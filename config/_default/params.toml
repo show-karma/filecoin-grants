@@ -1,13 +1,13 @@
 # Hugo
-title = "Scroll Grants"
-description = "Supporting builders and projects on Scroll through strategic grant allocation"
+title = "Filecoin Grants"
+description = "Supporting builders and projects on Filecoin through strategic grant allocation"
 images = ["cover.png"]
 
 # mainSections
 mainSections = ["docs"]
 
 [social]
-  twitter = "Scroll_ZKP"
+  twitter = "Filecoin"
 
 # Doks (@thulite/doks-core)
 [doks]
@@ -21,7 +21,7 @@ mainSections = ["docs"]
 
   ## Button
   navBarButton = true # false (default) or true
-  navBarButtonUrl = "https://grantsapp.scroll.io/programs/969"
+  navBarButtonUrl = "https://gap.karmahq.xyz/filecoin"
   navBarButtonText = "Apply for Grant"
 
   # FlexSearch
@@ -74,7 +74,7 @@ mainSections = ["docs"]
   editPage = false # false (default) or true
   lastMod = false # false (default) or true
   repoHost = "GitHub" # GitHub (default), Gitea, GitLab, Bitbucket, or BitbucketServer
-  docsRepo = "https://github.com/yourusername/op-grants-council"
+  docsRepo = "https://github.com/yourusername/filecoin-grants"
   docsRepoBranch = "main" # main (default), master, or <branch name>
   docsRepoSubPath = "" # "" (none, default) or <sub path>
 
@@ -131,7 +131,7 @@ mainSections = ["docs"]
   [seo.schemas]
     type = "Organization" # Organization (default) or Person
     logo = "favicon-512x512.png" # Logo of Organization — favicon-512x512.png (default)
-    name = "Scroll Grants" # Name of Organization or Person
+    name = "Filecoin Grants" # Name of Organization or Person
     sameAs = [] # E.g. ["https://github.com/thuliteio/thulite", "https://fosstodon.org/@thulite"]
     images = ["cover.png"] # ["cover.png"] (default)
     article = [] # Article sections

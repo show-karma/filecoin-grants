@@ -1,4 +1,4 @@
-title = "Scroll Community"
+title = "Filecoin Community"
 baseurl = "http://localhost:1313/"
 disableAliases = true
 disableHugoGeneratorInject = true
@@ -15,7 +15,7 @@ defaultContentLanguage = "en"
 disableLanguages = ["de", "nl"]
 defaultContentLanguageInSubdir = false
 
-copyRight = "Copyright (c) 2025 Scroll Community Grants Program"
+copyRight = "Copyright (c) 2025 Filecoin Community Grants Program"
 
 [build.buildStats]
   enable = true

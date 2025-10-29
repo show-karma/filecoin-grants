@@ -1,9 +1,9 @@
-// Scroll Brand Colors - Clean Professional Palette
-$primary: #FF684B;           // Scroll Primary - warm beige
-$primary-light: #fff5e9;
-$primary-lighter: #fffcf7;
-$primary-dark: #ffd9b8;
-$primary-subtle: #fffcf7;
+// Filecoin Brand Colors - Clean Professional Palette
+$primary: #0090ff;           // Filecoin Primary - blue
+$primary-light: #79a3e6;
+$primary-lighter: #e6f2ff;
+$primary-dark: #1864dc;
+$primary-subtle: #f9f9f9;
 
 // Professional neutrals
 $gray-50: #FAFBFC;
@@ -21,8 +21,8 @@ $gray-900: #111827;
 $success: #10B981;           // Green
 $info: #3B82F6;             // Blue
 $warning: #F59E0B;          // Amber
-$danger: #FF684B;           // Scroll Orange
-$accent: #FF684B;           // Scroll Orange for accents
+$danger: #EF4444;           // Red
+$accent: #0090ff;           // Filecoin Blue for accents
 
 // Background colors
 $body-bg: #FFFFFF;
@@ -41,7 +41,7 @@ $dark: $gray-800;
 
 // Link colors
 $link-color: $accent;
-$link-hover-color: #ff5538;
+$link-hover-color: #1864dc;
 
 // Border colors
 $border-color: $gray-200;
@@ -65,10 +65,10 @@ $footer-color: $gray-500;
 
 // Buttons
 $btn-primary-bg: $accent;
-$btn-primary-bg-hover: #ff5538;
+$btn-primary-bg-hover: #1864dc;
 $btn-primary-color: #FFFFFF;
-$btn-shadow: 0 2px 4px rgba(255,104,75,0.12);
-$btn-shadow-hover: 0 4px 8px rgba(255,104,75,0.20);
+$btn-shadow: 0 2px 4px rgba(0,144,255,0.12);
+$btn-shadow-hover: 0 4px 8px rgba(0,144,255,0.20);
 
 // Alert colors
 $alert-primary-bg: $primary-lighter;

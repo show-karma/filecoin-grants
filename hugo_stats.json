@@ -22,7 +22,6 @@
       "header",
       "hr",
       "html",
-      "img",
       "input",
       "kbd",
       "label",
@@ -262,7 +261,7 @@
     ],
     "ids": [
       "TableOfContents",
-      "about-scroll",
+      "about-filecoin",
       "get-involved",
       "impact-metrics",
       "key-focus-areas",
