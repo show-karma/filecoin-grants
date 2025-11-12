@@ -1,7 +1,7 @@
 ---
-title: "Community Grant Programs"
-description: "Explore Filecoin Community Grants programs"
-lead: "Supporting community-driven initiatives that strengthen and grow the Filecoin ecosystem"
+title: "Filecoin ProPGF Batch 2"
+description: "Explore Filecoin ProPGF Batch 2 program details"
+lead: "A $4M milestone-based funding program designed to accelerate innovation and strengthen the Filecoin ecosystem"
 date: 2024-01-31T08:47:36+00:00
 lastmod: 2025-10-15T00:00:00+00:00
 draft: false

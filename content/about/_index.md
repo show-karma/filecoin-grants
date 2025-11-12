@@ -19,4 +19,4 @@ We fund projects that build community, drive adoption, and create meaningful imp
 
 ## Get Involved
 
-Ready to contribute to the Filecoin ecosystem? [Apply for a grant](https://gap.karmahq.xyz/filecoin) or [read the full program details](https://github.com/filecoin-project/community#forums).
+Ready to contribute to the Filecoin ecosystem? [Apply for a grant](https://app.filpgf.io) or [read the full program details](https://github.com/filecoin-project/community#forums).
