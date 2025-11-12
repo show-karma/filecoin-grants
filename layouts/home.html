@@ -2,29 +2,12 @@
 <section class="hero-section">
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-lg-12 text-center">
-        <h1 class="mb-4">Announcing the General Track</h1>
-        <p class="lead mb-5">We're thrilled to announce the launch of <strong>Filecoin ProPGF Batch 2</strong> — a <strong>$4M milestone-based funding program</strong> designed to accelerate innovation and strengthen the Filecoin ecosystem.</p>
-        <p class="mb-5">This round continues our commitment to support projects that make Filecoin more <strong>useful, resilient, and impactful</strong> — from infrastructure and research to governance and user experience.</p>
-        <div class="alert mb-5" role="alert" style="background-color: #e6f2ff; border: none;">
-          <div class="d-flex align-items-center justify-content-center">
-            <div class="flex-shrink-0">
-              <span class="badge rounded-pill p-3 me-3" style="background-color: #000000;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 16 16">
-                  <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
-                  <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                </svg>
-              </span>
-            </div>
-            <div class="flex-grow-1 text-start">
-              <h4 class="alert-heading mb-1 mt-0">Applications Open</h4>
-              <p class="mb-0">Applications open on <strong>November 12th</strong> and will be hosted on <strong>Karma</strong>.</p>
-            </div>
-          </div>
-        </div>
-        <div class="text-center">
-          <a class="btn btn-lg me-3 mb-3" href="https://app.filpgf.io" role="button" style="background-color: #0090ff; color: #ffffff; border: none;">Apply for Grant</a>
-          <a class="btn btn-lg mb-3" href="https://filecoin.io/blog/posts/filecoin-ecosystem-metrics-roundup-building-a-data-driven-foundation-for-growth/" role="button" style="border: 2px solid #000000; color: #000000; background-color: white;">Ecosystem Metrics</a>
+      <div class="col-lg-10 text-center">
+        <h1 class="mb-4">{{ .Title }}</h1>
+        <p class="lead mb-5">{{ .Params.lead }}</p>
+        <div class="text-center mb-5">
+          <a class="btn btn-lg me-3 mb-3" href="/programs" role="button" style="background-color: #0090ff; color: #ffffff; border: none;">View Programs</a>
+          <a class="btn btn-lg mb-3" href="https://app.filpgf.io" role="button" style="border: 2px solid #000000; color: #000000; background-color: white;">Apply for Grant</a>
         </div>
       </div>
     </div>
@@ -32,3 +15,15 @@
 </section>
 {{ end }}
 
+{{ define "sidebar-prefooter" }}
+<section class="section section-lg">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 text-center">
+        <h2 class="mb-4">About Filecoin</h2>
+        <p class="lead mb-4">Filecoin is a decentralized storage network designed to store humanity's most important information. It turns cloud storage into an algorithmic market, allowing anyone to rent out spare storage space or purchase storage at competitive prices. Built on open-source protocols, Filecoin provides a secure, efficient, and decentralized alternative to centralized storage solutions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}
