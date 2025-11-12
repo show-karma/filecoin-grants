@@ -260,6 +260,8 @@
       "text-center",
       "text-decoration-none",
       "text-end",
+      "text-lg-end",
+      "text-lg-start",
       "text-muted",
       "text-reset",
       "text-start",
