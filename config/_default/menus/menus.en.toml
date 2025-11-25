@@ -1,8 +1,21 @@
 # Main navigation
+# Programs dropdown
 [[main]]
   name = "Programs"
-  url = "/programs/"
   weight = 10
+  identifier = "programs"
+
+[[main]]
+  name = "ProPGF"
+  url = "/programs/"
+  parent = "programs"
+  weight = 1
+
+[[main]]
+  name = "RetroPGF"
+  url = "https://www.fil-retropgf.io/"
+  parent = "programs"
+  weight = 2
 
 # More dropdown
 [[main]]
