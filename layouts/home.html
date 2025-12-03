@@ -1,14 +1,270 @@
 {{ define "main" }}
+<!-- Hero Section -->
 <section class="hero-section">
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-10 text-center">
+        <span class="badge rounded-pill px-3 py-2 mb-4" style="background-color: #e6f2ff; color: #0090ff; font-weight: 600;">Open for Applications</span>
         <h1 class="mb-4">{{ .Title }}</h1>
         <p class="lead mb-5">{{ .Params.lead }}</p>
-        <div class="text-center mb-5">
-          <a class="btn btn-lg me-3 mb-3" href="/programs" role="button" style="background-color: #0090ff; color: #ffffff; border: none;">ProPGF Program</a>
+        <div class="text-center mb-4">
+          <a class="btn btn-lg me-3 mb-3" href="/propgf" role="button" style="background-color: #0090ff; color: #ffffff; border: none;">ProPGF Program</a>
           <a class="btn btn-lg mb-3" href="https://www.fil-retropgf.io/" target="_blank" rel="noopener" role="button" style="background-color: #0090ff; color: #ffffff; border: none;">RetroPGF Program</a>
         </div>
+        <p class="text-muted small">Join hundreds of builders shaping the future of decentralized storage</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Program Highlights -->
+<section class="section section-md bg-light">
+  <div class="container">
+    <div class="row justify-content-center text-center mb-5">
+      <div class="col-lg-8">
+        <h2 class="mb-3">Two Ways to Get Funded</h2>
+        <p class="lead">Choose the program that best fits your project's stage and goals.</p>
+      </div>
+    </div>
+    <div class="row justify-content-center g-4">
+      <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body p-4 p-lg-5">
+            <div class="mb-3">
+              <div class="rounded-circle p-3 d-inline-flex" style="background-color: #e6f2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+              </div>
+            </div>
+            <h3 class="h4 mb-3">ProPGF Program</h3>
+            <p class="text-muted mb-4">Milestone-based funding for new projects building tools, infrastructure, and applications on Filecoin. Perfect for teams with a clear roadmap.</p>
+            <ul class="list-unstyled mb-4">
+              <li class="mb-2"><span style="color: #0090ff;">&#10003;</span> Milestone-based payouts</li>
+              <li class="mb-2"><span style="color: #0090ff;">&#10003;</span> Up to $4M in funding</li>
+              <li class="mb-2"><span style="color: #0090ff;">&#10003;</span> Technical mentorship</li>
+            </ul>
+            <a href="/propgf" class="btn" style="background-color: #0090ff; color: #ffffff; border: none;">Learn More</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body p-4 p-lg-5">
+            <div class="mb-3">
+              <div class="rounded-circle p-3 d-inline-flex" style="background-color: #e6f2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+                </svg>
+              </div>
+            </div>
+            <h3 class="h4 mb-3">RetroPGF Program</h3>
+            <p class="text-muted mb-4">Retroactive funding that rewards projects for impact already delivered to the Filecoin ecosystem. Get recognized for your contributions.</p>
+            <ul class="list-unstyled mb-4">
+              <li class="mb-2"><span style="color: #0090ff;">&#10003;</span> Reward past contributions</li>
+              <li class="mb-2"><span style="color: #0090ff;">&#10003;</span> Community-driven selection</li>
+              <li class="mb-2"><span style="color: #0090ff;">&#10003;</span> No milestones required</li>
+            </ul>
+            <a href="https://www.fil-retropgf.io/" target="_blank" rel="noopener" class="btn" style="background-color: #0090ff; color: #ffffff; border: none;">Learn More</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Impact Stats -->
+<section class="section section-lg">
+  <div class="container">
+    <div class="row justify-content-center text-center mb-5">
+      <div class="col-lg-8">
+        <h2 class="mb-3">Building the Filecoin Ecosystem</h2>
+        <p class="lead">Our grants programs have supported builders across the globe.</p>
+      </div>
+    </div>
+    <div class="row justify-content-center g-4 text-center">
+      <div class="col-6 col-lg-3">
+        <div class="p-4">
+          <div class="display-5 fw-bold mb-2" style="color: #0090ff;">$4M+</div>
+          <p class="text-muted mb-0">Total Funding</p>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="p-4">
+          <div class="display-5 fw-bold mb-2" style="color: #0090ff;">100+</div>
+          <p class="text-muted mb-0">Projects Funded</p>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="p-4">
+          <div class="display-5 fw-bold mb-2" style="color: #0090ff;">50+</div>
+          <p class="text-muted mb-0">Countries</p>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="p-4">
+          <div class="display-5 fw-bold mb-2" style="color: #0090ff;">6</div>
+          <p class="text-muted mb-0">Focus Areas</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What We Fund -->
+<section class="section section-md bg-light">
+  <div class="container">
+    <div class="row justify-content-center text-center mb-5">
+      <div class="col-lg-8">
+        <h2 class="mb-3">What We Fund</h2>
+        <p class="lead">We support projects that strengthen the Filecoin ecosystem across key areas.</p>
+      </div>
+    </div>
+    <div class="row justify-content-center g-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="mb-3">
+              <div class="rounded-circle p-3 d-inline-flex" style="background-color: #e6f2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+                  <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+                </svg>
+              </div>
+            </div>
+            <h4 class="h5 card-title">Developer Tools</h4>
+            <p class="card-text small">SDKs, APIs, and infrastructure that improve the developer experience.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="mb-3">
+              <div class="rounded-circle p-3 d-inline-flex" style="background-color: #e6f2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
+                </svg>
+              </div>
+            </div>
+            <h4 class="h5 card-title">Research</h4>
+            <p class="card-text small">Technical, economic, or design research that advances the protocol.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="mb-3">
+              <div class="rounded-circle p-3 d-inline-flex" style="background-color: #e6f2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+                </svg>
+              </div>
+            </div>
+            <h4 class="h5 card-title">Community</h4>
+            <p class="card-text small">Onboarding, documentation, and adoption initiatives.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="mb-3">
+              <div class="rounded-circle p-3 d-inline-flex" style="background-color: #e6f2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                </svg>
+              </div>
+            </div>
+            <h4 class="h5 card-title">Governance</h4>
+            <p class="card-text small">Tools and frameworks for transparency and decision-making.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="mb-3">
+              <div class="rounded-circle p-3 d-inline-flex" style="background-color: #e6f2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                </svg>
+              </div>
+            </div>
+            <h4 class="h5 card-title">User Experience</h4>
+            <p class="card-text small">Interfaces and apps that make Filecoin intuitive for users.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="mb-3">
+              <div class="rounded-circle p-3 d-inline-flex" style="background-color: #e6f2ff;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                </svg>
+              </div>
+            </div>
+            <h4 class="h5 card-title">Infrastructure</h4>
+            <p class="card-text small">Core services essential to the Filecoin network.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About Filecoin -->
+<section class="section section-lg">
+  <div class="container">
+    <div class="row justify-content-center align-items-center g-5">
+      <div class="col-lg-6">
+        <h2 class="mb-4">About Filecoin</h2>
+        <p class="lead mb-4">Filecoin is a decentralized storage network designed to store humanity's most important information.</p>
+        <p class="text-muted mb-4">It turns cloud storage into an algorithmic market, allowing anyone to rent out spare storage space or purchase storage at competitive prices. Built on open-source protocols, Filecoin provides a secure, efficient, and decentralized alternative to centralized storage solutions.</p>
+        <a href="https://filecoin.io/" target="_blank" rel="noopener" class="btn" style="border: 2px solid #0090ff; color: #0090ff; background-color: white;">Learn More About Filecoin</a>
+      </div>
+      <div class="col-lg-5 offset-lg-1">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4 p-lg-5">
+            <h5 class="mb-4">Why Build on Filecoin?</h5>
+            <ul class="list-unstyled mb-0">
+              <li class="d-flex align-items-start mb-3">
+                <span class="me-3" style="color: #0090ff;">&#10003;</span>
+                <span>Decentralized and censorship-resistant storage</span>
+              </li>
+              <li class="d-flex align-items-start mb-3">
+                <span class="me-3" style="color: #0090ff;">&#10003;</span>
+                <span>Verifiable and cryptographically secure</span>
+              </li>
+              <li class="d-flex align-items-start mb-3">
+                <span class="me-3" style="color: #0090ff;">&#10003;</span>
+                <span>Growing ecosystem of developers and users</span>
+              </li>
+              <li class="d-flex align-items-start">
+                <span class="me-3" style="color: #0090ff;">&#10003;</span>
+                <span>Open-source and community-driven</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section section-lg" style="background: linear-gradient(135deg, #e6f2ff 0%, #f9f9f9 100%);">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-8">
+        <h2 class="mb-4">Ready to Build?</h2>
+        <p class="lead mb-5">Join the Filecoin ecosystem and turn your ideas into reality. Choose a program to get started.</p>
+        <a class="btn btn-lg" href="#" role="button" style="background-color: #0090ff; color: #ffffff; border: none;" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">View Programs</a>
       </div>
     </div>
   </div>
@@ -16,14 +272,4 @@
 {{ end }}
 
 {{ define "sidebar-prefooter" }}
-<section class="section section-lg">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-10 text-center">
-        <h2 class="mb-4">About Filecoin</h2>
-        <p class="lead mb-4">Filecoin is a decentralized storage network designed to store humanity's most important information. It turns cloud storage into an algorithmic market, allowing anyone to rent out spare storage space or purchase storage at competitive prices. Built on open-source protocols, Filecoin provides a secure, efficient, and decentralized alternative to centralized storage solutions.</p>
-      </div>
-    </div>
-  </div>
-</section>
 {{ end }}
