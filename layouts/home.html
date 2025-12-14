@@ -4,12 +4,12 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-10 text-center">
-        <span class="badge rounded-pill px-3 py-2 mb-4" style="{{ .Params.hero.badge_style }}">{{ .Params.hero.badge_text }}</span>
+        <span class="badge rounded-pill px-3 py-2 mb-4" style="{{ .Params.hero.badge_style | safeCSS }}">{{ .Params.hero.badge_text }}</span>
         <h1 class="mb-4">{{ .Title }}</h1>
         <p class="lead mb-5">{{ .Params.lead }}</p>
         <div class="text-center mb-4">
           {{ range .Params.hero.buttons }}
-          <a class="btn btn-lg me-3 mb-3" href="{{ .url }}" role="button" style="{{ .style }}"{{ if .external }} target="_blank" rel="noopener"{{ end }}>{{ .text }}</a>
+          <a class="btn btn-lg me-3 mb-3" href="{{ .url }}" role="button" style="{{ .style | safeCSS }}"{{ if .external }} target="_blank" rel="noopener"{{ end }}>{{ .text }}</a>
           {{ end }}
         </div>
         <p class="text-muted small">{{ .Params.hero.subtitle }}</p>
