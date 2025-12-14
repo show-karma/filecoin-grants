@@ -21,9 +21,8 @@ hero:
       url: "/propgf"
       style: "background-color: #0090ff; color: #ffffff; border: none;"
     - text: "RetroPGF Program"
-      url: "https://www.fil-retropgf.io/"
+      url: "/retropgf"
       style: "background-color: #0090ff; color: #ffffff; border: none;"
-      external: true
 
 # Program Highlights
 programs:
@@ -47,8 +46,7 @@ programs:
         - "Community-driven selection"
         - "No milestones required"
       button_text: "Learn More"
-      button_url: "https://www.fil-retropgf.io/"
-      external: true
+      button_url: "/retropgf"
 
 # Impact Stats
 stats:

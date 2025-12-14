@@ -13,7 +13,7 @@
 
 [[main]]
   name = "RetroPGF"
-  url = "https://www.fil-retropgf.io/"
+  url = "/retropgf/"
   parent = "programs"
   weight = 2
 
