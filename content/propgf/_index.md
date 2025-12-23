@@ -15,7 +15,7 @@ hero:
   intro: "We're thrilled to announce <strong>Filecoin ProPGF Batch 2</strong> — a <span style='color: #0090ff; font-weight: 700;'>$4M milestone-based funding program</span> designed to accelerate innovation and strengthen the Filecoin ecosystem."
   description: "Supporting projects that make Filecoin more <strong>useful, resilient, and impactful</strong> — from infrastructure and research to governance and user experience."
   application_status: "Applications now open"
-  deadline: "Application Deadline: Dec 23rd, 2025 at 23:59 UTC"
+  deadline: "Application Deadline: Dec 31st, 2025 at 23:59 UTC"
   apply_url: "https://app.filpgf.io/programs/992/apply"
   metrics_url: "https://filecoin.io/blog/posts/filecoin-ecosystem-metrics-roundup-building-a-data-driven-foundation-for-growth/"
 
