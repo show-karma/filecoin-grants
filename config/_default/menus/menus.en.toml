@@ -17,6 +17,12 @@
   parent = "programs"
   weight = 2
 
+# Applications link
+[[main]]
+  name = "Applications"
+  url = "https://app.filpgf.io/browse-applications"
+  weight = 20
+
 # More dropdown
 [[main]]
   name = "More"
