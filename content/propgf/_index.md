@@ -14,9 +14,9 @@ hero:
   title: "Announcing the<br/>General Track"
   intro: "We're thrilled to announce <strong>Filecoin ProPGF Batch 2</strong> — a <span style='color: #0090ff; font-weight: 700;'>$4M milestone-based funding program</span> designed to accelerate innovation and strengthen the Filecoin ecosystem."
   description: "Supporting projects that make Filecoin more <strong>useful, resilient, and impactful</strong> — from infrastructure and research to governance and user experience."
-  application_status: "Applications now open"
-  deadline: "Application Deadline: Dec 31st, 2025 at 23:59 UTC"
-  apply_url: "https://app.filpgf.io/programs/992/apply"
+  application_status: "Applications are now closed"
+  deadline: "View all applications"
+  apply_url: "https://app.filpgf.io/browse-applications?programId=992"
   metrics_url: "https://filecoin.io/blog/posts/filecoin-ecosystem-metrics-roundup-building-a-data-driven-foundation-for-growth/"
 
 # What We're Looking For
@@ -164,8 +164,8 @@ stay_connected:
 
 # CTA Section
 cta:
-  title: "Ready to Apply?"
-  description: "Submit your application and join the next wave of builders shaping the Filecoin ecosystem."
-  button_text: "Apply for Grant"
-  button_url: "https://app.filpgf.io/programs/992/apply"
+  title: "View Applications"
+  description: "Browse all submitted applications for Batch 2 of the Filecoin ProPGF program."
+  button_text: "View Applications"
+  button_url: "https://app.filpgf.io/browse-applications?programId=992"
 ---

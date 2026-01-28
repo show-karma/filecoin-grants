@@ -1,21 +1,33 @@
 # Main navigation
-# Programs dropdown
-[[main]]
-  name = "Programs"
-  weight = 10
-  identifier = "programs"
-
+# ProPGF dropdown
 [[main]]
   name = "ProPGF"
+  weight = 10
+  identifier = "propgf"
+
+[[main]]
+  name = "Overview"
   url = "/propgf/"
-  parent = "programs"
+  parent = "propgf"
   weight = 1
 
 [[main]]
+  name = "Batch 1 grants"
+  url = "https://www.karmahq.xyz/community/filecoin"
+  parent = "propgf"
+  weight = 2
+
+[[main]]
+  name = "Batch 2 applications"
+  url = "https://app.filpgf.io/browse-applications?programId=992"
+  parent = "propgf"
+  weight = 3
+
+# RetroPGF link
+[[main]]
   name = "RetroPGF"
   url = "https://www.fil-retropgf.io/"
-  parent = "programs"
-  weight = 2
+  weight = 15
 
 # Applications link
 [[main]]
