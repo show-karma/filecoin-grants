@@ -17,10 +17,16 @@
     <div class="container">
   {{ end -}}
 
-    <!-- Site title with logo -->
-    <a class="navbar-brand me-auto me-xl-3 d-flex align-items-center" href="{{ relLangURL "" }}">
-      <span class="navbar-brand-logo me-2">F</span>
-      <span>Filecoin Community</span>
+    <!-- Site title with Filecoin logo + Powered by Karma -->
+    <a class="navbar-brand me-auto me-xl-3 d-flex flex-column align-items-start text-decoration-none" href="{{ relLangURL "" }}">
+      <div class="d-flex align-items-center">
+        <img src="{{ "filecoin-logo.svg" | relURL }}" alt="Filecoin" width="32" height="32" class="navbar-brand-logo-img me-2">
+        <span class="navbar-brand-title">Filecoin Community</span>
+      </div>
+      <div class="navbar-powered-by d-flex align-items-center justify-content-end w-100">
+        <span class="powered-by-text">Powered by</span>
+        <img src="{{ "karma-logo.svg" | relURL }}" alt="Karma" height="16" class="powered-by-logo">
+      </div>
     </a>
 
     <!-- Mobile button group -->
@@ -135,17 +141,6 @@
         </button>
         {{ end -}}
 
-        <!-- Social menu -->
-        {{ if .Site.Menus.social -}}
-        <ul id="socialMenu" class="nav mx-auto flex-row order-xl-4">
-          {{ range .Site.Menus.social -}}
-            <li class="nav-item">
-              <a class="nav-link social-link" href="{{ .URL | relURL }}"{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Pre | safeHTML }}<small class="ms-2 visually-hidden">{{ .Name | safeHTML }}</small></a>
-            </li>
-          {{ end -}}
-        </ul>
-        {{ end -}}
-
         <!-- Mobile social links -->
         <div class="d-xl-none border-top pt-3 mt-3">
           {{ if .Site.Menus.social -}}
@@ -181,21 +176,196 @@
 {{ end -}}
 
 <style>
-.navbar-brand-logo {
-  width: 32px;
-  height: 32px;
-  background-color: #e6f2ff;
-  color: #0090ff;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
+/* ── Match gap-app-v2 whitelabel-navbar styles ── */
+
+/* Navbar: h-16 (64px), white bg, border-b border-zinc-200, horizontal padding px-8 lg:px-24 */
+.navbar {
+  height: 64px !important;
+  min-height: 64px !important;
+  padding: 0 !important;
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 1px solid #e4e4e7 !important;
+  box-shadow: none !important;
 }
 
+.navbar > .container,
+.navbar > .container-xxl,
+.navbar > [class^="container-"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  height: 64px !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 2rem !important;  /* px-8 = 32px */
+  padding-right: 2rem !important;
+}
+
+@media (min-width: 1200px) {
+  .navbar > .container,
+  .navbar > .container-xxl,
+  .navbar > [class^="container-"] {
+    padding-left: 6rem !important;  /* lg:px-24 = 96px */
+    padding-right: 6rem !important;
+  }
+}
+
+/* Brand section: flex-col, items-start, me-auto me-xl-3 */
+.navbar-brand {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  padding: 0 !important;
+  margin: 0 auto 0 0 !important; /* me-auto */
+  font-size: inherit !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+@media (min-width: 1200px) {
+  .navbar-brand {
+    margin: 0 auto 0 0 !important; /* me-auto: push all nav items to the right */
+  }
+}
+
+.navbar-brand:hover {
+  color: inherit !important;
+  background: none !important;
+}
+
+.navbar-brand-logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Brand title: text-lg (18px) font-semibold (600) text-zinc-900 */
+.navbar-brand-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #18181b;
+  line-height: 1.2;
+}
+
+/* Powered by section */
+.navbar-powered-by {
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.powered-by-text {
+  font-size: 0.625rem;
+  color: #71717a;
+  line-height: 1;
+}
+
+.powered-by-logo {
+  height: 14px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Nav links: text-sm (14px) font-medium (500) text-zinc-600, px-3 py-2, rounded-lg */
+.navbar-nav > .nav-item > .nav-link,
+.navbar-nav > .nav-item > .dropdown-toggle {
+  font-size: 0.875rem !important;   /* text-sm = 14px */
+  font-weight: 500 !important;      /* font-medium */
+  color: #52525b !important;        /* text-zinc-600 */
+  padding: 0.5rem 0.75rem !important; /* py-2 px-3 = 8px 12px */
+  border-radius: 0.5rem !important;  /* rounded-lg */
+  transition: color 0.15s, background-color 0.15s !important;
+  white-space: nowrap !important;
+  line-height: 1.25rem !important;   /* match text-sm line-height */
+}
+
+/* Keep generic .nav-link for backward compat but lower specificity */
+.navbar-nav .nav-link {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #52525b !important;
+  border-radius: 0.5rem !important;
+  transition: color 0.15s, background-color 0.15s !important;
+  white-space: nowrap !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #18181b !important;        /* hover:text-zinc-900 */
+  background: #f4f4f5 !important;   /* hover:bg-zinc-100 */
+}
+
+/* Dropdown toggle: same as nav-link but with flex for chevron alignment */
+.navbar-nav .dropdown-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;         /* gap-1 */
+}
+
+/* Chevron icon in dropdowns: h-3.5 w-3.5 (14px) */
+.navbar-nav .dropdown-toggle .icon-tabler-chevron-down {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Dropdown menu styling to match shadcn/radix style */
+.navbar-nav .dropdown-menu {
+  min-width: 180px;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  padding: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item {
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  color: #18181b;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item:hover {
+  background: #f4f4f5;
+  color: #18181b;
+}
+
+/* Desktop: right-align nav items with search & CTA */
+@media (min-width: 1200px) {
+  .navbar .offcanvas {
+    flex-grow: 0 !important;
+    flex-basis: auto !important;
+  }
+
+  .navbar .offcanvas .offcanvas-body {
+    justify-content: flex-end !important;
+    gap: 0.25rem !important; /* gap-1 */
+    align-items: center !important;
+  }
+
+  .navbar .offcanvas .offcanvas-body .navbar-nav {
+    flex-grow: 0 !important;
+  }
+}
+
+/* Nav items: gap-1 (4px) between items, no extra margin */
+.navbar-nav {
+  gap: 0.25rem !important; /* gap-1 = 4px */
+  align-items: center !important;
+}
+
+.navbar-nav .nav-item {
+  margin: 0 !important;
+}
+
+/* Separator before the CTA button (matches the | divider in whitelabel) */
+.navbar .btn-primary.rounded-pill {
+  margin-left: 1rem !important;
+}
+
+/* Mobile header styles */
 .nav-link.fw-semibold {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.25rem;
@@ -210,13 +380,13 @@
   border-color: var(--bs-gray-300) !important;
 }
 
-/* Ensure mobile menu items are properly styled */
+/* Mobile offcanvas nav links */
 .offcanvas-body .nav-link {
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 0.75rem !important;
 }
 
 .offcanvas-body .navbar-nav .navbar-nav .nav-link {
-  padding-left: 2rem;
+  padding-left: 1.5rem !important;
 }
 
 /* Mobile-only styles using media query */
@@ -224,7 +394,7 @@
   /* Force offcanvas to full height on mobile only */
   #offcanvasNavMain {
     height: 100vh !important;
-    height: 100dvh !important; /* Use dynamic viewport height for mobile browsers */
+    height: 100dvh !important;
     max-height: none !important;
     background-color: white !important;
     width: 280px !important;
@@ -266,7 +436,7 @@
   .navbar .order-3 {
     order: 2 !important;
   }
-  
+
   #searchToggleMobile {
     order: 3 !important;
   }
@@ -278,7 +448,7 @@
     height: auto !important;
     max-height: none !important;
   }
-  
+
   #offcanvasNavMain .offcanvas-body {
     height: auto !important;
     max-height: none !important;
@@ -302,12 +472,12 @@ document.addEventListener('DOMContentLoaded', function() {
       offcanvas.style.height = '100vh';
       offcanvas.style.maxHeight = 'none';
       offcanvas.style.backgroundColor = 'white';
-      
+
       const header = offcanvas.querySelector('.offcanvas-header');
       if (header) {
         header.style.backgroundColor = 'white';
       }
-      
+
       const body = offcanvas.querySelector('.offcanvas-body');
       if (body) {
         body.style.backgroundColor = 'white';
@@ -315,19 +485,19 @@ document.addEventListener('DOMContentLoaded', function() {
         body.style.overflowY = 'auto';
       }
     }
-    
+
     // Listen for when offcanvas is about to be shown
     offcanvas.addEventListener('show.bs.offcanvas', function() {
       fixOffcanvasStyles();
     });
-    
+
     // Listen for when offcanvas is fully shown
     offcanvas.addEventListener('shown.bs.offcanvas', function() {
       fixOffcanvasStyles();
       // Use a small delay to ensure Bootstrap has finished its animations
       setTimeout(fixOffcanvasStyles, 10);
     });
-    
+
     // Watch for class changes using MutationObserver
     const observer = new MutationObserver(function(mutations) {
       mutations.forEach(function(mutation) {
@@ -338,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     });
-    
+
     // Start observing the offcanvas for class changes
     observer.observe(offcanvas, {
       attributes: true,
