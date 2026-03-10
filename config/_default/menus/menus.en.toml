@@ -1,4 +1,12 @@
 # Main navigation
+
+# Applications link
+[[main]]
+  name = "Applications"
+  identifier = "applications"
+  url = "https://app.filpgf.io/browse-applications"
+  weight = 5
+
 # ProPGF dropdown
 [[main]]
   name = "ProPGF"
@@ -7,33 +15,40 @@
 
 [[main]]
   name = "Overview"
-  url = "/propgf/"
+  url = "https://filpgf.io/propgf"
   parent = "propgf"
   weight = 1
 
 [[main]]
-  name = "Batch 1 grants"
-  url = "https://www.karmahq.xyz/community/filecoin"
+  name = "Grants"
+  url = "https://karmahq.xyz/community/filecoin"
   parent = "propgf"
   weight = 2
 
 [[main]]
-  name = "Batch 2 applications"
-  url = "https://app.filpgf.io/browse-applications?programId=992"
+  name = "Applications"
+  identifier = "propgf-applications"
+  url = "https://app.filpgf.io/browse-applications"
   parent = "propgf"
   weight = 3
+
+[[main]]
+  name = "Payout process"
+  url = "https://docs.google.com/document/d/1WIyL8zj1ToTEVujRvCV6E4mlle5srwLP3DhEarWn3Ug/edit?usp=sharing"
+  parent = "propgf"
+  weight = 4
+
+[[main]]
+  name = "Financials"
+  url = "https://app.filpgf.io/financials"
+  parent = "propgf"
+  weight = 5
 
 # RetroPGF link
 [[main]]
   name = "RetroPGF"
   url = "https://www.fil-retropgf.io/"
   weight = 15
-
-# Applications link
-[[main]]
-  name = "Applications"
-  url = "https://app.filpgf.io/browse-applications"
-  weight = 20
 
 # More dropdown
 [[main]]
@@ -55,7 +70,7 @@
 
 [[main]]
   name = "Forum"
-  url = "https://github.com/filecoin-project/community#forums"
+  url = "https://github.com/filecoin-project/community/discussions"
   parent = "more"
   weight = 3
 
@@ -65,6 +80,31 @@
   parent = "more"
   weight = 4
 
+# Resources dropdown (social links)
+[[main]]
+  name = "Resources"
+  weight = 50
+  identifier = "resources"
+
+[[main]]
+  name = "Twitter"
+  url = "https://twitter.com/Filecoin"
+  parent = "resources"
+  weight = 1
+
+[[main]]
+  name = "Discord"
+  url = "https://discord.gg/yeQ2hcd2TD"
+  parent = "resources"
+  weight = 2
+
+[[main]]
+  name = "GitHub"
+  url = "https://github.com/filecoin-project"
+  parent = "resources"
+  weight = 3
+
+# Social links (kept for footer/other uses)
 [[social]]
   name = "Twitter"
   pre = '<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>'
@@ -82,6 +122,3 @@
   pre = '<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path></svg>'
   url = "https://github.com/filecoin-project"
   weight = 30
-
-
-

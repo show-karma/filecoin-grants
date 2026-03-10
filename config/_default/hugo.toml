@@ -45,7 +45,7 @@ copyRight = "Copyright (c) 2025 Filecoin Community Grants Program"
   priority = 0.5
 
 [caches]
-  [caches.getjson]
+  [caches.getresource]
     dir = ":cacheDir/:project"
     maxAge = -1 # "30m"
 
