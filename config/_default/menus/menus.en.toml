@@ -1,12 +1,5 @@
 # Main navigation
 
-# Applications link
-[[main]]
-  name = "Applications"
-  identifier = "applications"
-  url = "https://app.filpgf.io/browse-applications"
-  weight = 5
-
 # ProPGF dropdown
 [[main]]
   name = "ProPGF"
