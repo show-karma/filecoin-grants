@@ -13,8 +13,8 @@ seo:
 
 # Hero Section
 hero:
-  badge_text: "Open for Applications"
-  badge_style: "background-color: #e6f2ff; color: #0090ff; font-weight: 600;"
+  badge_text: ""
+  badge_style: "display: none;"
   subtitle: "Join hundreds of builders shaping the future of decentralized storage"
   buttons:
     - text: "ProPGF Program"

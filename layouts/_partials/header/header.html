@@ -90,7 +90,25 @@
                 <ul class="dropdown-menu shadow rounded border-0">
                   {{ range .Children -}}
                   {{- $childActive := eq .Name $current.Title -}}
+                    {{ if .HasChildren -}}
+                    <li class="dropdown-submenu">
+                      <a class="dropdown-item dropdown-submenu-toggle" href="#">
+                        {{ .Name }}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon-chevron-right" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                          <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                      </a>
+                      <ul class="dropdown-menu dropdown-submenu-menu shadow rounded border-0">
+                        {{ range .Children -}}
+                        {{- $subActive := eq .Name $current.Title -}}
+                          <li><a class="dropdown-item{{ if $subActive }} active{{ end }}" href="{{ .URL | relURL }}"{{ if $subActive }} aria-current="true"{{ end }}{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Name }}</a></li>
+                        {{ end -}}
+                      </ul>
+                    </li>
+                    {{ else -}}
                     <li><a class="dropdown-item{{ if $childActive }} active{{ end }}" href="{{ .URL | relURL }}"{{ if $childActive }} aria-current="true"{{ end }}{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Name }}</a></li>
+                    {{ end -}}
                   {{ end -}}
                 </ul>
               </li>
@@ -100,9 +118,23 @@
                 <ul class="navbar-nav ms-3">
                   {{ range .Children -}}
                   {{- $childActive := eq .Name $current.Title -}}
+                    {{ if .HasChildren -}}
+                    <li class="nav-item">
+                      <div class="nav-link fw-semibold text-muted small">{{ .Name }}</div>
+                      <ul class="navbar-nav ms-3">
+                        {{ range .Children -}}
+                        {{- $subActive := eq .Name $current.Title -}}
+                          <li class="nav-item">
+                            <a class="nav-link{{ if $subActive }} active{{ end }}" href="{{ .URL | relURL }}"{{ if $subActive }} aria-current="true"{{ end }}{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Name }}</a>
+                          </li>
+                        {{ end -}}
+                      </ul>
+                    </li>
+                    {{ else -}}
                     <li class="nav-item">
                       <a class="nav-link{{ if $childActive }} active{{ end }}" href="{{ .URL | relURL }}"{{ if $childActive }} aria-current="true"{{ end }}{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Name }}</a>
                     </li>
+                    {{ end -}}
                   {{ end -}}
                 </ul>
               </li>
@@ -328,6 +360,36 @@
 .navbar-nav .dropdown-menu .dropdown-item:hover {
   background: #f4f4f5;
   color: #18181b;
+}
+
+/* Nested submenu (dropdown inside dropdown) */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.dropdown-submenu-toggle .icon-chevron-right {
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.dropdown-submenu-menu {
+  display: none;
+  position: absolute !important;
+  top: -0.25rem !important;
+  left: 100% !important;
+  min-width: 200px;
+  margin: 0 !important;
+}
+
+.dropdown-submenu:hover > .dropdown-submenu-menu {
+  display: block;
 }
 
 /* Desktop: right-align nav items with search & CTA */
