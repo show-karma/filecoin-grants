@@ -115,7 +115,7 @@
   </div>
 </section>
 
-<!-- Timeline (hidden)
+{{/* Timeline section hidden
 <section class="section section-lg">
   <div class="container">
     <div class="row justify-content-center">
@@ -131,87 +131,29 @@
           <p class="lead">{{ .Params.timeline.section_subtitle }}</p>
         </div>
 
-        <!-- Timeline CSS -->
         <style>
-          .timeline-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-          }
-          .timeline-table th {
-            background-color: #f8fafc;
-            padding: 0.75rem 0.5rem;
-            text-align: center;
-            font-weight: 600;
-            color: #374151;
-            border: 1px solid #e5e7eb;
-          }
-          .timeline-table td {
-            padding: 0.5rem 0.25rem;
-            text-align: center;
-            border: 1px solid #e5e7eb;
-            vertical-align: middle;
-            height: 40px;
-          }
-          .timeline-bar {
-            padding: 0.5rem 0.75rem;
-            border-radius: 4px;
-            font-weight: 500;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            display: inline-block;
-            width: 100%;
-          }
-          .bar-sensemaking { background-color: #6366f1; color: white; }
-          .bar-applications { background-color: #0090ff; color: white; }
-          .bar-reviews { background-color: #10b981; color: white; }
-          .bar-results { background-color: #f472b6; color: white; }
-          .bar-disbursements { background-color: #ef4444; color: white; }
-          .timeline-note {
-            background-color: #fef3c7;
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
-            margin-top: 2rem;
-            text-align: center;
-            font-style: italic;
-            color: #92400e;
-          }
-          @media (max-width: 768px) {
-            .timeline-table { font-size: 0.7rem; }
-            .timeline-bar { font-size: 0.65rem; padding: 0.35rem 0.5rem; }
-            .timeline-table th, .timeline-table td { padding: 0.35rem 0.15rem; }
-          }
+          .timeline-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+          .timeline-table th { background-color: #f8fafc; padding: 0.75rem 0.5rem; text-align: center; font-weight: 600; color: #374151; border: 1px solid #e5e7eb; }
+          .timeline-table td { padding: 0.5rem 0.25rem; text-align: center; border: 1px solid #e5e7eb; vertical-align: middle; height: 40px; }
+          .timeline-bar { padding: 0.5rem 0.75rem; border-radius: 4px; font-weight: 500; font-size: 0.8rem; white-space: nowrap; display: inline-block; width: 100%; }
+          .timeline-note { background-color: #fef3c7; border-radius: 8px; padding: 1rem 1.5rem; margin-top: 2rem; text-align: center; font-style: italic; color: #92400e; }
         </style>
 
         {{ range .Params.timeline.batches }}
-        <!-- {{ .name }} Timeline -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-3 p-lg-4">
             <h5 class="mb-3 text-center" style="color: {{ .color }};">{{ .name }}</h5>
             <div class="table-responsive">
               <table class="timeline-table">
-                <thead>
-                  <tr>
-                    {{ range .months }}
-                    <th>{{ . }}</th>
-                    {{ end }}
-                  </tr>
-                </thead>
+                <thead><tr>{{ range .months }}<th>{{ . }}</th>{{ end }}</tr></thead>
                 <tbody>
                   {{ range .phases }}
                   <tr>
-                    {{ $span := .span }}
-                    {{ $start := .start_col }}
-                    {{ $name := .name }}
-                    {{ $color := .color }}
+                    {{ $span := .span }}{{ $start := .start_col }}{{ $name := .name }}{{ $color := .color }}
                     {{ range seq 0 5 }}
-                      {{ if eq . $start }}
-                        <td colspan="{{ $span }}"><span class="timeline-bar" style="background-color: {{ $color }}; color: white;">{{ $name }}</span></td>
+                      {{ if eq . $start }}<td colspan="{{ $span }}"><span class="timeline-bar" style="background-color: {{ $color }}; color: white;">{{ $name }}</span></td>
                       {{ else if and (gt . $start) (lt . (add $start $span)) }}
-                        <!-- Skip cells covered by colspan -->
-                      {{ else }}
-                        <td></td>
-                      {{ end }}
+                      {{ else }}<td></td>{{ end }}
                     {{ end }}
                   </tr>
                   {{ end }}
@@ -222,39 +164,20 @@
         </div>
         {{ end }}
 
-        <!-- Legend -->
         <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
-          <div class="d-flex align-items-center">
-            <span class="rounded me-2" style="width: 16px; height: 16px; background-color: #6366f1; display: inline-block;"></span>
-            <span class="small text-muted">Sensemaking</span>
-          </div>
-          <div class="d-flex align-items-center">
-            <span class="rounded me-2" style="width: 16px; height: 16px; background-color: #0090ff; display: inline-block;"></span>
-            <span class="small text-muted">Applications</span>
-          </div>
-          <div class="d-flex align-items-center">
-            <span class="rounded me-2" style="width: 16px; height: 16px; background-color: #10b981; display: inline-block;"></span>
-            <span class="small text-muted">Reviews</span>
-          </div>
-          <div class="d-flex align-items-center">
-            <span class="rounded me-2" style="width: 16px; height: 16px; background-color: #f472b6; display: inline-block;"></span>
-            <span class="small text-muted">Results + KYC</span>
-          </div>
-          <div class="d-flex align-items-center">
-            <span class="rounded me-2" style="width: 16px; height: 16px; background-color: #ef4444; display: inline-block;"></span>
-            <span class="small text-muted">Disbursements</span>
-          </div>
+          <div class="d-flex align-items-center"><span class="rounded me-2" style="width: 16px; height: 16px; background-color: #6366f1; display: inline-block;"></span><span class="small text-muted">Sensemaking</span></div>
+          <div class="d-flex align-items-center"><span class="rounded me-2" style="width: 16px; height: 16px; background-color: #0090ff; display: inline-block;"></span><span class="small text-muted">Applications</span></div>
+          <div class="d-flex align-items-center"><span class="rounded me-2" style="width: 16px; height: 16px; background-color: #10b981; display: inline-block;"></span><span class="small text-muted">Reviews</span></div>
+          <div class="d-flex align-items-center"><span class="rounded me-2" style="width: 16px; height: 16px; background-color: #f472b6; display: inline-block;"></span><span class="small text-muted">Results + KYC</span></div>
+          <div class="d-flex align-items-center"><span class="rounded me-2" style="width: 16px; height: 16px; background-color: #ef4444; display: inline-block;"></span><span class="small text-muted">Disbursements</span></div>
         </div>
 
-        <!-- Note -->
-        <div class="timeline-note">
-          {{ .Params.timeline.note | safeHTML }}
-        </div>
+        <div class="timeline-note">{{ .Params.timeline.note | safeHTML }}</div>
       </div>
     </div>
   </div>
 </section>
--->
+*/}}
 
 <!-- New Experiments Welcome -->
 <section class="section section-md bg-light">
