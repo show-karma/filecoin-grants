@@ -1,5 +1,28 @@
 {{/* Put your custom <script></script> tags here */}}
 
+{{/* Karma Chat Widget */}}
+{{ if eq (hugo.Environment) "production" -}}
+<script src="https://karmahq.xyz/widget/karma-chat.js" defer></script>
+{{ else -}}
+<script src="https://staging.karmahq.xyz/widget/karma-chat.js" defer></script>
+{{ end -}}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (typeof KarmaChat !== "undefined") {
+      KarmaChat.init({
+        apiUrl: {{ if eq (hugo.Environment) "production" -}}
+          "https://gapapi.karmahq.xyz/v2/agent/stream"
+        {{ else -}}
+          "https://gapstagapi.karmahq.xyz/v2/agent/stream"
+        {{ end -}},
+        communityId: "filecoin",
+        title: "Filecoin Grants Assistant",
+        placeholder: "Ask about Filecoin grants, programs, or applications..."
+      });
+    }
+  });
+</script>
+
 {{/* EXAMPLE - only load script for production
 {{ if eq (hugo.Environment) "production" -}}
   {{ partial "footer/esbuild" (dict "src" "js/instantpage.js" "load" "async" "transpile" false) -}}
