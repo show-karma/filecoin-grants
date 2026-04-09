@@ -113,26 +113,26 @@
                 </ul>
               </li>
               <!-- Mobile expanded list - show only on small screens -->
-              <li class="nav-item d-block d-xl-none">
-                <div class="nav-link fw-semibold text-muted">{{ .Name }}</div>
-                <ul class="navbar-nav ms-3">
+              <li class="nav-item mobile-section d-block d-xl-none">
+                <div class="mobile-section-header">{{ .Name }}</div>
+                <ul class="navbar-nav mobile-section-items">
                   {{ range .Children -}}
                   {{- $childActive := eq .Name $current.Title -}}
                     {{ if .HasChildren -}}
-                    <li class="nav-item">
-                      <div class="nav-link fw-semibold text-muted small">{{ .Name }}</div>
-                      <ul class="navbar-nav ms-3">
+                    <li class="nav-item mobile-subsection">
+                      <div class="mobile-subsection-header">{{ .Name }}</div>
+                      <ul class="navbar-nav mobile-subsection-items">
                         {{ range .Children -}}
                         {{- $subActive := eq .Name $current.Title -}}
                           <li class="nav-item">
-                            <a class="nav-link{{ if $subActive }} active{{ end }}" href="{{ .URL | relURL }}"{{ if $subActive }} aria-current="true"{{ end }}{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Name }}</a>
+                            <a class="nav-link mobile-link{{ if $subActive }} active{{ end }}" href="{{ .URL | relURL }}"{{ if $subActive }} aria-current="true"{{ end }}{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Name }}</a>
                           </li>
                         {{ end -}}
                       </ul>
                     </li>
                     {{ else -}}
                     <li class="nav-item">
-                      <a class="nav-link{{ if $childActive }} active{{ end }}" href="{{ .URL | relURL }}"{{ if $childActive }} aria-current="true"{{ end }}{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Name }}</a>
+                      <a class="nav-link mobile-link{{ if $childActive }} active{{ end }}" href="{{ .URL | relURL }}"{{ if $childActive }} aria-current="true"{{ end }}{{ if hasPrefix .URL "http" }} target="_blank" rel="noopener"{{ end }}>{{ .Name }}</a>
                     </li>
                     {{ end -}}
                   {{ end -}}
@@ -413,7 +413,20 @@
 /* Nav items: gap-1 (4px) between items, no extra margin */
 .navbar-nav {
   gap: 0.25rem !important; /* gap-1 = 4px */
-  align-items: center !important;
+}
+
+/* Center-align nav items only on desktop */
+@media (min-width: 1200px) {
+  .navbar-nav {
+    align-items: center !important;
+  }
+}
+
+/* Left-align nav items on mobile */
+@media (max-width: 1199.98px) {
+  .navbar-nav {
+    align-items: stretch !important;
+  }
 }
 
 .navbar-nav .nav-item {
@@ -425,30 +438,109 @@
   margin-left: 1rem !important;
 }
 
-/* Mobile header styles */
-.nav-link.fw-semibold {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
-  margin-top: 0.5rem;
+/* ── Mobile menu hierarchy ── */
+
+/* Section header (top-level parent like "ProPGF", "More") */
+.mobile-section-header {
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: #a1a1aa !important;
+  padding: 0.75rem 0.75rem 0.375rem !important;
+  margin-top: 0.25rem !important;
+  pointer-events: none !important;
 }
 
-.navbar-nav .navbar-nav {
-  margin-bottom: 0.5rem;
+/* Add a top border to visually separate sections (skip first) */
+.mobile-section + .mobile-section {
+  border-top: 1px solid #e4e4e7;
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+/* Items list under a section header */
+.mobile-section-items {
+  gap: 0 !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* Subsection header (nested parent like "Grants", "Applications") */
+.mobile-subsection-header {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: #71717a !important;
+  padding: 0.5rem 0.75rem 0.25rem 1rem !important;
+  pointer-events: none !important;
+}
+
+/* Subsection items list */
+.mobile-subsection-items {
+  gap: 0 !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* Leaf nav links in mobile menu */
+.mobile-link {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #18181b !important;
+  padding: 0.5rem 0.75rem 0.5rem 1rem !important;
+  border-radius: 0.375rem !important;
+  margin: 0 0.375rem !important;
+}
+
+/* Nested links get extra indent */
+.mobile-subsection-items .mobile-link {
+  padding-left: 1.5rem !important;
+}
+
+.mobile-link:hover,
+.mobile-link:focus {
+  background: #f4f4f5 !important;
+  color: #18181b !important;
+}
+
+.mobile-link.active {
+  color: #2563eb !important;
+  background: #eff6ff !important;
+  font-weight: 600 !important;
 }
 
 .offcanvas-body .border-top {
   border-color: var(--bs-gray-300) !important;
 }
 
-/* Mobile offcanvas nav links */
-.offcanvas-body .nav-link {
-  padding: 0.625rem 0.75rem !important;
+/* Standalone top-level items on mobile (e.g. "RetroPGF") */
+@media (max-width: 1199.98px) {
+  .offcanvas-body > .navbar-nav > .nav-item:not(.mobile-section) > .nav-link {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #18181b !important;
+    padding: 0.5rem 0.75rem 0.5rem 1rem !important;
+    border-radius: 0.375rem !important;
+    margin: 0 0.375rem !important;
+  }
+
+  .offcanvas-body > .navbar-nav > .nav-item:not(.mobile-section) > .nav-link:hover,
+  .offcanvas-body > .navbar-nav > .nav-item:not(.mobile-section) > .nav-link:focus {
+    background: #f4f4f5 !important;
+  }
+
+  .offcanvas-body > .navbar-nav > .nav-item:not(.mobile-section) > .nav-link.active {
+    color: #2563eb !important;
+    background: #eff6ff !important;
+    font-weight: 600 !important;
+  }
 }
 
-.offcanvas-body .navbar-nav .navbar-nav .nav-link {
-  padding-left: 1.5rem !important;
+/* Generic offcanvas nav link padding (non-mobile-link items on desktop) */
+@media (min-width: 1200px) {
+  .offcanvas-body .nav-link {
+    padding: 0.625rem 0.75rem !important;
+  }
 }
 
 /* Mobile-only styles using media query */
