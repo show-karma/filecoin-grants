@@ -21,8 +21,8 @@ mainSections = ["docs"]
 
   ## Button
   navBarButton = true # false (default) or true
-  navBarButtonUrl = "https://app.filpgf.io/programs/992/apply"
-  navBarButtonText = "Apply for Grant"
+  navBarButtonUrl = "https://app.filpgf.io/?login=true"
+  navBarButtonText = "Login"
 
   # FlexSearch
   flexSearch = true # true (default) or false
