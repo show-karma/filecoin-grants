@@ -50,6 +50,57 @@ programs:
       button_url: "https://www.fil-retropgf.io/"
       external: true
 
+# Funding Round Timeline
+timeline:
+  eyebrow: "ProPGF — General Track"
+  section_title: "Funding Round Timeline"
+  section_subtitle: "Batch 3"
+  description: "A phase-by-phase breakdown of how applications move from submission to funded grant."
+  footnote: "*AI sorting and assignment starts happening in parallel — based on past experience, it takes ~2 weeks to get the first batch of rejections out and reviewers started on their assignments. However, if completed sooner, we will move to the next phase early."
+  phases:
+    - number: "1"
+      title: "Applications Open"
+      dates: "23 Jun – 10 Jul 2026"
+      duration: "3 weeks"
+      description: "Application form live from 23 June. Applicants submit project proposals, team details, and funding requirements. Hard close at the end of the day, 10 July — no late submissions accepted."
+    - number: "2a"
+      title: "AI Evaluation"
+      dates: "13 Jul – 17 Jul 2026"
+      duration: "1 week"
+      description: "Filtering across all submitted applications to shortlist relevant apps and rejections start going out. Reports with past data prepared for reviewers."
+      has_footnote: true
+    - number: "2b"
+      title: "Filtering & Committee Assignment"
+      dates: "20 Jul – 24 Jul 2026"
+      duration: "1 week"
+      description: "Team reviews AI outputs and removes ineligible or low-quality applications further. Shortlisted applications assigned to Selection Committee members. Committee briefing materials prepared and distributed."
+    - number: "3"
+      title: "Selection Committee Review"
+      dates: "27 Jul – 14 Aug 2026"
+      duration: "3 weeks"
+      description: "Committee members independently review their assigned applications. Interviews, deliberation, and shortlist consolidation. Final selection recommendations submitted."
+    - number: "4"
+      title: "Consolidation & Funder Review"
+      dates: "17 Aug – 21 Aug 2026"
+      duration: "1 week"
+      description: "Internal team consolidates Selection Committee outputs. Final list shared with funders for sign-off."
+    - number: "5"
+      title: "Announcement & Informing Applicants"
+      dates: "24 Aug – 28 Aug 2026"
+      duration: "1 week"
+      description: "Successful applicants notified. Rejection communications sent to unsuccessful applicants. Public announcement."
+    - number: "6"
+      title: "Agreement & KYC"
+      dates: "31 Aug – 11 Sep 2026"
+      duration: "2 weeks"
+      description: "Grant agreements issued and signed. KYC and compliance checks completed for all grantees. All documentation finalised."
+    - number: "—"
+      title: "Buffer / Contingency"
+      dates: "12 Sep – 25 Sep 2026"
+      duration: ""
+      description: ""
+      muted: true
+
 # Impact Stats
 stats:
   section_title: "Building the Filecoin Ecosystem"
