@@ -14,7 +14,7 @@ hero:
   title: "Announcing the<br/>General Track"
   intro: "We're thrilled to announce <strong>Filecoin ProPGF Batch 3</strong> — a <span style='color: #0090ff; font-weight: 700;'>$4M milestone-based funding program</span> designed to accelerate innovation and strengthen the Filecoin ecosystem."
   description: "Supporting projects that make Filecoin more <strong>useful, resilient, and impactful</strong> — from infrastructure and research to governance and user experience."
-  application_status: "Applications open 23 Jun 26"
+  application_status: "Applications open June 23"
   deadline: "View past rounds"
   apply_url: "https://app.filpgf.io"
 
