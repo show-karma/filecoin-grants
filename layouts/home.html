@@ -4,6 +4,15 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-10 text-center">
+        {{ with .Params.announcement }}
+        <a href="{{ .url }}" class="home-announcement mb-4">
+          <span class="home-announcement__pulse" aria-hidden="true"></span>
+          <span class="home-announcement__text">{{ .text }}</span>
+          <svg class="home-announcement__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+          </svg>
+        </a>
+        {{ end }}
         <span class="badge rounded-pill px-3 py-2 mb-4" style="{{ .Params.hero.badge_style | safeCSS }}">{{ .Params.hero.badge_text }}</span>
         <h1 class="mb-4">{{ .Title }}</h1>
         <p class="lead mb-5">{{ .Params.lead }}</p>

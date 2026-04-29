@@ -11,6 +11,11 @@ seo:
   canonical: ""
   noindex: false
 
+# Announcement (clickable pill above the hero title)
+announcement:
+  text: "ProPGF General Track Batch 3 opens 23 Jun 26"
+  url: "/propgf/#funding-round-timeline"
+
 # Hero Section
 hero:
   badge_text: ""

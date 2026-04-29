@@ -1,6 +1,6 @@
 ---
 title: "Announcing the General Track"
-description: "Explore Filecoin ProPGF Batch 2 program details"
+description: "Explore Filecoin ProPGF Batch 3 program details"
 lead: "A $4M milestone-based funding program designed to accelerate innovation and strengthen the Filecoin ecosystem"
 date: 2024-01-31T08:47:36+00:00
 lastmod: 2025-10-15T00:00:00+00:00
@@ -10,14 +10,13 @@ type: propgf
 
 # Hero Section
 hero:
-  badge_text: "ProPGF Batch 2"
+  badge_text: "ProPGF Batch 3"
   title: "Announcing the<br/>General Track"
-  intro: "We're thrilled to announce <strong>Filecoin ProPGF Batch 2</strong> — a <span style='color: #0090ff; font-weight: 700;'>$4M milestone-based funding program</span> designed to accelerate innovation and strengthen the Filecoin ecosystem."
+  intro: "We're thrilled to announce <strong>Filecoin ProPGF Batch 3</strong> — a <span style='color: #0090ff; font-weight: 700;'>$4M milestone-based funding program</span> designed to accelerate innovation and strengthen the Filecoin ecosystem."
   description: "Supporting projects that make Filecoin more <strong>useful, resilient, and impactful</strong> — from infrastructure and research to governance and user experience."
-  application_status: "Applications are now closed"
-  deadline: "View all applications"
-  apply_url: "https://app.filpgf.io/browse-applications?programId=992"
-  metrics_url: "https://filecoin.io/blog/posts/filecoin-ecosystem-metrics-roundup-building-a-data-driven-foundation-for-growth/"
+  application_status: "Applications open 23 Jun 26"
+  deadline: "View past rounds"
+  apply_url: "https://app.filpgf.io"
 
 # What We're Looking For
 focus_categories:
@@ -43,92 +42,56 @@ focus_categories:
       icon: "box"
       description: "For projects that applied in ProPGF Round 1 and are considered core infrastructure or services essential to the Filecoin network."
 
-# Timeline Section
+# Funding Round Timeline
 timeline:
-  section_title: "Program Timeline"
-  section_subtitle: "General overview of timeline"
-  note: "<strong>Note:</strong> Dates may shift slightly as we finalize logistics, but the overall cadence will remain the same."
-  batches:
-    - name: "Batch 2"
-      color: "#0090ff"
-      months:
-        - "Oct 2025"
-        - "Nov 2025"
-        - "Dec 2025"
-        - "Jan 2026"
-        - "Feb 2026"
-        - "Mar 2026"
-      phases:
-        - name: "Sensemaking"
-          color: "#6366f1"
-          start_col: 0
-          span: 1
-        - name: "Applications Batch 2"
-          color: "#0090ff"
-          start_col: 1
-          span: 2
-        - name: "Reviews Batch 2"
-          color: "#10b981"
-          start_col: 2
-          span: 2
-        - name: "Results + KYC/Contracts"
-          color: "#f472b6"
-          start_col: 3
-          span: 2
-        - name: "Disbursements - Batch 2"
-          color: "#ef4444"
-          start_col: 4
-          span: 2
-    - name: "Batch 3"
-      color: "#10b981"
-      months:
-        - "Apr 2026"
-        - "May 2026"
-        - "June 2026"
-        - "July 2026"
-        - "Aug 2026"
-      phases:
-        - name: "Applications - Batch 3"
-          color: "#0090ff"
-          start_col: 0
-          span: 2
-        - name: "Reviews - Batch 3"
-          color: "#10b981"
-          start_col: 1
-          span: 2
-        - name: "Results + KYC/Contracts"
-          color: "#f472b6"
-          start_col: 2
-          span: 2
-        - name: "Disbursements - Batch 3"
-          color: "#ef4444"
-          start_col: 3
-          span: 2
-    - name: "Batch 4"
-      color: "#f472b6"
-      months:
-        - "Sept 2026"
-        - "Oct 2026"
-        - "Nov 2026"
-        - "Dec 2026"
-        - "Jan 2027"
-      phases:
-        - name: "Applications - Batch 4"
-          color: "#0090ff"
-          start_col: 0
-          span: 2
-        - name: "Reviews - Batch 4"
-          color: "#10b981"
-          start_col: 1
-          span: 2
-        - name: "Results + KYC/Contracts"
-          color: "#f472b6"
-          start_col: 2
-          span: 2
-        - name: "Disbursements - Batch 4"
-          color: "#ef4444"
-          start_col: 3
-          span: 2
+  eyebrow: "ProPGF — General Track"
+  section_title: "Funding Round Timeline"
+  section_subtitle: "Batch 3"
+  description: "A phase-by-phase breakdown of how applications move from submission to funded grant."
+  footnote: "*AI sorting and assignment starts happening in parallel — based on past experience, it takes ~2 weeks to get the first batch of rejections out and reviewers started on their assignments. However, if completed sooner, we will move to the next phase early."
+  phases:
+    - number: "1"
+      title: "Applications Open"
+      dates: "23 Jun – 10 Jul 2026"
+      duration: "3 weeks"
+      description: "Application form live from 23 June. Applicants submit project proposals, team details, and funding requirements. Hard close at the end of the day, 10 July — no late submissions accepted."
+    - number: "2a"
+      title: "AI Evaluation"
+      dates: "13 Jul – 17 Jul 2026"
+      duration: "1 week"
+      description: "Filtering across all submitted applications to shortlist relevant apps and rejections start going out. Reports with past data prepared for reviewers."
+      has_footnote: true
+    - number: "2b"
+      title: "Filtering & Committee Assignment"
+      dates: "20 Jul – 24 Jul 2026"
+      duration: "1 week"
+      description: "Team reviews AI outputs and removes ineligible or low-quality applications further. Shortlisted applications assigned to Selection Committee members. Committee briefing materials prepared and distributed."
+    - number: "3"
+      title: "Selection Committee Review"
+      dates: "27 Jul – 14 Aug 2026"
+      duration: "3 weeks"
+      description: "Committee members independently review their assigned applications. Interviews, deliberation, and shortlist consolidation. Final selection recommendations submitted."
+    - number: "4"
+      title: "Consolidation & Funder Review"
+      dates: "17 Aug – 21 Aug 2026"
+      duration: "1 week"
+      description: "Internal team consolidates Selection Committee outputs. Final list shared with funders for sign-off."
+    - number: "5"
+      title: "Announcement & Informing Applicants"
+      dates: "24 Aug – 28 Aug 2026"
+      duration: "1 week"
+      description: "Successful applicants notified. Rejection communications sent to unsuccessful applicants. Public announcement."
+    - number: "6"
+      title: "Agreement & KYC"
+      dates: "31 Aug – 11 Sep 2026"
+      duration: "2 weeks"
+      description: "Grant agreements issued and signed. KYC and compliance checks completed for all grantees. All documentation finalised."
+    - number: "—"
+      title: "Buffer / Contingency"
+      dates: "12 Sep – 25 Sep 2026"
+      duration: ""
+      description: ""
+      muted: true
 
 # New Experiments Section
 experiments:
@@ -164,8 +127,8 @@ stay_connected:
 
 # CTA Section
 cta:
-  title: "View Applications"
-  description: "Browse all submitted applications for Batch 2 of the Filecoin ProPGF program."
-  button_text: "View Applications"
-  button_url: "https://app.filpgf.io/browse-applications?programId=992"
+  title: "View past rounds"
+  description: "Browse past Filecoin ProPGF rounds and the projects that have been funded so far."
+  button_text: "View past rounds"
+  button_url: "https://app.filpgf.io"
 ---
