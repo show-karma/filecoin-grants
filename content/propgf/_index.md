@@ -13,7 +13,7 @@ hero:
   badge_text: "ProPGF Batch 3"
   title: "Announcing the<br/>General Track"
   intro: "We're thrilled to announce <strong>Filecoin ProPGF Batch 3</strong> — a <span style='color: #0090ff; font-weight: 700;'>milestone-based funding program</span> designed to accelerate innovation and strengthen the Filecoin ecosystem."
-  description: "Dedicated to two areas where the ecosystem has the clearest need: <strong>maintaining the core infrastructure</strong> the Filecoin network depends on, and <strong>delivering against published RFPs that support Pods</strong>. <em>Total funding amount will be announced soon.</em>"
+  description: "Supporting projects that make Filecoin more <strong>useful, resilient, and impactful</strong> — from infrastructure and research to governance and user experience. <em>Total funding amount will be announced soon.</em>"
   application_status: "Applications open May 26"
   deadline: "View past rounds"
   apply_url: "https://app.filpgf.io"

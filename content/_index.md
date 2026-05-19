@@ -40,7 +40,7 @@ programs:
       description: "Milestone-based funding for new projects building tools, infrastructure, and applications on Filecoin. Perfect for teams with a clear roadmap."
       features:
         - "Milestone-based payouts"
-        - "Multi-million dollar funding rounds"
+        - "Up to $4M in funding"
         - "Technical mentorship"
       button_text: "Learn More"
       button_url: "/propgf"
