@@ -257,7 +257,6 @@
       "timeline-card",
       "timeline-card__dates",
       "timeline-card__description",
-      "timeline-card__duration",
       "timeline-card__header",
       "timeline-card__meta",
       "timeline-card__title",
