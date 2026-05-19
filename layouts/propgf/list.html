@@ -57,6 +57,47 @@
   </div>
 </section>
 
+<!-- What Batch 3 Funds -->
+{{ with .Params.focus_categories }}
+<section class="section section-md bg-light">
+  <div class="container">
+    <div class="row justify-content-center text-center mb-5">
+      <div class="col-lg-8">
+        <h2 class="mb-3">{{ .section_title }}</h2>
+        {{ with .section_subtitle }}
+        <p class="lead">{{ . | safeHTML }}</p>
+        {{ end }}
+      </div>
+    </div>
+    <div class="row justify-content-center g-4">
+      {{ range .items }}
+      <div class="col-lg-6 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="rounded-circle p-3 me-3 d-inline-flex" style="background-color: #e6f2ff;">
+                {{ if eq .icon "box" }}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                </svg>
+                {{ else if eq .icon "bulb" }}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0090ff" viewBox="0 0 16 16">
+                  <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
+                </svg>
+                {{ end }}
+              </div>
+              <h3 class="h5 mb-0">{{ .title }}</h3>
+            </div>
+            <p class="mb-0" style="color: #6b7280;">{{ .description | safeHTML }}</p>
+          </div>
+        </div>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</section>
+{{ end }}
+
 <!-- Funding Round Timeline -->
 {{ with .Params.timeline }}
 <section id="funding-round-timeline" class="section section-lg timeline-section">
