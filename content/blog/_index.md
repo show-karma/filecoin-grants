@@ -15,5 +15,5 @@ seo:
 # and still get a sensible page.
 cascade:
   type: "blog"
-  author: "Filecoin Community Grants"
+  author: "ProPGF Team"
 ---

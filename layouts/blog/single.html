@@ -228,10 +228,11 @@
             {{ end }}
           </div>
 
-          {{ with $desc }}
-          {{ if not (eq . $title) }}
-          <p class="post-header__lead">{{ . | plainify | truncate 280 }}</p>
-          {{ end }}
+          {{/* Only show a lead paragraph if the editor explicitly set a
+               `description:` in front matter. The auto-summary tends to
+               duplicate the opening of the post, so we skip it here. */}}
+          {{ with .Params.description }}
+          <p class="post-header__lead">{{ . | safeHTML }}</p>
           {{ end }}
         </div>
       </div>

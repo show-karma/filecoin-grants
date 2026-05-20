@@ -217,7 +217,7 @@ is required**. The page will still render correctly:
 | **Title** | First `# Heading` in the markdown body, OR the humanized filename. |
 | **Date** | Git commit date of the file (when the file was added). |
 | **Description** | First paragraph of the post (auto-summarized). |
-| **Author** | Defaults to **Filecoin Community Grants** (configured in `content/blog/_index.md`). |
+| **Author** | Defaults to **ProPGF Team** (configured in `content/blog/_index.md`). |
 
 So this is a valid post:
 
