@@ -1,0 +1,35 @@
+{{- /*
+  Returns a usable page title even for pages without `title:` in front matter.
+
+  Fallback chain:
+    1. .Params.seo.title       — explicit SEO override
+    2. .Title                  — front-matter title
+    3. First H1 in the body    — for raw-markdown posts
+    4. Humanized filename
+    5. Site title              — final last resort
+
+  Usage:  {{ partial "seo/derived-page-title.html" . }}
+*/ -}}
+{{- $title := "" -}}
+{{- if .Params.seo.title -}}
+  {{- $title = .Params.seo.title -}}
+{{- else if .Title -}}
+  {{- $title = .Title -}}
+{{- else -}}
+  {{- $raw := .RawContent | default "" -}}
+  {{- $firstLine := "" -}}
+  {{- with (split $raw "\n") -}}
+    {{- $firstLine = index . 0 -}}
+  {{- end -}}
+  {{- if hasPrefix $firstLine "# " -}}
+    {{- $h1 := strings.TrimPrefix "# " $firstLine -}}
+    {{- $title = strings.Trim $h1 " *_" -}}
+  {{- end -}}
+  {{- if and (not $title) .File -}}
+    {{- $title = humanize .File.BaseFileName | title -}}
+  {{- end -}}
+  {{- if not $title -}}
+    {{- $title = .Site.Title -}}
+  {{- end -}}
+{{- end -}}
+{{- $title -}}
