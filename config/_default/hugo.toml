@@ -55,9 +55,10 @@ copyRight = "Copyright (c) 2025 Filecoin Community Grants Program"
   tag = "tags"
 
 [permalinks]
-  # :slugorfilename uses front-matter `slug`, then `title` (slugified), then
-  # the filename — so a bare .md file dropped into /blog still gets a URL.
-  blog = "/blog/:slugorfilename/"
+  # :slugorcontentbasename uses front-matter `slug` if set, otherwise the
+  # content base filename — so a bare .md file dropped into /blog still
+  # gets a URL. (Renamed from :slugorfilename in Hugo 0.144.0.)
+  blog = "/blog/:slugorcontentbasename/"
   docs = "/docs/:sections[1:]/:slug/"
 # docs = "/docs/1.0/:sections[1:]/:slug/"
 
