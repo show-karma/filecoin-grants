@@ -84,6 +84,12 @@
   url = "https://www.fil-retropgf.io/"
   weight = 15
 
+# Blog link
+[[main]]
+  name = "Blog"
+  url = "/blog/"
+  weight = 20
+
 # More dropdown
 [[main]]
   name = "More"

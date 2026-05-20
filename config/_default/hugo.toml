@@ -4,7 +4,7 @@ disableAliases = true
 disableHugoGeneratorInject = true
 # disableKinds = ["taxonomy", "term"]
 enableEmoji = true
-enableGitInfo = false
+enableGitInfo = true
 enableRobotsTXT = true
 languageCode = "en-US"
 rssLimit = 10
@@ -55,9 +55,18 @@ copyRight = "Copyright (c) 2025 Filecoin Community Grants Program"
   tag = "tags"
 
 [permalinks]
-  blog = "/blog/:slug/"
+  # :slugorfilename uses front-matter `slug`, then `title` (slugified), then
+  # the filename — so a bare .md file dropped into /blog still gets a URL.
+  blog = "/blog/:slugorfilename/"
   docs = "/docs/:sections[1:]/:slug/"
 # docs = "/docs/1.0/:sections[1:]/:slug/"
+
+# Fall back through these sources so blog posts without front matter still
+# get a usable date. Order = first match wins.
+[frontmatter]
+  date = ["date", "publishDate", ":git", ":fileModTime"]
+  lastmod = [":git", "lastmod", "date"]
+  publishDate = ["publishDate", "date"]
 
 [minify.tdewolff.html]
   keepWhitespace = false
