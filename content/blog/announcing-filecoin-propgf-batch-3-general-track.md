@@ -1,7 +1,5 @@
 # **Announcing Filecoin ProPGF Batch 3: General Track**
 
-*By ProPGF Team*
-
 We're excited to announce **Filecoin ProPGF Batch 3 - General Track**, a **$2M milestone-based funding round** dedicated to two areas where the ecosystem has the clearest, highest-leverage need: **maintaining the core infrastructure the network depends on** and **delivering against published RFPs that support Pods**.
 
 Building on the work of [Batch 1](https://www.filecoin.io/blog/filecoin-propgf-batch-1-36m-awarded-to-ecosystem-builders) and [Batch 2](https://www.filecoin.io/blog/filecoin-propgf-batch-2-general-track-322m-allocated-to-core-infrastructure-and-ecosystem-builders), this round sharpens our focus. We've learned a lot about where ProPGF funding creates the most durable impact, and Batch 3 channels that learning into a tighter, more intentional program - one designed to give the teams keeping Filecoin healthy and the teams building alongside Pods the support they need to do their best work.
