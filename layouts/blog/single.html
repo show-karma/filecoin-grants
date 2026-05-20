@@ -26,6 +26,64 @@
 {{ $desc := or .Params.description .Summary }}
 
 <style>
+.post-header {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+  padding: 2.5rem 0 2rem;
+}
+.post-header__blob {
+  position: absolute;
+  top: -120px;
+  right: -120px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(0,144,255,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.post-header__inner {
+  position: relative;
+  z-index: 1;
+}
+.post-header__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #0090ff;
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+}
+.post-header__back:hover {
+  color: #0070cc;
+}
+.post-header__title {
+  font-size: clamp(1.875rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+  margin: 0 0 0.875rem;
+}
+.post-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 0.875rem;
+}
+.post-header__lead {
+  font-size: 1.0625rem;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.55;
+}
+.post-body {
+  padding: 3rem 0 4rem;
+}
 .blog-content {
   font-size: 1.0625rem;
   line-height: 1.75;
@@ -138,25 +196,22 @@
 </style>
 
 <article>
-  <!-- Hero -->
-  <section class="hero-section" style="background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%); position: relative; overflow: hidden; padding-bottom: 2rem;">
-    <div style="position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(0,144,255,0.08) 0%, transparent 70%); border-radius: 50%;"></div>
-
-    <div class="container" style="position: relative; z-index: 1;">
+  <!-- Header -->
+  <section class="post-header">
+    <span class="post-header__blob" aria-hidden="true"></span>
+    <div class="container post-header__inner">
       <div class="row justify-content-center">
         <div class="col-lg-9 col-xl-8">
-          <a href="{{ "/blog/" | relURL }}" class="d-inline-flex align-items-center gap-2 mb-4 text-decoration-none" style="color: #0090ff; font-weight: 600; font-size: 0.95rem;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <a href="{{ "/blog/" | relURL }}" class="post-header__back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
               <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
             </svg>
             Back to Blog
           </a>
 
-          <h1 class="mb-3" style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; color: #111827; line-height: 1.15;">
-            {{ $title }}
-          </h1>
+          <h1 class="post-header__title">{{ $title }}</h1>
 
-          <div class="mb-3 d-flex flex-wrap align-items-center gap-2" style="color: #6b7280; font-size: 0.95rem;">
+          <div class="post-header__meta">
             {{ if not .Date.IsZero }}
             <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>
             {{ end }}
@@ -172,7 +227,7 @@
 
           {{ with $desc }}
           {{ if not (eq . $title) }}
-          <p class="lead mb-0" style="font-size: 1.2rem; color: #4b5563;">{{ . | plainify | truncate 280 }}</p>
+          <p class="post-header__lead">{{ . | plainify | truncate 280 }}</p>
           {{ end }}
           {{ end }}
         </div>
@@ -181,9 +236,9 @@
   </section>
 
   {{ with .Params.image }}
-  <section class="container" style="margin-top: -1rem; margin-bottom: 3rem;">
+  <section class="container" style="margin-bottom: 2.5rem;">
     <div class="row justify-content-center">
-      <div class="col-lg-10">
+      <div class="col-lg-9 col-xl-8">
         <img src="{{ . | relURL }}" alt="{{ $title }}" class="w-100 rounded-4 shadow-sm" style="aspect-ratio: 16 / 9; object-fit: cover;">
       </div>
     </div>
@@ -191,7 +246,7 @@
   {{ end }}
 
   <!-- Content -->
-  <section class="section section-md pt-0">
+  <section class="post-body">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-9 col-xl-8">
@@ -209,14 +264,19 @@
                 All posts
               </a>
 
-              {{ $url := .Permalink | urlquery }}
-              {{ $shareTitle := $title | urlquery }}
+              {{/*
+                Hugo's `querify` builds a properly URL-encoded query string,
+                and `safeURL` tells the template engine not to re-encode the
+                whole URL (which would double-encode the params).
+              */}}
+              {{ $tweetURL := printf "https://twitter.com/intent/tweet?%s" (querify "url" .Permalink "text" $title) | safeURL }}
+              {{ $linkedInURL := printf "https://www.linkedin.com/sharing/share-offsite/?%s" (querify "url" .Permalink) | safeURL }}
               <div class="d-flex align-items-center gap-2">
                 <span class="small" style="color: #6b7280;">Share:</span>
-                <a class="btn btn-sm btn-outline-secondary rounded-pill" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?url={{ $url }}&text={{ $shareTitle }}" aria-label="Share on X">
+                <a class="btn btn-sm btn-outline-secondary rounded-pill" target="_blank" rel="noopener" href="{{ $tweetURL }}" aria-label="Share on X">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
                 </a>
-                <a class="btn btn-sm btn-outline-secondary rounded-pill" target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url={{ $url }}" aria-label="Share on LinkedIn">
+                <a class="btn btn-sm btn-outline-secondary rounded-pill" target="_blank" rel="noopener" href="{{ $linkedInURL }}" aria-label="Share on LinkedIn">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11v5"/><path d="M8 8v.01"/><path d="M12 16v-5"/><path d="M16 16v-3a2 2 0 0 0 -4 0"/><path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4z"/></svg>
                 </a>
               </div>
