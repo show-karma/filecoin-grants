@@ -1,0 +1,15 @@
+{{- /*
+  Project override of @thulite/seo's title partial. Uses our shared
+  derived-page-title helper so raw-markdown posts (no front matter) still
+  get a meaningful <title> instead of " | Site Title".
+*/ -}}
+{{- $pageTitle := partial "seo/derived-page-title.html" . -}}
+{{- $separator := .Site.Params.seo.title.separator | default "|" -}}
+{{- $suffix := .Site.Params.seo.title.suffix | default .Site.Title -}}
+{{- $title := "" -}}
+{{- if eq $pageTitle $suffix -}}
+  {{- $title = $suffix -}}
+{{- else -}}
+  {{- $title = printf "%s %s %s" $pageTitle $separator $suffix -}}
+{{- end -}}
+<title>{{ $title }}</title>
