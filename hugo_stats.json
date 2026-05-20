@@ -4,7 +4,6 @@
       "a",
       "article",
       "base",
-      "blockquote",
       "body",
       "br",
       "button",
@@ -44,15 +43,9 @@
       "style",
       "summary",
       "svg",
-      "table",
-      "tbody",
-      "td",
       "template",
-      "th",
-      "thead",
       "time",
       "title",
-      "tr",
       "ul"
     ],
     "classes": [
@@ -254,7 +247,6 @@
       "px-4",
       "py-2",
       "py-3",
-      "py-5",
       "query-no-results",
       "rounded",
       "rounded-4",
@@ -309,22 +301,20 @@
       "wrap"
     ],
     "ids": [
+      "1-core-infrastructure-maintenance",
+      "2-rfp-responses-pod-supporting-work",
       "TableOfContents",
-      "announcing-filecoin-propgf-batch-3",
+      "announcing-filecoin-propgf-batch-3-general-track",
       "batch-1-highlights",
-      "core-infrastructure-maintenance",
       "focus-areas",
-      "funding-model",
+      "funding-model-milestone-based",
       "funding-round-timeline",
-      "how-to-follow-along",
-      "key-dates",
       "notable-projects-funded",
       "offcanvasNavMain",
       "offcanvasNavMainLabel",
       "propgf-batch-1-retrospective",
       "query",
       "resources",
-      "rfp-responses-pod-supporting-work",
       "search-form",
       "searchModal",
       "searchModalLabel",
@@ -332,10 +322,9 @@
       "searchToggleDesktop",
       "searchToggleMobile",
       "selection-committee",
-      "stay-connected",
       "toc",
       "what-batch-3-funds",
-      "what-youll-find-here"
+      "what-to-watch-for"
     ]
   }
 }

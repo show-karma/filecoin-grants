@@ -96,7 +96,10 @@
         {{ end }}
         {{ $h1 := "" }}
         {{ if hasPrefix $firstLine "# " }}
-          {{ $h1 = trim (strings.TrimPrefix "# " $firstLine) " " }}
+          {{/* Strip leading `# ` and any wrapping markdown emphasis (** *) so a
+               bold or italic H1 still renders as plain text on the card. */}}
+          {{ $h1 = strings.TrimPrefix "# " $firstLine }}
+          {{ $h1 = strings.Trim $h1 " *_" }}
         {{ end }}
         {{ $fallbackTitle := "" }}
         {{ with .File }}
