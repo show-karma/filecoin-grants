@@ -1,0 +1,157 @@
+{{ define "main" }}
+<style>
+.blog-header {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+  padding: 3rem 0 2.5rem;
+  text-align: center;
+}
+.blog-header__blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.blog-header__blob--right {
+  top: -120px;
+  right: -120px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(0,144,255,0.08) 0%, transparent 70%);
+}
+.blog-header__blob--left {
+  bottom: -160px;
+  left: -160px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(0,144,255,0.05) 0%, transparent 70%);
+}
+.blog-header__inner {
+  position: relative;
+  z-index: 1;
+}
+.blog-header__title {
+  font-size: clamp(1.875rem, 3vw, 2.5rem);
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+}
+.blog-header__lead {
+  font-size: 1rem;
+  color: #4b5563;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.blog-posts {
+  padding: 3rem 0 4rem;
+}
+.blog-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.blog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 144, 255, 0.12) !important;
+}
+.blog-card-img {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+</style>
+
+<!-- Page header -->
+<section class="blog-header">
+  <span class="blog-header__blob blog-header__blob--right" aria-hidden="true"></span>
+  <span class="blog-header__blob blog-header__blob--left" aria-hidden="true"></span>
+  <div class="container blog-header__inner">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <h1 class="blog-header__title">{{ .Title }}</h1>
+        {{ with .Params.lead }}
+        <p class="blog-header__lead">{{ . | safeHTML }}</p>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Posts -->
+<section class="blog-posts">
+  <div class="container">
+    {{ $posts := where .Pages "Type" "blog" }}
+    {{ $posts = $posts.ByDate.Reverse }}
+    {{ if $posts }}
+    <div class="row g-4">
+      {{ range $posts }}
+        {{/*
+          Derive a title even when the post has no front matter:
+            1. front-matter .Title
+            2. first H1 in the raw markdown body
+            3. humanized + title-cased filename
+        */}}
+        {{ $raw := .RawContent | default "" }}
+        {{ $firstLine := "" }}
+        {{ with (split $raw "\n") }}
+          {{ $firstLine = index . 0 }}
+        {{ end }}
+        {{ $h1 := "" }}
+        {{ if hasPrefix $firstLine "# " }}
+          {{ $h1 = trim (strings.TrimPrefix "# " $firstLine) " " }}
+        {{ end }}
+        {{ $fallbackTitle := "" }}
+        {{ with .File }}
+          {{ $fallbackTitle = humanize .BaseFileName | title }}
+        {{ end }}
+        {{ $title := or .Title $h1 $fallbackTitle "Untitled" }}
+
+        {{/* Description: front-matter description, then auto Summary */}}
+        {{ $desc := or .Params.description .Summary }}
+
+      <div class="col-lg-6">
+        <a href="{{ .RelPermalink }}" class="text-decoration-none d-block h-100">
+          <div class="card h-100 border-0 shadow-sm blog-card">
+            {{ with .Params.image }}
+            <img src="{{ . | relURL }}" alt="{{ $title }}" class="card-img-top blog-card-img">
+            {{ end }}
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="mb-3 d-flex align-items-center gap-2 small" style="color: #6b7280;">
+                {{ if not .Date.IsZero }}
+                <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>
+                {{ end }}
+                {{ with .Params.author }}
+                {{ if not $.Date.IsZero }}<span aria-hidden="true">&middot;</span>{{ end }}
+                <span>{{ . }}</span>
+                {{ end }}
+              </div>
+              <h2 class="h3 mb-3" style="color: #111827; font-weight: 700;">{{ $title }}</h2>
+              {{ with $desc }}
+              <p class="mb-4 flex-grow-1" style="color: #4b5563;">
+                {{ . | plainify | truncate 220 }}
+              </p>
+              {{ end }}
+              <span class="d-inline-flex align-items-center gap-2" style="color: #0090ff; font-weight: 600;">
+                Read more
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </a>
+      </div>
+      {{ end }}
+    </div>
+    {{ else }}
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center py-5">
+        <h2 class="h4 mb-3" style="color: #111827;">No posts yet</h2>
+        <p style="color: #6b7280;">Check back soon for updates from the Filecoin Community Grants program.</p>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</section>
+{{ end }}
+
+{{ define "sidebar-prefooter" }}
+{{ end }}

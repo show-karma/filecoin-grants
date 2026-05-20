@@ -26,6 +26,7 @@ This guide will help you update website content **without touching any code**. A
 |------|------------------|
 | `content/_index.md` | **Homepage** - Hero, programs, stats, about section |
 | `content/propgf/_index.md` | **ProPGF Page** - Batch details, timeline, application info |
+| `content/blog/*.md` | **Blog Posts** - Drop a new `.md` file here to publish a post at `/blog/<filename>` |
 
 ---
 
@@ -195,6 +196,81 @@ stay_connected:
     - title: "Questions"
       description: "Questions? Reach out to <strong>Maria</strong> or <strong>Alex</strong> directly."
 ```
+
+---
+
+## Blog Posts
+
+**Folder:** `content/blog/`
+
+The blog lives at **`/blog`**. Each post is a single Markdown file dropped
+directly into `content/blog/` — no subfolders required.
+
+### The simplest workflow: just drop a `.md` file
+
+You can paste raw Markdown into a new file in `content/blog/` and **nothing else
+is required**. The page will still render correctly:
+
+| What | How it's derived (when missing) |
+|------|---------------------------------|
+| **URL slug** | Built from the filename (lowercased, spaces and punctuation become dashes). Better: from the title if a `title:` is set in front matter. |
+| **Title** | First `# Heading` in the markdown body, OR the humanized filename. |
+| **Date** | Git commit date of the file (when the file was added). |
+| **Description** | First paragraph of the post (auto-summarized). |
+| **Author** | Defaults to **Filecoin Community Grants** (configured in `content/blog/_index.md`). |
+
+So this is a valid post:
+
+```markdown
+# Announcing Batch 3
+
+We're thrilled to announce Filecoin ProPGF Batch 3 — a milestone-based
+funding program designed to accelerate innovation and strengthen the
+Filecoin ecosystem.
+
+## What Batch 3 funds
+
+- Core Infrastructure Maintenance
+- RFP Responses: Pod-Supporting Work
+```
+
+Save that as `content/blog/announcing-batch-3.md` and the post publishes at
+`/blog/announcing-batch-3/`. The duplicate top-level `# Announcing Batch 3` is
+hidden automatically (the hero shows it once).
+
+### Optional front-matter overrides
+
+If you want more control, add a YAML front-matter block at the top of the file:
+
+```markdown
+---
+title: "Announcing Batch 3"
+description: "A milestone-based funding program for the Filecoin ecosystem."
+date: 2026-05-26T09:00:00+00:00
+author: "Erin OConnor"
+# Optional: hero image — put the file under `static/` and reference it like "/cover.png"
+# image: "/cover.png"
+# draft: true   # hide from the live site
+---
+
+Body of the post starts here, in Markdown.
+```
+
+| Field | When you'd set it |
+|-------|-------------------|
+| `title` | You want the URL to match a specific slug, or the H1 isn't a good title. |
+| `description` | You want a hand-written card summary (instead of the auto-extracted first paragraph). |
+| `date` | You want to publish-date a post for a date that isn't its commit date. |
+| `author` | The byline isn't "Filecoin Community Grants". |
+| `image` | You want a hero image (file under `static/`, referenced like `/cover.png`). |
+| `draft` | Set to `true` to keep a post hidden. |
+
+### Publishing tips
+
+- Posts are sorted by date (newest first) on `/blog`.
+- Images for posts go in `static/` (referenced as `/my-image.jpg`).
+- If you want a fancy URL, set `slug: "my-custom-slug"` in front matter — it
+  wins over everything else.
 
 ---
 
@@ -444,11 +520,17 @@ content/
 ├── _index.md              ← Homepage content
 ├── batches/
 │   └── ...
+├── blog/
+│   ├── _index.md          ← Blog index page settings
+│   └── *.md               ← One file per blog post
 └── propgf/
     └── _index.md          ← ProPGF page content
 
 layouts/
 ├── home.html              ← Homepage template (don't edit)
+├── blog/
+│   ├── list.html          ← Blog index template (don't edit)
+│   └── single.html        ← Single post template (don't edit)
 └── propgf/
     └── list.html          ← ProPGF template (don't edit)
 ```
