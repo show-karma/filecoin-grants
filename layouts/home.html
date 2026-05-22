@@ -71,17 +71,18 @@
   </div>
 </section>
 
+{{ with .Params.stats }}
 <!-- Impact Stats -->
 <section class="section section-lg">
   <div class="container">
     <div class="row justify-content-center text-center mb-5">
       <div class="col-lg-8">
-        <h2 class="mb-3">{{ .Params.stats.section_title }}</h2>
-        <p class="lead">{{ .Params.stats.section_subtitle }}</p>
+        <h2 class="mb-3">{{ .section_title }}</h2>
+        <p class="lead">{{ .section_subtitle }}</p>
       </div>
     </div>
     <div class="row justify-content-center g-4 text-center">
-      {{ range .Params.stats.items }}
+      {{ range .items }}
       <div class="col-6 col-lg-3">
         <div class="p-4">
           <div class="display-5 fw-bold mb-2" style="color: #0090ff;">{{ .value }}</div>
@@ -92,6 +93,7 @@
     </div>
   </div>
 </section>
+{{ end }}
 
 <!-- What We Fund -->
 <section class="section section-md bg-light">
@@ -104,7 +106,7 @@
     </div>
     <div class="row justify-content-center g-4">
       {{ range .Params.focus_areas.items }}
-      <div class="col-lg-4 col-md-6">
+      <div class="col-lg-6 col-md-6">
         <div class="card h-100 border-0 shadow-sm">
           <div class="card-body text-center p-4">
             <div class="mb-3">

@@ -55,43 +55,17 @@ programs:
       button_url: "https://www.fil-retropgf.io/"
       external: true
 
-# Impact Stats
-stats:
-  section_title: "Building the Filecoin Ecosystem"
-  section_subtitle: "Our grants programs have supported builders across the globe."
-  items:
-    - value: "$4M+"
-      label: "Total Funding"
-    - value: "100+"
-      label: "Projects Funded"
-    - value: "50+"
-      label: "Countries"
-    - value: "6"
-      label: "Focus Areas"
-
 # What We Fund
 focus_areas:
   section_title: "What We Fund"
-  section_subtitle: "We support projects that strengthen the Filecoin ecosystem across key areas."
+  section_subtitle: "ProPGF Batch 3 supports two categories of work."
   items:
-    - title: "Developer Tools"
-      icon: "code"
-      description: "SDKs, APIs, and infrastructure that improve the developer experience."
-    - title: "Research"
-      icon: "bulb"
-      description: "Technical, economic, or design research that advances the protocol."
-    - title: "Community"
-      icon: "users"
-      description: "Onboarding, documentation, and adoption initiatives."
-    - title: "Governance"
-      icon: "clock"
-      description: "Tools and frameworks for transparency and decision-making."
-    - title: "User Experience"
-      icon: "info-circle"
-      description: "Interfaces and apps that make Filecoin intuitive for users."
-    - title: "Infrastructure"
+    - title: "Core Infrastructure Maintenance"
       icon: "box"
-      description: "Core services essential to the Filecoin network."
+      description: "Funding for the maintenance of core infrastructure the Filecoin network depends on — the implementations, critical libraries, dependencies, and essential services the rest of the ecosystem builds on top of."
+    - title: "RFP Responses: Pod-Supporting Work"
+      icon: "bulb"
+      description: "Funding for projects submitted in response to specific RFPs published on filpgf.io and the Filecoin website the week of 26 May 2026. These RFPs cover support and innovation work in service of Pods."
 
 # About Filecoin
 about:
