@@ -79,13 +79,10 @@ stay_connected:
   items:
     - title: "Updates"
       icon: "chat"
-      description: "For updates, join the <a href='https://t.me/+nUc-d7FXmt1kOWVl' target='_blank' rel='noopener'>FIL ProPGF</a> telegram group."
-    - title: "Questions"
-      icon: "question"
-      description: "Questions? Reach out to <strong>Sejal</strong> or <strong>Josh</strong> directly."
+      description: "Join the <a href='https://t.me/+nUc-d7FXmt1kOWVl' target='_blank' rel='noopener'>FIL PGF Telegram group</a> or <a href='https://filecoinproject.slack.com/archives/C08GGK4DAVC' target='_blank' rel='noopener'>#filpgf Slack</a>."
     - title: "Blog"
       icon: "document"
-      description: "Stay tuned for our follow-up blog with step-by-step details on how to apply via <strong>Karma</strong>."
+      description: "Follow the latest PGF program updates on the <a href='https://www.filecoin.io/blog' target='_blank' rel='noopener'>Filecoin blog</a>."
 
 # CTA Section
 cta:
