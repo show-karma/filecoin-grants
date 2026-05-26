@@ -13,7 +13,7 @@ seo:
 
 # Announcement (clickable pill above the hero title)
 announcement:
-  text: "ProPGF General Track Batch 3 opens May 26"
+  text: "ProPGF General Track Batch 3 Now Open"
   url: "/propgf/#funding-round-timeline"
 
 # Hero Section

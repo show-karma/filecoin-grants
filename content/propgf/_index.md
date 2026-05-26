@@ -16,7 +16,7 @@ hero:
   description: "Supporting projects that make Filecoin more <strong>useful, resilient, and impactful</strong> — from infrastructure and research to governance and user experience. <em>Total funding amount will be announced soon.</em>"
   application_status: "Applications open May 26"
   deadline: "View past rounds"
-  apply_url: "https://app.filpgf.io"
+  apply_url: "https://app.filpgf.io/programs/1479/"
 
 # What Batch 3 Funds
 focus_categories:
