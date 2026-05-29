@@ -74,12 +74,6 @@
   weight = 3
 
 [[main]]
-  name = "Payout process"
-  url = "https://docs.google.com/document/d/1WIyL8zj1ToTEVujRvCV6E4mlle5srwLP3DhEarWn3Ug/edit?usp=sharing"
-  parent = "propgf"
-  weight = 5
-
-[[main]]
   name = "Financials"
   url = "https://app.filpgf.io/financials"
   parent = "propgf"

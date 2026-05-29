@@ -27,7 +27,7 @@ focus_categories:
       description: "Funding for the maintenance of core infrastructure the Filecoin network depends on. This is the foundational work that keeps the protocol reliable, performant, and safe: the implementations, critical libraries, dependencies and essential services that the rest of the ecosystem builds on top of."
     - title: "RFP Responses: Pod-Supporting Work"
       icon: "bulb"
-      description: "Funding for projects submitted in response to specific RFPs (Requests for Proposals) published on filpgf.io and the Filecoin website the week of 26 May 2026. These RFPs cover support and innovation work in service of Pods."
+      description: "Funding for projects submitted in response to specific RFPs (Requests for Proposals) published on filpgf.io and the Filecoin website the week of 01 June, 2026. These RFPs cover support and innovation work in service of Pods."
 
 # Funding Round Timeline
 timeline:
@@ -42,7 +42,7 @@ timeline:
       description: "Apply on filpgf.io with your project proposal, team details, and funding request."
     - number: "2"
       title: "RFPs Published"
-      dates: "Week of 26 May 2026"
+      dates: "Week of 01 June, 2026"
       description: "RFPs for Pod-supporting work go live on filpgf.io and the Filecoin website. Review them before preparing an RFP-response submission."
     - number: "3"
       title: "Early Bird Deadline"
