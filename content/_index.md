@@ -65,7 +65,7 @@ focus_areas:
       description: "Funding for the maintenance of core infrastructure the Filecoin network depends on — the implementations, critical libraries, dependencies, and essential services the rest of the ecosystem builds on top of."
     - title: "RFP Responses: Pod-Supporting Work"
       icon: "bulb"
-      description: "Funding for projects submitted in response to specific RFPs published on filpgf.io and the Filecoin website the week of 26 May 2026. These RFPs cover support and innovation work in service of Pods."
+      description: "Funding for projects submitted in response to specific RFPs published on filpgf.io and the Filecoin website the week of 01 June, 2026. These RFPs cover support and innovation work in service of Pods."
 
 # About Filecoin
 about:
