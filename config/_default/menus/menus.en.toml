@@ -7,13 +7,6 @@
   identifier = "propgf"
 
 [[main]]
-  name = "Batch 3 - Apply Now"
-  identifier = "batch-3-apply"
-  url = "https://app.filpgf.io/programs/1479/"
-  parent = "propgf"
-  weight = 1
-
-[[main]]
   name = "Overview"
   url = "https://filpgf.io/propgf"
   parent = "propgf"
@@ -45,6 +38,13 @@
   url = "https://app.filpgf.io/projects?programId=1039"
   parent = "grants"
   weight = 3
+
+[[main]]
+  name = "Batch 3 - Apply Now"
+  identifier = "grants-batch-3"
+  url = "https://app.filpgf.io/programs/1479/"
+  parent = "grants"
+  weight = 4
 
 [[main]]
   name = "Applications"
