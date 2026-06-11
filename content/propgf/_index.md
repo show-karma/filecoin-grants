@@ -28,6 +28,8 @@ focus_categories:
     - title: "RFP Responses: Pod-Supporting Work"
       icon: "bulb"
       description: "Funding for projects submitted in response to specific RFPs (Requests for Proposals) published on filpgf.io and the Filecoin website the week of 01 June, 2026. These RFPs cover support and innovation work in service of Pods."
+      link: "/blog/propgf-batch-3-call-for-builders/"
+      link_text: "Read the Batch 3 RFPs"
 
 # Funding Round Timeline
 timeline:
