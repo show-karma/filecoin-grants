@@ -56,8 +56,9 @@ AI is the most significant demand driver for storage infrastructure in a decade,
 * Verifiable-compute and audit services — productized services pairing Filecoin storage with verifiable execution (vector databases, RAG pipelines, inference checkpoints, agent audit trails) sold as managed infrastructure with SLAs.
 * Training-data provenance products — commercial offerings that solve the audit, licensing, and provenance problem for AI training corpora — sold to model developers, regulators, or rights-holders.
 * Cross-stack verifiable-AI infrastructure — products pairing Filecoin storage with adjacent AI infrastructure (compute attestation, model registries, dataset marketplaces) where the funded team owns the product and customer.
+* Machine-readable ecosystem knowledge — services that create, maintain, and improve technical documentation, knowledge bases, and machine-readable content that can be consumed by both developers and AI systems.
 
-Not in scope: Open-source framework integrations, SDKs, developer-experience tooling, documentation, and DevRel — that work sits inside the relevant pod. General-purpose AI products that incidentally use Filecoin, research-only projects, or open-source contributions without a customer-facing product are also out.
+Not in scope: General-purpose AI products that incidentally use Filecoin, research-only projects, or open-source contributions without a customer-facing product are also out.
 
 A strong proposal: An AI-infra team ships a verifiable agent-memory service with tamper-evident audit logs, sold under SLA, with three named regulated-industry customers in production within six months.
 
