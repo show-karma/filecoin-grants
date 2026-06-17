@@ -33,16 +33,16 @@
   weight = 2
 
 [[main]]
-  name = "Pods Track"
-  identifier = "grants-pods"
-  url = "https://app.filpgf.io/projects?programId=1039"
+  name = "Batch 3"
+  identifier = "grants-batch-3"
+  url = "https://app.filpgf.io/programs/1479/"
   parent = "grants"
   weight = 3
 
 [[main]]
-  name = "Batch 3 - Apply Now"
-  identifier = "grants-batch-3"
-  url = "https://app.filpgf.io/programs/1479/"
+  name = "Pods Track"
+  identifier = "grants-pods"
+  url = "https://app.filpgf.io/projects?programId=1039"
   parent = "grants"
   weight = 4
 
