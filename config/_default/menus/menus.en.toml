@@ -67,11 +67,18 @@
   weight = 2
 
 [[main]]
+  name = "Batch 3"
+  identifier = "applications-batch-3"
+  url = "https://app.filpgf.io/browse-applications?programId=1479"
+  parent = "applications"
+  weight = 3
+
+[[main]]
   name = "Pods Track"
   identifier = "applications-pods"
   url = "https://app.filpgf.io/browse-applications?programId=1039"
   parent = "applications"
-  weight = 3
+  weight = 4
 
 [[main]]
   name = "Financials"
