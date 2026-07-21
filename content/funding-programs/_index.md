@@ -1,7 +1,7 @@
 ---
 title: "Funding Programs"
-description: "A clear breakdown of Filecoin's ProPGF and RetroPGF funding programs — and how to choose the right one for your project."
-lead: "Two ways to get funded on Filecoin. Here's how ProPGF and RetroPGF work, and how to choose the right path for your project."
+description: "Filecoin Public Goods Funding (PGF): how ProPGF and RetroPGF work and how to choose."
+lead: "Protocol Labs' Filecoin Public Goods Funding (PGF) programs support projects that strengthen the Filecoin ecosystem and broader open-source infrastructure."
 date: 2024-01-31T08:47:36+00:00
 lastmod: 2025-10-15T00:00:00+00:00
 draft: false
@@ -9,63 +9,59 @@ images: []
 type: funding-programs
 seo:
   title: "Funding Programs | Filecoin Community Grants"
-  description: "Understand Filecoin's two public-goods funding programs — ProPGF (prospective, milestone-based) and RetroPGF (retroactive, impact-based) — and how to choose."
+  description: "Protocol Labs' Filecoin Public Goods Funding (PGF) programs — ProPGF (prospective) and RetroPGF (retroactive) — and how to choose."
   canonical: ""
   noindex: false
 
-# Hero Section
+# Hero — sourced from the "About ProPGF" section of the Batch 3 announcement blog post.
 hero:
   badge_text: "Funding Programs"
-  title: "Two Ways to Get Funded"
-  intro: "Filecoin funds public goods through <strong>two complementary programs</strong>. Whether you're about to start building or have already delivered impact, there's a path for you."
+  title: "Filecoin Public Goods Funding"
+  intro: "Protocol Labs' <strong>Filecoin Public Goods Funding (PGF)</strong> programs support projects that strengthen the Filecoin ecosystem and broader open-source infrastructure. Funding is distributed through two complementary programs."
 
-# Program cards
+# Program cards — descriptions and features reuse the existing homepage copy;
+# taglines are the one-line definitions from the blog's "About ProPGF" section.
 programs:
-  section_title: "Choose your path"
+  section_title: "Two ways funding is distributed"
   items:
     - title: "ProPGF"
-      tagline: "Prospective Public Goods Funding"
+      tagline: "Prospective funding for forward-looking initiatives"
       icon: "plus-circle"
-      description: "Milestone-based funding for projects building tools, infrastructure, and applications on Filecoin. Best for teams with a clear roadmap who want funding to build what comes next."
+      description: "Milestone-based funding for new projects building tools, infrastructure, and applications on Filecoin. Perfect for teams with a clear roadmap."
       features:
-        - "Milestone-based payouts tied to deliverables"
-        - "Apply before you build, against a defined roadmap"
-        - "Technical mentorship and ongoing support"
+        - "Milestone-based payouts"
+        - "Up to $4M in funding"
+        - "Technical mentorship"
       button_text: "Explore ProPGF"
       button_url: "/propgf"
     - title: "RetroPGF"
-      tagline: "Retroactive Public Goods Funding"
+      tagline: "Retroactive rewards for demonstrated impact"
       icon: "lightning"
-      description: "Retroactive funding that rewards projects for impact already delivered to the Filecoin ecosystem. Best for contributors who have already shipped value and want to be recognized for it."
+      description: "Retroactive funding that rewards projects for impact already delivered to the Filecoin ecosystem. Get recognized for your contributions."
       features:
-        - "Rewards impact you've already delivered"
+        - "Reward past contributions"
         - "Community-driven selection"
-        - "No milestones or upfront proposal required"
+        - "No milestones required"
       button_text: "Explore RetroPGF"
       button_url: "https://www.fil-retropgf.io/"
       external: true
 
-# How to choose (comparison)
+# How to choose — the subtitle is the blog's distinction sentence verbatim;
+# every cell is drawn from the blog copy and the program links above.
 compare:
   section_title: "How to choose"
-  section_subtitle: "Not sure which program fits? Here's how they compare."
+  section_subtitle: "While RetroPGF evaluates past impact, ProPGF is designed to strategically allocate capital toward future ecosystem priorities through milestone-based funding and structured review."
   headers:
     - ""
     - "ProPGF"
     - "RetroPGF"
   rows:
-    - label: "Timing"
-      propgf: "Prospective — funds work you're about to do"
-      retropgf: "Retroactive — rewards work you've already done"
+    - label: "Focus"
+      propgf: "Prospective — forward-looking initiatives"
+      retropgf: "Retroactive — demonstrated impact"
     - label: "Funding model"
-      propgf: "Milestone-based payouts against a roadmap"
-      retropgf: "One-time rewards based on demonstrated impact"
-    - label: "Best for"
-      propgf: "Teams with a clear plan and defined milestones"
-      retropgf: "Projects that have already shipped ecosystem value"
-    - label: "What you submit"
-      propgf: "A proposal with team details and a funding request"
-      retropgf: "Evidence of your past contributions and impact"
+      propgf: "Milestone-based funding and structured review"
+      retropgf: "Rewards for impact already delivered"
     - label: "Where to apply"
       propgf: "filpgf.io"
       retropgf: "fil-retropgf.io"
@@ -73,9 +69,9 @@ compare:
 # CTA Section
 cta:
   title: "Ready to get funded?"
-  description: "Pick the program that fits your project's stage and get started."
+  description: "Explore the program that fits your project."
   buttons:
-    - text: "Apply to ProPGF"
+    - text: "Explore ProPGF"
       url: "/propgf"
     - text: "Learn about RetroPGF"
       url: "https://www.fil-retropgf.io/"

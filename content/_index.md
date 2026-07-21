@@ -26,16 +26,15 @@ hero:
       external: true
 
 # Resources / "Stay in the loop"
-# The two report cards auto-resolve to the LATEST published report of each type
-# at build time (see the resolver in layouts/home.html) — no manual date updates.
-# `report_config` matches the report's config slug from the Karma reports API;
-# if the API is unreachable during a build, the card falls back to reports_base_url.
+# The report cards link to the reports list on app.filpgf.io filtered by report
+# type (?type=<reportConfigId>), which always shows the latest of that type first
+# — no manual date updates needed. Config IDs come from the Karma reports API:
+#   Monthly Pods Report      = 6a23268272df01209256e5b9
+#   Bi-Weekly Progress Report = 6a233d04e82a77f23c7838f7
 resources:
   eyebrow: "Resources"
   section_title: "Stay in the loop"
   section_subtitle: "Key content to help you navigate the grants program and track progress."
-  reports_api: "https://gapapi.karmahq.xyz/v2/communities/filecoin/reports/published"
-  reports_base_url: "https://app.filpgf.io/community/filecoin/reports"
   items:
     - title: "Blog"
       icon: "book"
@@ -44,12 +43,12 @@ resources:
     - title: "Monthly Pods Reporting"
       icon: "bar-chart"
       description: "Monthly updates from active grant recipients across all pods."
-      report_config: "monthly-pods-report"
+      url: "https://app.filpgf.io/reports?type=6a23268272df01209256e5b9"
       external: true
     - title: "Bi-weekly Progress Reporting"
       icon: "graph-up"
       description: "Granular milestone tracking published every two weeks."
-      report_config: "bi-weekly-progress-report"
+      url: "https://app.filpgf.io/reports?type=6a233d04e82a77f23c7838f7"
       external: true
     - title: "Overview of Funding Programs"
       icon: "layers"

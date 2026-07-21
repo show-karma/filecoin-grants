@@ -29,23 +29,6 @@
 
 <!-- Resources / Stay in the loop -->
 {{ with .Params.resources }}
-{{/* Resolve the latest published report per config slug at build time so the
-     report cards never go stale. If the API is unreachable during the build,
-     the affected card falls back to reports_base_url (the reports list page). */}}
-{{ $reports := slice }}
-{{ $apiUrl := .reports_api }}
-{{ with $apiUrl }}
-  {{ with try (resources.GetRemote .) }}
-    {{ with .Err }}
-      {{ warnf "resources: could not fetch reports from %s: %s" $apiUrl . }}
-    {{ else with .Value }}
-      {{ $reports = . | transform.Unmarshal }}
-    {{ else }}
-      {{ warnf "resources: empty response fetching reports from %s" $apiUrl }}
-    {{ end }}
-  {{ end }}
-{{ end }}
-{{ $reportsBase := .reports_base_url }}
 <section class="section section-md">
   <div class="container">
     <div class="resources-panel">
@@ -56,16 +39,8 @@
       </div>
       <div class="row g-3 g-lg-4">
         {{ range .items }}
-        {{ $url := .url }}
-        {{ with .report_config }}
-        {{ $url = $reportsBase }}
-        {{ $matches := sort (where (where $reports "reportConfigSlug" .) "status" "published") "runDate" "desc" }}
-        {{ with (index $matches 0) }}
-        {{ $url = printf "%s/%s" $reportsBase .runDate }}
-        {{ end }}
-        {{ end }}
         <div class="col-md-6">
-          <a class="resource-card" href="{{ $url }}"{{ if .external }} target="_blank" rel="noopener"{{ end }}>
+          <a class="resource-card" href="{{ .url }}"{{ if .external }} target="_blank" rel="noopener"{{ end }}>
             <span class="resource-card__icon" aria-hidden="true">
               {{ if eq .icon "book" }}
               <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
