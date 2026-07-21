@@ -25,6 +25,37 @@ hero:
       style: "background-color: #0090ff; color: #ffffff; border: none;"
       external: true
 
+# Resources / "Stay in the loop"
+# The two report cards auto-resolve to the LATEST published report of each type
+# at build time (see the resolver in layouts/home.html) — no manual date updates.
+# `report_config` matches the report's config slug from the Karma reports API;
+# if the API is unreachable during a build, the card falls back to reports_base_url.
+resources:
+  eyebrow: "Resources"
+  section_title: "Stay in the loop"
+  section_subtitle: "Key content to help you navigate the grants program and track progress."
+  reports_api: "https://gapapi.karmahq.xyz/v2/communities/filecoin/reports/published"
+  reports_base_url: "https://app.filpgf.io/community/filecoin/reports"
+  items:
+    - title: "Blog"
+      icon: "book"
+      description: "News, insights, and stories from the Filecoin grants ecosystem."
+      url: "/blog/"
+    - title: "Monthly Pods Reporting"
+      icon: "bar-chart"
+      description: "Monthly updates from active grant recipients across all pods."
+      report_config: "monthly-pods-report"
+      external: true
+    - title: "Bi-weekly Progress Reporting"
+      icon: "graph-up"
+      description: "Granular milestone tracking published every two weeks."
+      report_config: "bi-weekly-progress-report"
+      external: true
+    - title: "Overview of Funding Programs"
+      icon: "layers"
+      description: "A clear breakdown of ProPGF, RetroPGF, and how to choose."
+      url: "/funding-programs/"
+
 # Program Highlights
 programs:
   section_title: "Two Ways to Get Funded"

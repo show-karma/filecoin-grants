@@ -47,7 +47,7 @@ copyRight = "Copyright (c) 2025 Filecoin Community Grants Program"
 [caches]
   [caches.getresource]
     dir = ":cacheDir/:project"
-    maxAge = -1 # "30m"
+    maxAge = "30m" # refetch remote data (homepage report links) at least every 30m so "latest" never freezes
 
 [taxonomies]
   contributor = "contributors"
