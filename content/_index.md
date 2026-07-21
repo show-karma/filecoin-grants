@@ -25,6 +25,32 @@ hero:
       style: "background-color: #0090ff; color: #ffffff; border: none;"
       external: true
 
+# Resources / "Stay in the loop"
+# The report cards link to the reports list on app.filpgf.io filtered by report
+# type (?type=<reportConfigId>), which always shows the latest of that type first
+# — no manual date updates needed. Config IDs come from the Karma reports API:
+#   Monthly Pods Report      = 6a23268272df01209256e5b9
+#   Bi-Weekly Progress Report = 6a233d04e82a77f23c7838f7
+resources:
+  eyebrow: "Resources"
+  section_title: "Stay in the loop"
+  section_subtitle: "Key content to help you navigate the grants program and track progress."
+  items:
+    - title: "Blog"
+      icon: "book"
+      description: "News, insights, and stories from the Filecoin grants ecosystem."
+      url: "/blog/"
+    - title: "Monthly Pods Reporting"
+      icon: "bar-chart"
+      description: "Monthly updates from active grant recipients across all pods."
+      url: "https://app.filpgf.io/reports?type=6a23268272df01209256e5b9"
+      external: true
+    - title: "Bi-weekly Progress Reporting"
+      icon: "graph-up"
+      description: "Granular milestone tracking published every two weeks."
+      url: "https://app.filpgf.io/reports?type=6a233d04e82a77f23c7838f7"
+      external: true
+
 # Program Highlights
 programs:
   section_title: "Two Ways to Get Funded"
