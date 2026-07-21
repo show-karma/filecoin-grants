@@ -1,11 +1,5 @@
 # Main navigation
 
-# Funding Programs overview (explains ProPGF + RetroPGF)
-[[main]]
-  name = "Funding Programs"
-  url = "/funding-programs/"
-  weight = 5
-
 # ProPGF dropdown
 [[main]]
   name = "ProPGF"

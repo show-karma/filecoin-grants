@@ -50,10 +50,6 @@ resources:
       description: "Granular milestone tracking published every two weeks."
       url: "https://app.filpgf.io/reports?type=6a233d04e82a77f23c7838f7"
       external: true
-    - title: "Overview of Funding Programs"
-      icon: "layers"
-      description: "A clear breakdown of ProPGF, RetroPGF, and how to choose."
-      url: "/funding-programs/"
 
 # Program Highlights
 programs:
