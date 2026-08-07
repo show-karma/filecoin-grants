@@ -9,8 +9,10 @@ mainSections = ["docs"]
 [social]
   twitter = "Filecoin"
 
-# Karma chat widget
+# Karma hosts
 [karma]
+  siteUrl = "https://karmahq.org"
+  contactEmail = "info@karmahq.xyz" # mailboxes stay on .xyz
   widgetHost = "https://www.karmahq.org"
   apiHost = "https://gapapi.karmahq.xyz" # pinned to .xyz until the API domain move lands
 
