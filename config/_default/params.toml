@@ -9,6 +9,11 @@ mainSections = ["docs"]
 [social]
   twitter = "Filecoin"
 
+# Karma chat widget
+[karma]
+  widgetHost = "https://www.karmahq.xyz"
+  apiHost = "https://gapapi.karmahq.xyz"
+
 # Doks (@thulite/doks-core)
 [doks]
   # Color mode

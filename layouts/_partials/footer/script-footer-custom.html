@@ -1,12 +1,12 @@
 {{/* Put your custom <script></script> tags here */}}
 
 {{/* Karma Chat Widget */}}
-<script src="https://www.karmahq.xyz/widget/karma-chat.js" defer></script>
+<script src="{{ site.Params.karma.widgetHost }}/widget/karma-chat.js" defer></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     if (typeof KarmaChat !== "undefined") {
       KarmaChat.init({
-        apiUrl: "https://gapapi.karmahq.xyz/v2/agent/stream",
+        apiUrl: "{{ site.Params.karma.apiHost }}/v2/agent/stream",
         communityId: "filecoin",
         title: "Filecoin Grants Assistant",
         placeholder: "Ask about Filecoin grants, programs, or applications..."
