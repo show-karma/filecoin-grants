@@ -11,8 +11,8 @@ mainSections = ["docs"]
 
 # Karma chat widget
 [karma]
-  widgetHost = "https://www.karmahq.xyz"
-  apiHost = "https://gapapi.karmahq.xyz"
+  widgetHost = "https://www.karmahq.org"
+  apiHost = "https://gapapi.karmahq.xyz" # pinned to .xyz until the API domain move lands
 
 # Doks (@thulite/doks-core)
 [doks]
