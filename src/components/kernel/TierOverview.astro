@@ -28,10 +28,15 @@ import { tierColor } from "./tier";
         TIERS.map((tier) => (
           <tr class="border-b border-line align-top">
             <td class="py-5 pr-6">
-              <div class="flex gap-3">
-                {/* Square-capped rule, as in the design — not a pill. */}
+              <div class="flex gap-4">
+                {/*
+                  A fixed-height pill, not a full-height rule: in the design it
+                  runs from the top of the tier name to the end of the first
+                  description line and stays that length whatever the row
+                  height.
+                */}
                 <span
-                  class="mt-1 w-[3px] shrink-0 self-stretch"
+                  class="mt-1 h-11 w-[6px] shrink-0 rounded-full"
                   style={`background:${tierColor(tier.id)}`}
                   aria-hidden="true"
                 />
