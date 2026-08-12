@@ -32,20 +32,15 @@
   --color-accent-rev: #22688f;
 
   /*
-   * Kernel tiers, ordered by how replaceable the function is. Each tier has
-   * two values: the design's saturated FILL, used for bars, rules and card
-   * headers, and a darker TEXT variant for the same colour set as type on
-   * white or the tint, where the fill would not clear 4.5:1.
+   * Kernel tiers, ordered by how replaceable the function is. One value per
+   * tier, exactly as the design specifies — used both as a fill (card headers,
+   * overview bars) and as text (inventory headings, row kickers, maintainer
+   * flags).
    */
   --color-tier-irreplaceable: #c0483c;
   --color-tier-essential: #c2870f;
   --color-tier-important: #1c7a66;
   --color-tier-nice: #7a3fd0;
-
-  --color-tier-irreplaceable-text: #9d3529;
-  --color-tier-essential-text: #7a5400;
-  --color-tier-important-text: #156353;
-  --color-tier-nice-text: #6733bb;
 
   /* Status */
   --color-ok: #1a7f37;

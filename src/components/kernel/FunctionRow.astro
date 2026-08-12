@@ -1,6 +1,6 @@
 ---
 import type { FunctionRow } from "../../data/kernel";
-import { tierTextColor, tierName } from "./tier";
+import { tierColor, tierName } from "./tier";
 
 type Props = { fn: FunctionRow };
 const { fn } = Astro.props;
@@ -23,7 +23,7 @@ const flags: Flag[] = [
 ].filter((flag): flag is Flag => flag !== null);
 
 const flagStyle = (tone: Flag["tone"]) =>
-  tone === "tier" ? `color:${tierTextColor(fn.tier)}` : undefined;
+  tone === "tier" ? `color:${tierColor(fn.tier)}` : undefined;
 
 const flagClass = (tone: Flag["tone"]) =>
   tone === "bad" ? "text-bad" : tone === "muted" ? "text-muted" : "";
@@ -35,7 +35,7 @@ const flagClass = (tone: Flag["tone"]) =>
   <div class="min-w-0">
     <p
       class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase"
-      style={`color:${tierTextColor(fn.tier)}`}
+      style={`color:${tierColor(fn.tier)}`}
     >
       {tierName(fn.tier)} · {fn.category}
     </p>
