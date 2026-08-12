@@ -25,6 +25,9 @@ export const PROGRAM_ID = "992";
 /** Every report for that programme, unfiltered by type. */
 export const PROGRAM_REPORTS_URL = `${EXTERNAL.reports}?programId=${PROGRAM_ID}`;
 
+/** Funded projects for that programme. */
+export const PROGRAM_PROJECTS_URL = `${EXTERNAL.explorer}?programId=${PROGRAM_ID}`;
+
 /**
  * Report-type ids from the Karma reports API. Linking by type (rather than to a
  * dated report) always surfaces the latest of that type, so these never need a

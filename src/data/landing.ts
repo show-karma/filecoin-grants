@@ -3,6 +3,7 @@ import {
   reportUrl,
   programReportUrl,
   PROGRAM_REPORTS_URL,
+  PROGRAM_PROJECTS_URL,
 } from "./site";
 
 /**
@@ -23,7 +24,7 @@ export const HEADLINE_STATS: Stat[] = [
     value: "$6.9M",
     label: "Deployed to date",
     linkText: "Funded Projects",
-    href: EXTERNAL.explorer,
+    href: PROGRAM_PROJECTS_URL,
   },
   {
     value: "31",
