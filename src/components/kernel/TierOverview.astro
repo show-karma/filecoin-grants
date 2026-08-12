@@ -1,5 +1,5 @@
 ---
-import { TIERS } from "../../data/kernel";
+import { TIERS, tierStats } from "../../data/kernel";
 import { tierColor } from "./tier";
 ---
 
@@ -25,68 +25,73 @@ import { tierColor } from "./tier";
     </thead>
     <tbody>
       {
-        TIERS.map((tier) => (
-          <tr class="border-b border-line align-top">
-            <td class="py-5 pr-6">
-              <div class="flex gap-4">
-                {/*
+        TIERS.map((tier) => {
+          const stats = tierStats(tier.id);
+          return (
+            <tr class="border-b border-line align-top">
+              <td class="py-5 pr-6">
+                <div class="flex gap-4">
+                  {/*
                   A fixed-height pill, not a full-height rule: in the design it
                   runs from the top of the tier name to the end of the first
                   description line and stays that length whatever the row
                   height.
                 */}
-                <span
-                  class="mt-1 h-11 w-[6px] shrink-0 rounded-full"
-                  style={`background:${tierColor(tier.id)}`}
-                  aria-hidden="true"
-                />
-                <div class="max-w-[16rem]">
-                  <p class="font-semibold text-ink">{tier.name}</p>
-                  <p class="mt-1 text-sm leading-snug text-body">{tier.rule}</p>
+                  <span
+                    class="mt-1 h-11 w-[6px] shrink-0 rounded-full"
+                    style={`background:${tierColor(tier.id)}`}
+                    aria-hidden="true"
+                  />
+                  <div class="max-w-[16rem]">
+                    <p class="font-semibold text-ink">{tier.name}</p>
+                    <p class="mt-1 text-sm leading-snug text-body">
+                      {tier.rule}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td class="py-5 pr-6">
-              {tier.functions === null ? (
-                <>
-                  <p class="font-mono text-sm text-muted">Pending</p>
-                  <p class="mono-meta mt-1 uppercase">Not yet inventoried</p>
-                </>
-              ) : (
-                <>
-                  <p class="font-mono text-lg font-medium text-ink">
-                    {tier.functions}
-                  </p>
-                  <p class="mono-meta mt-1 uppercase">
-                    {tier.listed === tier.functions
-                      ? "All listed"
-                      : `${tier.listed} listed`}
-                  </p>
-                </>
-              )}
-            </td>
-            <td class="py-5 pr-6">
-              {tier.slaMet === null ? (
-                <>
-                  <p class="font-mono text-lg text-muted" aria-hidden="true">
-                    —
-                  </p>
-                  <p class="mono-meta mt-1 uppercase">No data</p>
-                </>
-              ) : (
-                <>
-                  <p class="font-mono text-lg font-medium text-ink">
-                    {tier.slaMet}
-                  </p>
-                  <p class="mono-meta mt-1 uppercase">
-                    {tier.measured} measured
-                  </p>
-                </>
-              )}
-            </td>
-            <td class="py-5 text-sm text-body">{tier.posturePosture}</td>
-          </tr>
-        ))
+              </td>
+              <td class="py-5 pr-6">
+                {tier.functions === null ? (
+                  <>
+                    <p class="font-mono text-sm text-muted">Pending</p>
+                    <p class="mono-meta mt-1 uppercase">Not yet inventoried</p>
+                  </>
+                ) : (
+                  <>
+                    <p class="font-mono text-lg font-medium text-ink">
+                      {tier.functions}
+                    </p>
+                    <p class="mono-meta mt-1 uppercase">
+                      {stats.listed === tier.functions
+                        ? "All listed"
+                        : `${stats.listed} listed`}
+                    </p>
+                  </>
+                )}
+              </td>
+              <td class="py-5 pr-6">
+                {stats.slaMet === null ? (
+                  <>
+                    <p class="font-mono text-lg text-muted" aria-hidden="true">
+                      —
+                    </p>
+                    <p class="mono-meta mt-1 uppercase">No data</p>
+                  </>
+                ) : (
+                  <>
+                    <p class="font-mono text-lg font-medium text-ink">
+                      {stats.slaMet}
+                    </p>
+                    <p class="mono-meta mt-1 uppercase">
+                      {stats.measured} measured
+                    </p>
+                  </>
+                )}
+              </td>
+              <td class="py-5 text-sm text-body">{tier.postureShort}</td>
+            </tr>
+          );
+        })
       }
     </tbody>
   </table>

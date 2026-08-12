@@ -6,13 +6,13 @@ a fully static site with no client-side JavaScript.
 
 ## Commands
 
-| Command        | Action                                        |
-| -------------- | --------------------------------------------- |
-| `pnpm install` | Install dependencies                          |
-| `pnpm dev`     | Dev server at `localhost:4321`                |
+| Command        | Action                                          |
+| -------------- | ----------------------------------------------- |
+| `pnpm install` | Install dependencies                            |
+| `pnpm dev`     | Dev server at `localhost:4321`                  |
 | `pnpm build`   | Type-check (`astro check`) and build to `dist/` |
-| `pnpm preview` | Serve the production build locally            |
-| `pnpm format`  | Format with Prettier                          |
+| `pnpm preview` | Serve the production build locally              |
+| `pnpm format`  | Format with Prettier                            |
 
 ## Structure
 
@@ -39,15 +39,28 @@ The relevant modules are `landing.ts`, `kernel.ts` and `programs.ts`.
 
 ### Known data gaps
 
-The design mockups do not legibly list every inventory row, and rows were not
-invented to fill the gaps. `src/data/kernel.ts` currently holds:
+The Kernel report declares **5 Irreplaceable** and **24 Essential** functions,
+and states that **22** of them are listed. The design mockups only render 18 —
+4 Irreplaceable and 14 Essential. The remaining 4 rows do not appear anywhere in
+the design doc, whose Kernel section is still three comments reading "can be
+added next week when metrics are finalized". Rows have not been invented to
+close the gap.
 
-- **4 of 5** declared Irreplaceable functions
-- **14 of the 17** Essential functions the design lists (of 24 declared)
+So that the page cannot contradict itself, the overview table derives
+**listed**, **measured** and the **rolling SLA** from `FUNCTIONS` via
+`tierStats()`. The only externally sourced figure is each tier's declared
+total. The table therefore reads "5 / 4 listed" and "24 / 14 listed", matching
+the inventory below it, and each tier carries a "Showing N of M" note.
 
-The inventory renders a "Showing N of M functions in this tier" note wherever
-listed rows fall short of the declared count, so the gap is visible on the page
-rather than silent. Fill these in from the source inventory before launch.
+Two consequences worth knowing when the missing rows arrive:
+
+- The tier SLA percentages (96.3% and 96.0%) are the mean across listed
+  measured rows. The report quotes 97.3% and 96.5% over the full inventory, so
+  these will move as rows are added.
+- `KERNEL_METRICS` is still verbatim from the report and references "22 listed"
+  and "29 declared". Those tiles are program-level figures, not derived from
+  `FUNCTIONS`, so they will disagree with the table until the inventory is
+  complete.
 
 Kernel's `Important` and `Nice to have` tiers are intentionally empty — they are
 not inventoried yet, and the page says so.

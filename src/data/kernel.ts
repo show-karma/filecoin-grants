@@ -18,14 +18,16 @@ export type Tier = {
   example: string;
   posture: string;
   /** Short posture phrasing used in the overview table. */
-  posturePosture: string;
-  /** Declared function count, or null when the tier is not inventoried yet. */
+  postureShort: string;
+  /**
+   * Declared function count for the tier, from the Kernel report — the total
+   * that exists, not the number listed here. Null while a tier is not
+   * inventoried yet. Everything else the overview table shows (how many are
+   * listed, how many are measured, the rolling SLA) is derived from
+   * {@link FUNCTIONS} by {@link tierStats}, so the table can never disagree
+   * with the inventory rendered below it.
+   */
   functions: number | null;
-  /** How many of those functions are listed on this page. */
-  listed: number | null;
-  /** Rolling-90d SLA across measured functions, or null when unmeasured. */
-  slaMet: string | null;
-  measured: number | null;
 };
 
 export const TIERS: Tier[] = [
@@ -39,11 +41,8 @@ export const TIERS: Tier[] = [
       "Distributed randomness beacon — without it, block production stops.",
     posture:
       "Must fund. Non-negotiable security requirements. Audits milestone-gated.",
-    posturePosture: "Must fund — non-negotiable",
+    postureShort: "Must fund — non-negotiable",
     functions: 5,
-    listed: 5,
-    slaMet: "97.3%",
-    measured: 4,
   },
   {
     id: "essential",
@@ -55,11 +54,8 @@ export const TIERS: Tier[] = [
       "Testnets: the network continues without them, but at least one is needed to stage and rehearse upgrades.",
     posture:
       "Fund for diversity that ensures uptime — maintain two or more implementations. Budget negotiable.",
-    posturePosture: "Fund for redundancy — 2+ implementations",
+    postureShort: "Fund for redundancy — 2+ implementations",
     functions: 24,
-    listed: 17,
-    slaMet: "96.5%",
-    measured: 15,
   },
   {
     id: "important",
@@ -71,11 +67,8 @@ export const TIERS: Tier[] = [
       "A testnet faucet: it makes test FIL easy to get, but the network runs without it.",
     posture:
       "Fund maintenance, not features. Flag any repo with zero active developers.",
-    posturePosture: "Fund maintenance, not features",
+    postureShort: "Fund maintenance, not features",
     functions: null,
-    listed: null,
-    slaMet: null,
-    measured: null,
   },
   {
     id: "nice",
@@ -87,11 +80,8 @@ export const TIERS: Tier[] = [
       "F3: the network exists without it, but it improves UX considerably and encourages growth.",
     posture:
       "Discretionary. Fund only where aligned with the sustainability strategy.",
-    posturePosture: "Discretionary",
+    postureShort: "Discretionary",
     functions: null,
-    listed: null,
-    slaMet: null,
-    measured: null,
   },
 ];
 
@@ -124,9 +114,14 @@ export const NEXT_ROUND = {
   ctaHref: "https://app.filpgf.io/programs/1479/",
 };
 
-/** The domains a function can sit in, in the order the inventory presents them. */
+/**
+ * The domains a function can sit in, in the order the inventory presents them.
+ * Transcribed from the inventory mockups. The glossary also names "storage
+ * market middleware", which no listed function currently sits in.
+ */
 export const DOMAINS = [
   "Blockchain core & physical storage",
+  "Coordination & hardening",
   "Coordination & incentives",
   "UX / DX",
 ] as const;
@@ -149,10 +144,14 @@ export type FunctionRow = {
 };
 
 /**
- * Verified rows transcribed from the design. The Essential tier declares 24
- * functions and the design lists 17 of them; the crops we have legibly show 14,
- * and 4 of the 5 Irreplaceable rows. Missing rows are deliberately absent
- * rather than invented — add them from the source inventory before launch.
+ * Every function row legible in the design mockups.
+ *
+ * The Kernel report declares 5 Irreplaceable and 24 Essential functions, and
+ * says 22 of them are listed. The mockups render 18 — the remaining 4 do not
+ * appear anywhere in the design doc, and rows are not invented to close the
+ * gap. Because the overview table derives its counts from this array (see
+ * {@link tierStats}), the page stays self-consistent: it shows 18 rows and
+ * says so, against the declared totals.
  */
 export const FUNCTIONS: FunctionRow[] = [
   {
@@ -237,10 +236,11 @@ export const FUNCTIONS: FunctionRow[] = [
     noHealthMetric: true,
     note: "2 growth counters on the project view",
   },
+
   {
     tier: "essential",
     category: "Network data & monitoring",
-    domain: "Blockchain core & physical storage",
+    domain: "Coordination & hardening",
     name: "Monitoring, archival access and incident response (Grafana, OpsGenie, IR coordination)",
     slaMet: "100.0%",
     singleMaintainer: true,
@@ -248,7 +248,7 @@ export const FUNCTIONS: FunctionRow[] = [
   {
     tier: "essential",
     category: "Shared infra stewardship",
-    domain: "Blockchain core & physical storage",
+    domain: "Coordination & hardening",
     name: "Vendor/access governance, runbooks, Slack/Workspace/GitHub stewardship",
     slaMet: "100.0%",
     singleMaintainer: true,
@@ -256,7 +256,7 @@ export const FUNCTIONS: FunctionRow[] = [
   {
     tier: "essential",
     category: "Testnets",
-    domain: "Blockchain core & physical storage",
+    domain: "Coordination & hardening",
     name: "Mainnet-realistic testnet for rehearsing every network-version upgrade",
     slaMet: "100.0%",
     singleMaintainer: true,
@@ -264,7 +264,7 @@ export const FUNCTIONS: FunctionRow[] = [
   {
     tier: "essential",
     category: "Testnets — explorer",
-    domain: "Blockchain core & physical storage",
+    domain: "Coordination & hardening",
     name: "Explorer for Calibration testnet",
     slaMet: "96.7%",
     singleMaintainer: true,
@@ -272,10 +272,11 @@ export const FUNCTIONS: FunctionRow[] = [
   {
     tier: "essential",
     category: "Testnets — miners",
-    domain: "Blockchain core & physical storage",
+    domain: "Coordination & hardening",
     name: "Calibnet miners (Lotus-Miner / Curio / Venus) for upgrade rehearsal",
     slaMet: "97.1%",
   },
+
   {
     tier: "essential",
     category: "Network data & monitoring",
@@ -283,6 +284,7 @@ export const FUNCTIONS: FunctionRow[] = [
     name: "Aggregates Filecoin on/off-chain data into open, queryable datasets and dashboards",
     slaMet: "97.4%",
   },
+
   {
     tier: "essential",
     category: "Explorers and tooling",
@@ -300,6 +302,34 @@ export const FUNCTIONS: FunctionRow[] = [
     singleMaintainer: true,
   },
 ];
+
+export type TierStats = {
+  /** Rows actually listed on this page for the tier. */
+  listed: number;
+  /** Of those, how many report a health metric. */
+  measured: number;
+  /** Mean rolling-90d figure across the measured rows, or null if none. */
+  slaMet: string | null;
+};
+
+/**
+ * Summarises a tier from the rows above, so the overview table is always a
+ * true description of the inventory rendered below it. The declared total
+ * (Tier.functions) is the only figure that comes from outside this file.
+ */
+export const tierStats = (id: TierId): TierStats => {
+  const rows = FUNCTIONS.filter((row) => row.tier === id);
+  const measured = rows.filter((row) => row.slaMet !== null);
+  const mean =
+    measured.reduce((total, row) => total + parseFloat(row.slaMet!), 0) /
+    (measured.length || 1);
+
+  return {
+    listed: rows.length,
+    measured: measured.length,
+    slaMet: measured.length ? `${mean.toFixed(1)}%` : null,
+  };
+};
 
 export type KernelMetric = {
   value: string;
