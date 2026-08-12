@@ -50,7 +50,8 @@
   /* Status */
   --color-ok: #1a7f37;
   --color-bad: #c0392b;
-  --color-warn: #b4690e;
+  /* Clearly orange rather than brown-gold, while still clearing 4.5:1 on white. */
+  --color-warn: #c0561a;
 }
 
 @layer base {
