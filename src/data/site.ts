@@ -14,6 +14,18 @@ export const EXTERNAL = {
 } as const;
 
 /**
+ * Programme id for the batch the headline stats are drawn from.
+ *
+ * Deliberately NOT applied to every report link: the site spans three
+ * programmes, and the Pods track is a different programme id again, so scoping
+ * a site-wide link to one batch would silently narrow what it shows.
+ */
+export const PROGRAM_ID = "992";
+
+/** Every report for that programme, unfiltered by type. */
+export const PROGRAM_REPORTS_URL = `${EXTERNAL.reports}?programId=${PROGRAM_ID}`;
+
+/**
  * Report-type ids from the Karma reports API. Linking by type (rather than to a
  * dated report) always surfaces the latest of that type, so these never need a
  * manual date bump.
@@ -23,8 +35,13 @@ export const REPORT_TYPES = {
   biweeklyProgress: "6a233d04e82a77f23c7838f7",
 } as const;
 
+/** Latest report of a type, across every programme. */
 export const reportUrl = (type: keyof typeof REPORT_TYPES) =>
   `${EXTERNAL.reports}?type=${REPORT_TYPES[type]}`;
+
+/** Latest report of a type, scoped to {@link PROGRAM_ID}. */
+export const programReportUrl = (type: keyof typeof REPORT_TYPES) =>
+  `${PROGRAM_REPORTS_URL}&type=${REPORT_TYPES[type]}`;
 
 export const SITE = {
   name: "filpgf.io",

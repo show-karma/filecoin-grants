@@ -1,4 +1,9 @@
-import { EXTERNAL, reportUrl } from "./site";
+import {
+  EXTERNAL,
+  reportUrl,
+  programReportUrl,
+  PROGRAM_REPORTS_URL,
+} from "./site";
 
 /**
  * Figures shown on the landing page. These are published numbers, not live
@@ -24,19 +29,19 @@ export const HEADLINE_STATS: Stat[] = [
     value: "31",
     label: "Active Projects",
     linkText: "Funding Reports",
-    href: EXTERNAL.reports,
+    href: PROGRAM_REPORTS_URL,
   },
   {
     value: "3",
     label: "Funding Initiatives",
     linkText: "Kernel · Revenue Dev · R&D",
-    href: "#objectives",
+    href: "/blog/propgf-batch-3-call-for-builders/",
   },
   {
     value: "86%",
     label: "Checkpoints cleared across active projects",
     linkText: "Bi-weekly progress report",
-    href: reportUrl("biweeklyProgress"),
+    href: programReportUrl("biweeklyProgress"),
   },
 ];
 

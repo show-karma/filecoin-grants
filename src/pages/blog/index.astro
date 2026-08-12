@@ -51,9 +51,7 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
                   {post.data.description}
                 </p>
                 <p class="mt-5">
-                  <ArrowLink href={`/blog/${post.id}/`}>
-                    Read the post
-                  </ArrowLink>
+                  <ArrowLink href={`/blog/${post.id}/`} label="Read the post" />
                 </p>
               </article>
             </li>

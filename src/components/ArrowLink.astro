@@ -2,30 +2,47 @@
 /** Monospace "label →" link used for every secondary action on the site. */
 type Props = {
   href: string;
+  label: string;
   /** Renders in the accent colour rather than muted grey. */
   tone?: "accent" | "muted";
   class?: string;
 };
 
-const { href, tone = "accent", class: className = "" } = Astro.props;
+const { href, label, tone = "accent", class: className = "" } = Astro.props;
 const isExternal = href.startsWith("http");
 const toneClass = tone === "accent" ? "text-accent" : "text-muted";
+
+/**
+ * The arrow is bound to the final word inside a nowrap span. Anything looser —
+ * a trailing <span>, a ::after, even a leading non-breaking space — still
+ * leaves a line-break opportunity at the box boundary, which orphans the arrow
+ * onto its own line in narrow columns.
+ */
+const words = label.trim().split(/\s+/);
+const lastWord = words.pop() ?? "";
+const leadingWords = words.join(" ");
 ---
 
+{
+  /*
+  inline-block lets a long label wrap inside a narrow column while keeping the
+  whole link one box, and py/-my expands the touch target past the 16px text
+  line without changing the vertical rhythm.
+*/
+}
 <a
   href={href}
   class:list={[
-    // py/-my expands the touch target well past the 16px text box without
-    // changing the vertical rhythm around it.
-    "group inline-flex items-baseline gap-1.5 py-2.5 -my-2.5 font-mono text-xs tracking-wide underline-offset-4 hover:underline",
+    "inline-block py-2.5 -my-2.5 font-mono text-xs tracking-wide underline-offset-4 hover:underline",
     toneClass,
     className,
   ]}
   {...isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}}
 >
-  <span><slot /></span>
-  <span
-    class="transition-transform group-hover:translate-x-0.5"
-    aria-hidden="true">→</span
+  {
+    /* Space is part of the expression — a literal one here would be collapsed. */
+  }
+  {leadingWords ? `${leadingWords} ` : ""}<span class="whitespace-nowrap"
+    >{lastWord}&nbsp;<span aria-hidden="true">→</span></span
   >
 </a>

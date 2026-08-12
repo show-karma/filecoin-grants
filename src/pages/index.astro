@@ -78,9 +78,10 @@ const [featured, ...rest] = posts;
       {REPORT_CADENCES.map((report) => <ReportCard report={report} />)}
     </div>
     <p class="mt-8 text-sm text-muted">
-      Looking for a specific initiative? <ArrowLink href={EXTERNAL.explorer}
-        >Browse every funded project in the explorer</ArrowLink
-      >
+      Looking for a specific initiative? <ArrowLink
+        href={EXTERNAL.explorer}
+        label="Browse every funded project in the explorer"
+      />
     </p>
   </Section>
 
@@ -105,7 +106,7 @@ const [featured, ...rest] = posts;
             {featured.data.description}
           </p>
           <p class="mt-5">
-            <ArrowLink href={`/blog/${featured.id}/`}>Read the post</ArrowLink>
+            <ArrowLink href={`/blog/${featured.id}/`} label="Read the post" />
           </p>
         </article>
       )
@@ -129,7 +130,7 @@ const [featured, ...rest] = posts;
     }
 
     <p class="mt-6">
-      <ArrowLink href="/blog/">All posts</ArrowLink>
+      <ArrowLink href="/blog/" label="All posts" />
     </p>
   </Section>
 

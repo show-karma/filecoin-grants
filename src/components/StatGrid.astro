@@ -6,13 +6,22 @@ type Props = { stats: Stat[] };
 const { stats } = Astro.props;
 
 /**
- * Cells are padded on both sides so the copy never sits flush against a
- * divider. The cell that leads a row drops its left padding, so the first
- * figure stays optically aligned with the hero text above it — at sm the grid
- * is 2-up (odd children lead a row), at lg it is 4-up (only the first does).
+ * Cells are padded on both sides so a figure never sits flush against a
+ * divider, except where the cell leads a row — there the padding is dropped so
+ * the figure stays optically aligned with the hero text above it.
+ *
+ * Which cell leads a row depends on the column count (1 at base, 2 at sm, 4 at
+ * lg), so the classes are emitted per index rather than with `odd:`/`first:`
+ * variants. Those pseudo-class variants carry higher specificity than a plain
+ * breakpoint utility, so `sm:odd:pl-0` silently beat `lg:pl-6` at desktop and
+ * left the third cell flush against its divider.
  */
-const CELL =
-  "flex flex-col bg-white pt-5 pb-2 sm:px-6 sm:pt-6 sm:odd:pl-0 lg:pl-6 lg:first:pl-0";
+const cellClass = (i: number) =>
+  [
+    "flex flex-col bg-white pt-5 pb-2 sm:pt-6 sm:pr-6",
+    i % 2 === 0 ? "sm:pl-0" : "sm:pl-6",
+    i % 4 === 0 ? "lg:pl-0" : "lg:pl-6",
+  ].join(" ");
 ---
 
 {
@@ -25,8 +34,8 @@ const CELL =
   class="grid grid-cols-1 gap-px border-t border-line bg-line sm:grid-cols-2 lg:grid-cols-4"
 >
   {
-    stats.map((stat) => (
-      <div class={CELL}>
+    stats.map((stat, i) => (
+      <div class={cellClass(i)}>
         <dt class="order-2 mt-1 text-sm leading-snug text-body">
           {stat.label}
         </dt>
@@ -34,7 +43,7 @@ const CELL =
           {stat.value}
         </dd>
         <dd class="order-3 mt-3">
-          <ArrowLink href={stat.href}>{stat.linkText}</ArrowLink>
+          <ArrowLink href={stat.href} label={stat.linkText} />
         </dd>
       </div>
     ))

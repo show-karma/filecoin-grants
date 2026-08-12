@@ -11,6 +11,6 @@ const { report } = Astro.props;
   <h3 class="mt-2.5 text-lg">{report.title}</h3>
   <p class="mt-2 text-[0.95rem] leading-relaxed">{report.description}</p>
   <p class="mt-4">
-    <ArrowLink href={report.href} tone="muted">{report.linkText}</ArrowLink>
+    <ArrowLink href={report.href} label={report.linkText} tone="muted" />
   </p>
 </article>

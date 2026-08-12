@@ -60,7 +60,7 @@ const rows: { label: string; value: TextSegment[] }[] = [
     </p>
     <div class="flex items-center gap-5">
       <span class="font-mono text-sm font-medium text-ink">{o.amount}</span>
-      <ArrowLink href={o.href}>{o.program}</ArrowLink>
+      <ArrowLink href={o.href} label={o.program} />
     </div>
   </div>
 </article>
