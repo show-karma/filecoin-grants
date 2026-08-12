@@ -1,0 +1,24 @@
+---
+type Props = { breadcrumb?: string };
+const { breadcrumb } = Astro.props;
+---
+
+<div class="flex items-baseline gap-2 font-mono text-sm">
+  <a
+    href="/"
+    class="font-semibold tracking-tight text-ink"
+    aria-label="filpgf.io home"
+  >
+    fil<span class="text-accent">pgf</span>.io
+  </a>
+  {
+    breadcrumb && (
+      <>
+        <span class="text-muted" aria-hidden="true">
+          /
+        </span>
+        <span class="font-semibold text-ink">{breadcrumb}</span>
+      </>
+    )
+  }
+</div>

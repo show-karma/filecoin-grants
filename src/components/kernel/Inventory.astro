@@ -1,0 +1,83 @@
+---
+import { TIERS, FUNCTIONS, DOMAINS, type Tier } from "../../data/kernel";
+import { tierColor } from "./tier";
+import FunctionRow from "./FunctionRow.astro";
+
+/**
+ * Groups the verified function rows by tier, then by domain, preserving the
+ * domain order the design uses. Tiers with no inventory yet render the
+ * "pending" note instead of an empty list.
+ */
+const groupsFor = (tier: Tier) => {
+  const rows = FUNCTIONS.filter((f) => f.tier === tier.id);
+  return DOMAINS.map((domain) => ({
+    domain,
+    rows: rows.filter((f) => f.domain === domain),
+  })).filter((group) => group.rows.length > 0);
+};
+
+const PENDING_NOTE: Record<string, string> = {
+  important:
+    "Functions in this tier have not been inventoried yet. Posture is set — fund maintenance, not features — but nothing is being measured against it.",
+  nice: "Functions in this tier have not been inventoried yet. Posture is set — discretionary — but nothing is being measured against it.",
+};
+---
+
+<div class="space-y-12">
+  {
+    TIERS.map((tier) => {
+      const groups = groupsFor(tier);
+      const shown = groups.reduce((n, g) => n + g.rows.length, 0);
+
+      return (
+        <section aria-labelledby={`tier-${tier.id}`}>
+          <div
+            class="flex items-baseline justify-between gap-4 border-b pb-2"
+            style={`border-color:${tierColor(tier.id)}`}
+          >
+            <h3
+              id={`tier-${tier.id}`}
+              class="font-mono text-xs font-medium tracking-[0.14em] uppercase"
+              style={`color:${tierColor(tier.id)}`}
+            >
+              {tier.name}
+            </h3>
+            <p class="mono-meta">
+              {tier.functions === null
+                ? "inventory pending"
+                : `${tier.functions} functions`}
+            </p>
+          </div>
+
+          {tier.functions === null ? (
+            <p class="mt-4 rounded-md bg-white/70 px-4 py-3 font-mono text-xs leading-relaxed text-muted">
+              {PENDING_NOTE[tier.id]}
+            </p>
+          ) : (
+            <>
+              {groups.map((group) => (
+                <div class="mt-6">
+                  <p class="mono-meta uppercase">{group.domain}</p>
+                  <ul class="mt-3 space-y-3">
+                    {group.rows.map((fn) => (
+                      <li>
+                        <FunctionRow fn={fn} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+
+              {tier.listed !== null && shown < tier.functions && (
+                <p class="mt-4 rounded-md bg-white/70 px-4 py-3 font-mono text-xs leading-relaxed text-muted">
+                  Showing {shown} of {tier.functions} functions in this tier.
+                  The remainder are in the full inventory.
+                </p>
+              )}
+            </>
+          )}
+        </section>
+      );
+    })
+  }
+</div>

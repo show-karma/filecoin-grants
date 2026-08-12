@@ -1,40 +1,38 @@
 {
   "name": "filecoin-grants",
-  "version": "1.8.0",
-  "description": "Doks theme",
-  "author": "Thulite",
+  "version": "2.0.0",
+  "description": "Filecoin Public Goods Funding — filpgf.io",
   "license": "MIT",
+  "private": true,
+  "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/thuliteio/doks.git"
+    "url": "https://github.com/show-karma/filecoin-grants.git"
   },
   "scripts": {
-    "create": "hugo new",
-    "dev": "hugo server --disableFastRender --noHTTPCache",
-    "format": "prettier **/** -w -c",
-    "build": "hugo --minify --gc",
-    "build:production": "hugo --minify --gc --environment production",
-    "preview": "vite preview --outDir public"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "format": "prettier --write ."
   },
   "dependencies": {
-    "@thulite/doks-core": "^1.8.3",
-    "@thulite/images": "^3.3.1",
-    "@thulite/inline-svg": "^1.2.0",
-    "@thulite/seo": "^2.4.1",
-    "@tabler/icons": "^3.34.1",
-    "thulite": "^2.6.3"
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/inter": "^5.2.5",
+    "@fontsource-variable/inter-tight": "^5.2.5",
+    "@fontsource-variable/jetbrains-mono": "^5.2.5",
+    "@tailwindcss/vite": "^4.1.11",
+    "astro": "^5.12.0",
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.1",
-    "@changesets/cli": "^2.29.5",
+    "@astrojs/check": "^0.9.4",
     "prettier": "^3.6.2",
-    "vite": "^7.0.6"
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=20.11.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
   }
 }

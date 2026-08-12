@@ -1,0 +1,50 @@
+---
+import ArrowLink from "./ArrowLink.astro";
+import type { Objective } from "../data/landing";
+
+type Props = { objective: Objective };
+const { objective: o } = Astro.props;
+
+const rows = [
+  { label: "Model", value: o.model },
+  { label: "Measured", value: o.measured },
+  ...(o.pods ? [{ label: "Pods", value: o.pods }] : []),
+];
+---
+
+<article class="rounded-lg border border-line bg-white p-6 sm:p-8">
+  <p class="eyebrow">OBJ / {o.index}</p>
+  <h3 class="mt-3 text-xl sm:text-2xl">{o.title}</h3>
+  <p class="mt-3 max-w-3xl text-[0.95rem] leading-relaxed">{o.description}</p>
+
+  <div class="mt-6 border-t border-line-soft pt-5">
+    <p class="mono-meta uppercase">Funded through</p>
+    <p class="mt-1.5 flex flex-wrap items-baseline gap-2">
+      <span class="text-base font-semibold text-ink">{o.program}</span>
+      <span class="font-mono text-xs text-muted">{o.programQualifier}</span>
+    </p>
+
+    <dl class="mt-4 space-y-2">
+      {
+        rows.map((row) => (
+          <div class="flex flex-col gap-1 sm:flex-row sm:gap-6">
+            <dt class="mono-meta w-24 shrink-0 uppercase">{row.label}</dt>
+            <dd class="text-sm leading-relaxed">{row.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+
+  <div
+    class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-4"
+  >
+    <p class="font-mono text-xs text-muted">
+      <span class="font-medium text-ink">{o.initiatives}</span> initiatives
+    </p>
+    <div class="flex items-center gap-5">
+      <span class="font-mono text-sm font-medium text-ink">{o.amount}</span>
+      <ArrowLink href={o.href}>{o.program}</ArrowLink>
+    </div>
+  </div>
+</article>

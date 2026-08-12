@@ -1,0 +1,47 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostMeta from "../../components/PostMeta.astro";
+import ArrowLink from "../../components/ArrowLink.astro";
+import { reportUrl } from "../../data/site";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+type Props = { post: CollectionEntry<"blog"> };
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  cta={{ label: "Latest report", href: reportUrl("biweeklyProgress") }}
+  ogType="article"
+>
+  <article class="bg-white pt-12 pb-20 sm:pt-16">
+    <div class="container-page">
+      <p class="mb-8">
+        <ArrowLink href="/blog/" tone="muted">All posts</ArrowLink>
+      </p>
+
+      <header class="max-w-3xl border-b border-line pb-8">
+        <PostMeta date={post.data.date} author={post.data.author} />
+        <h1 class="mt-3 text-3xl leading-tight sm:text-4xl lg:text-5xl">
+          {post.data.title}
+        </h1>
+        <p class="mt-5 text-lg leading-relaxed">{post.data.description}</p>
+      </header>
+
+      <div class="prose-post mt-8 max-w-3xl">
+        <Content />
+      </div>
+    </div>
+  </article>
+</BaseLayout>

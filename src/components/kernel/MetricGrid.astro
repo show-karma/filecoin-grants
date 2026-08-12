@@ -1,0 +1,28 @@
+---
+import { KERNEL_METRICS } from "../../data/kernel";
+---
+
+<dl
+  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2"
+>
+  {
+    KERNEL_METRICS.map((metric) => (
+      <div class="bg-white p-5">
+        <dd class="font-mono text-2xl font-medium tracking-tight text-ink">
+          {metric.value}
+        </dd>
+        <dt class="mt-1.5 text-sm leading-snug text-body">{metric.label}</dt>
+        <p
+          class:list={[
+            "mt-2 font-mono text-xs leading-snug",
+            metric.noteTone === "warn" ? "text-bad" : "text-muted",
+          ]}
+        >
+          {metric.note}
+        </p>
+      </div>
+    ))
+  }
+  {/* Keeps the 5-item grid from leaving a ragged white cell. */}
+  <div class="hidden bg-tint sm:block" aria-hidden="true"></div>
+</dl>

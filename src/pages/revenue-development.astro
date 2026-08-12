@@ -1,0 +1,151 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/Section.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import Button from "../components/Button.astro";
+import ArrowLink from "../components/ArrowLink.astro";
+import CriteriaList from "../components/CriteriaList.astro";
+import PodCard from "../components/revdev/PodCard.astro";
+import ProcessSteps from "../components/revdev/ProcessSteps.astro";
+import {
+  PODS,
+  PODS_FOOTNOTE,
+  REVDEV_FUNDING_FACTS,
+  REVDEV_ROADMAP_CRITERIA,
+} from "../data/programs";
+
+const nav = [
+  { label: "Objective", href: "#objective" },
+  { label: "Pods", href: "#pods" },
+  { label: "Funding", href: "#funding" },
+];
+---
+
+<BaseLayout
+  title="Revenue Development"
+  description="Filecoin's 2026 strategy shifts the question from how much data the network can hold to how much it is paid to store and serve. Revenue Development is the program behind that shift."
+  nav={nav}
+  cta={{ label: "Meet the pods", href: "#pods" }}
+  breadcrumb="Revenue Development"
+  accent="rev"
+>
+  <!-- Hero -->
+  <section class="bg-white pt-14 pb-14 sm:pt-20">
+    <div class="container-page">
+      <div class="flex items-center gap-4">
+        <span class="eyebrow shrink-0"
+          >Revenue Development · Program overview</span
+        >
+        <span class="h-px flex-1 bg-line" aria-hidden="true"></span>
+      </div>
+
+      <h1
+        class="mt-5 max-w-2xl text-4xl leading-[1.08] sm:text-5xl lg:text-6xl"
+      >
+        Turning capacity into paid usage.
+      </h1>
+
+      <p class="mt-6 max-w-2xl text-lg leading-relaxed">
+        Filecoin's 2026 strategy shifts the question from how much data the
+        network can hold to how much it is paid to store and serve. Revenue
+        Development is the program behind that shift. It funds two pods
+        directly: there is no open call and no public application.
+      </p>
+    </div>
+  </section>
+
+  <!-- Objective -->
+  <Section id="objective">
+    <SectionHeader eyebrow="Objective" title="Funded through the pods" />
+
+    <div class="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-14">
+      <div class="space-y-5 text-[0.95rem] leading-relaxed">
+        <p>
+          Revenue Development doesn't run an open call. It funds two pods, each
+          with a specific product and go-to-market mandate, each accountable for
+          revenue in its slice of the ecosystem. Capital follows their six-month
+          roadmaps and is released as milestones land.
+        </p>
+        <p>
+          If you see something a pod's roadmap is missing, R&D is the program
+          that funds it. Work aimed at a gap in the network is requested through
+          published RFPs there, and what proves out can become part of a pod's
+          roadmap later.
+        </p>
+        <p class="pt-1">
+          <Button href="#pods">Meet the two pods</Button>
+        </p>
+      </div>
+
+      <div class="rounded-lg border border-line bg-white p-6">
+        <CriteriaList
+          label="What a roadmap has to show"
+          items={REVDEV_ROADMAP_CRITERIA}
+          tone="in"
+        />
+      </div>
+    </div>
+  </Section>
+
+  <!-- Pods -->
+  <Section id="pods" tint>
+    <SectionHeader
+      eyebrow="Pods"
+      title="Two pods set the roadmap"
+      intro="A pod is a small, mission-focused team with a specific product and go-to-market mandate. Pods own product and revenue for their slice of the ecosystem, and Revenue Development milestones are scoped against their six-month roadmaps."
+    />
+    <div class="mt-10 space-y-5">
+      {PODS.map((pod) => <PodCard pod={pod} />)}
+    </div>
+    <p class="mt-6 max-w-3xl text-sm leading-relaxed text-muted">
+      {PODS_FOOTNOTE}
+    </p>
+  </Section>
+
+  <!-- Funding -->
+  <Section id="funding">
+    <SectionHeader
+      eyebrow="How funding works"
+      title="Six-month roadmaps, milestone-gated"
+      intro="Each pod is funded against a six-month roadmap rather than an annual budget, with payouts released as milestones land. Nothing arrives up front, and a roadmap that stops moving stops drawing down."
+    />
+
+    <dl
+      class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-4"
+    >
+      {
+        REVDEV_FUNDING_FACTS.map((fact) => (
+          <div class="bg-white p-5">
+            <dt class="mono-meta uppercase">{fact.label}</dt>
+            <dd class="mt-1.5 text-lg font-semibold text-ink">{fact.value}</dd>
+            <p class="mt-1 text-sm leading-snug text-body">{fact.note}</p>
+          </div>
+        ))
+      }
+    </dl>
+
+    <div class="mt-12">
+      <ProcessSteps />
+    </div>
+  </Section>
+
+  <!-- Get involved -->
+  <Section id="contribute" tint>
+    <div
+      class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+    >
+      <SectionHeader
+        eyebrow="Get involved"
+        title="Want to contribute?"
+        intro="Revenue Development funds the two pods directly, so there's nothing to apply for here. R&D is where outside teams can pick up work that supports them."
+        class="max-w-2xl"
+      />
+      <div class="flex shrink-0 flex-col items-start gap-3">
+        <Button href="/rnd/">See R&D opportunities</Button>
+        <ArrowLink href="https://filecoin.io/slack" tone="muted">
+          Or get in touch to learn more
+        </ArrowLink>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>

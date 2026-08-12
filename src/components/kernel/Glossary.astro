@@ -1,0 +1,33 @@
+---
+import { GLOSSARY } from "../../data/kernel";
+
+/**
+ * Definitions carry **bold** emphasis on the load-bearing phrase. Rendering it
+ * here keeps the data file free of markup.
+ */
+const renderEmphasis = (text: string) =>
+  text
+    .split(/(\*\*[^*]+\*\*)/g)
+    .map((part) =>
+      part.startsWith("**") && part.endsWith("**")
+        ? `<strong class="font-semibold text-ink">${part.slice(2, -2)}</strong>`
+        : part,
+    )
+    .join("");
+---
+
+<dl
+  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2"
+>
+  {
+    GLOSSARY.map((entry) => (
+      <div class="bg-white p-5">
+        <dt class="font-semibold text-ink">{entry.term}</dt>
+        <dd
+          class="mt-2 text-sm leading-relaxed"
+          set:html={renderEmphasis(entry.definition)}
+        />
+      </div>
+    ))
+  }
+</dl>

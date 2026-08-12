@@ -1,0 +1,25 @@
+---
+import { SITE, FOOTER_NAV } from "../data/site";
+---
+
+<footer class="border-t border-line bg-white">
+  <div
+    class="container-page flex flex-col gap-4 py-8 text-sm sm:flex-row sm:items-center sm:justify-between"
+  >
+    <p class="text-muted">
+      {SITE.title} · {SITE.administeredBy}
+    </p>
+    <nav aria-label="Footer" class="flex items-center gap-6">
+      {
+        FOOTER_NAV.map((item) => (
+          <a
+            href={item.href}
+            class="text-body transition-colors hover:text-ink"
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</footer>

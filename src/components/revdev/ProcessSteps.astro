@@ -1,0 +1,33 @@
+---
+import { REVDEV_PROCESS } from "../../data/programs";
+---
+
+<ol class="grid grid-cols-1 gap-y-7 sm:grid-cols-3">
+  {
+    REVDEV_PROCESS.map((step, i) => (
+      <li class="relative pr-4">
+        <span
+          class="absolute top-[5px] right-0 left-3 h-px bg-line"
+          aria-hidden="true"
+        />
+        <span
+          class:list={[
+            "relative block h-2.5 w-2.5 rounded-full border-2",
+            i === 0 ? "border-accent bg-accent" : "border-line bg-white",
+          ]}
+          aria-hidden="true"
+        />
+        <p class="mono-meta mt-3 uppercase">Step {i + 1}</p>
+        <p
+          class:list={[
+            "mt-1 text-[0.95rem] font-semibold",
+            i === 0 ? "text-accent" : "text-ink",
+          ]}
+        >
+          {step.title}
+        </p>
+        <p class="mt-1 text-sm leading-snug text-body">{step.detail}</p>
+      </li>
+    ))
+  }
+</ol>

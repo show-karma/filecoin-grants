@@ -1,0 +1,29 @@
+---
+/** Monospace "label →" link used for every secondary action on the site. */
+type Props = {
+  href: string;
+  /** Renders in the accent colour rather than muted grey. */
+  tone?: "accent" | "muted";
+  class?: string;
+};
+
+const { href, tone = "accent", class: className = "" } = Astro.props;
+const isExternal = href.startsWith("http");
+const toneClass = tone === "accent" ? "text-accent" : "text-muted";
+---
+
+<a
+  href={href}
+  class:list={[
+    "group inline-flex items-baseline gap-1.5 font-mono text-xs tracking-wide underline-offset-4 hover:underline",
+    toneClass,
+    className,
+  ]}
+  {...isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}}
+>
+  <span><slot /></span>
+  <span
+    class="transition-transform group-hover:translate-x-0.5"
+    aria-hidden="true">→</span
+  >
+</a>

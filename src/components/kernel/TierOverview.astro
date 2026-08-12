@@ -1,0 +1,78 @@
+---
+import { TIERS } from "../../data/kernel";
+import { tierColor } from "./tier";
+---
+
+<!-- Wide table on desktop; the same rows stack into cards on small screens. -->
+<div class="overflow-x-auto">
+  <table class="w-full min-w-[46rem] border-collapse text-left">
+    <thead>
+      <tr class="border-b border-ink">
+        <th scope="col" class="mono-meta pb-2.5 uppercase">Tier</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">Functions</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">SLA met · 90d</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">Funding posture</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        TIERS.map((tier) => (
+          <tr class="border-b border-line align-top">
+            <td class="py-5 pr-6">
+              <div class="flex gap-3">
+                <span
+                  class="mt-1 w-[3px] shrink-0 self-stretch rounded-full"
+                  style={`background:${tierColor(tier.id)}`}
+                  aria-hidden="true"
+                />
+                <div class="max-w-[16rem]">
+                  <p class="font-semibold text-ink">{tier.name}</p>
+                  <p class="mt-1 text-sm leading-snug text-body">{tier.rule}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-5 pr-6">
+              {tier.functions === null ? (
+                <>
+                  <p class="font-mono text-sm text-muted">Pending</p>
+                  <p class="mono-meta mt-1 uppercase">Not yet inventoried</p>
+                </>
+              ) : (
+                <>
+                  <p class="font-mono text-lg font-medium text-ink">
+                    {tier.functions}
+                  </p>
+                  <p class="mono-meta mt-1 uppercase">
+                    {tier.listed === tier.functions
+                      ? "All listed"
+                      : `${tier.listed} listed`}
+                  </p>
+                </>
+              )}
+            </td>
+            <td class="py-5 pr-6">
+              {tier.slaMet === null ? (
+                <>
+                  <p class="font-mono text-lg text-muted" aria-label="No data">
+                    —
+                  </p>
+                  <p class="mono-meta mt-1 uppercase">No data</p>
+                </>
+              ) : (
+                <>
+                  <p class="font-mono text-lg font-medium text-ink">
+                    {tier.slaMet}
+                  </p>
+                  <p class="mono-meta mt-1 uppercase">
+                    {tier.measured} measured
+                  </p>
+                </>
+              )}
+            </td>
+            <td class="py-5 text-sm text-body">{tier.posturePosture}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

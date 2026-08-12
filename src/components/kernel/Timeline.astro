@@ -1,0 +1,36 @@
+---
+import { TIMELINE } from "../../data/kernel";
+---
+
+<ol class="grid grid-cols-2 gap-y-6 sm:grid-cols-4 lg:grid-cols-7">
+  {
+    TIMELINE.map((step) => (
+      <li class="relative pr-4">
+        {/* Connector rail, hidden on the last item of each row by overflow. */}
+        <span
+          class="absolute top-[5px] right-0 left-3 h-px bg-line"
+          aria-hidden="true"
+        />
+        <span
+          class:list={[
+            "relative block h-2.5 w-2.5 rounded-full border-2",
+            step.state === "done" && "border-ok bg-ok",
+            step.state === "current" && "border-accent bg-accent",
+            step.state === "upcoming" && "border-line bg-white",
+          ]}
+          aria-hidden="true"
+        />
+        <p class="mono-meta mt-3 uppercase">{step.date}</p>
+        <p
+          class:list={[
+            "mt-1 text-sm leading-snug",
+            step.state === "current" ? "text-accent" : "text-ink",
+          ]}
+        >
+          {step.label}
+          {step.state === "current" && <span class="sr-only"> (current)</span>}
+        </p>
+      </li>
+    ))
+  }
+</ol>
