@@ -5,6 +5,7 @@ import SectionHeader from "../components/SectionHeader.astro";
 import Button from "../components/Button.astro";
 import ArrowLink from "../components/ArrowLink.astro";
 import CriteriaList from "../components/CriteriaList.astro";
+import PageHero from "../components/PageHero.astro";
 import {
   RND_LOOKING_FOR,
   RND_NOT_IN_SCOPE,
@@ -26,29 +27,11 @@ const nav = [
   breadcrumb="R&D"
   accent="rd"
 >
-  <!-- Hero -->
-  <section class="bg-white pt-14 pb-14 sm:pt-20">
-    <div class="container-page">
-      <div class="flex items-center gap-4">
-        <span class="eyebrow shrink-0">R&D · Program overview</span>
-        <span class="h-px flex-1 bg-line" aria-hidden="true"></span>
-      </div>
-
-      <h1
-        class="mt-5 max-w-2xl text-4xl leading-[1.08] sm:text-5xl lg:text-6xl"
-      >
-        Funding what the network needs next.
-      </h1>
-
-      <p class="mt-6 max-w-2xl text-lg leading-relaxed">
-        R&D backs work that closes gaps in the network before they become
-        problems. RFPs are published as gaps are identified and applications are
-        reviewed as they arrive, with funding released in stages as the work
-        proves out. The strongest proposals name the gap they close and say why
-        it matters now.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    eyebrow="R&D · Program overview"
+    title="Funding what the network needs next."
+    intro="R&D backs work that closes gaps in the network before they become problems. RFPs are published as gaps are identified and applications are reviewed as they arrive, with funding released in stages as the work proves out. The strongest proposals name the gap they close and say why it matters now."
+  />
 
   <!-- Objective -->
   <Section id="objective">

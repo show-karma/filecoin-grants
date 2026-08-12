@@ -6,6 +6,7 @@ import Button from "../components/Button.astro";
 import ArrowLink from "../components/ArrowLink.astro";
 import DarkCallout from "../components/DarkCallout.astro";
 import CriteriaList from "../components/CriteriaList.astro";
+import PageHero from "../components/PageHero.astro";
 import TierOverview from "../components/kernel/TierOverview.astro";
 import TierCard from "../components/kernel/TierCard.astro";
 import Timeline from "../components/kernel/Timeline.astro";
@@ -45,32 +46,15 @@ const KERNEL_DOES_NOT_FUND = [
   breadcrumb="Kernel"
   accent="kernel"
 >
-  <!-- Hero -->
-  <section class="bg-white pt-14 pb-14 sm:pt-20">
-    <div class="container-page">
-      <div class="flex items-center gap-4">
-        <span class="eyebrow shrink-0">Kernel · Program overview</span>
-        <span class="h-px flex-1 bg-line" aria-hidden="true"></span>
-      </div>
-
-      <h1
-        class="mt-5 max-w-2xl text-4xl leading-[1.08] sm:text-5xl lg:text-6xl"
-      >
-        What keeps the network running.
-      </h1>
-
-      <p class="mt-6 max-w-2xl text-lg leading-relaxed">
-        Kernel funds the functions Filecoin depends on to keep producing blocks,
-        proving storage, and staying observable. It is treated as a near-fixed
-        cost rather than a growth bet: the goal is not more features, it is that
-        nothing essential quietly stops being maintained.
-      </p>
-
-      <div class="mt-12">
-        <TierOverview />
-      </div>
+  <PageHero
+    eyebrow="Kernel · Program overview"
+    title="What keeps the network running."
+    intro="Kernel funds the functions Filecoin depends on to keep producing blocks, proving storage, and staying observable. It is treated as a near-fixed cost rather than a growth bet: the goal is not more features, it is that nothing essential quietly stops being maintained."
+  >
+    <div class="mt-12">
+      <TierOverview />
     </div>
-  </section>
+  </PageHero>
 
   <!-- Objective -->
   <Section id="objective">
@@ -150,9 +134,9 @@ const KERNEL_DOES_NOT_FUND = [
   <!-- Inventory -->
   <Section id="functions" tint>
     <SectionHeader
-      eyebrow="The inventory"
-      title="Every function, and how it's holding up"
-      intro="A function is a capability the network needs, named by what it does rather than by the repo that happens to provide it. Health is the share of the last 90 days the function's reported metrics sat within target. A single maintaining team on an irreplaceable function is the network's real exposure, so those rows are flagged."
+      eyebrow="Functions"
+      title="The inventory"
+      intro="A function is a capability the network needs, named by what it does rather than by the repo that happens to provide it. Health is the share of the last 90 days the function's reported metrics sat within target. Open any row for what the function does, its SLA, who maintains it, and what it's funded through. A single maintaining team on an irreplaceable function is the network's real exposure, so those rows are flagged."
     />
     <div class="mt-10">
       <Inventory />
@@ -162,7 +146,7 @@ const KERNEL_DOES_NOT_FUND = [
   <!-- Metrics -->
   <Section id="metrics">
     <SectionHeader
-      eyebrow="Kernel · metrics"
+      eyebrow="Metrics"
       title="How the program is doing"
       intro="Aggregate health matters less than coverage. A function with no maintainer and no metric is invisible to this page, which is exactly what makes it dangerous."
     />

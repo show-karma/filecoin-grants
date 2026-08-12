@@ -1,16 +1,20 @@
 ---
 import { TIMELINE } from "../../data/kernel";
+
+/**
+ * The connector rail only reads as a connector when the steps form one
+ * unbroken row, which happens at lg (7-up). Below that the grid wraps, and a
+ * per-item rail leaves a line dangling off the last item of every row — so
+ * rails are suppressed until lg, and hidden on the final step.
+ */
+const ITEM =
+  "relative pr-4 after:absolute after:top-[5px] after:right-0 after:left-3 after:hidden after:h-px after:bg-line lg:after:block lg:last:after:hidden";
 ---
 
 <ol class="grid grid-cols-2 gap-y-6 sm:grid-cols-4 lg:grid-cols-7">
   {
     TIMELINE.map((step) => (
-      <li class="relative pr-4">
-        {/* Connector rail, hidden on the last item of each row by overflow. */}
-        <span
-          class="absolute top-[5px] right-0 left-3 h-px bg-line"
-          aria-hidden="true"
-        />
+      <li class={ITEM}>
         <span
           class:list={[
             "relative block h-2.5 w-2.5 rounded-full border-2",
@@ -28,7 +32,11 @@ import { TIMELINE } from "../../data/kernel";
           ]}
         >
           {step.label}
-          {step.state === "current" && <span class="sr-only"> (current)</span>}
+          <span class="sr-only">
+            {step.state === "done" && " (complete)"}
+            {step.state === "current" && " (in progress)"}
+            {step.state === "upcoming" && " (upcoming)"}
+          </span>
         </p>
       </li>
     ))

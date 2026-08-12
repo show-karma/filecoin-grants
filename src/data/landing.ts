@@ -40,6 +40,12 @@ export const HEADLINE_STATS: Stat[] = [
   },
 ];
 
+/**
+ * A run of text where some spans link out — used for the "Pods" row, which
+ * names Filecoin Onchain Cloud and Fil One as links inside a sentence.
+ */
+export type TextSegment = { text: string; href?: string };
+
 export type Objective = {
   index: string;
   title: string;
@@ -49,7 +55,7 @@ export type Objective = {
   href: string;
   model: string;
   measured: string;
-  pods?: string;
+  pods?: TextSegment[];
   initiatives: number;
   amount: string;
 };
@@ -79,7 +85,12 @@ export const OBJECTIVES: Objective[] = [
     href: "/revenue-development/",
     model: "Milestone-gated, six-month roadmaps scoped via Pods",
     measured: "Network-level KPIs and contribution to ecosystem growth",
-    pods: "Filecoin Onchain Cloud and Fil One — this program funds both, and nothing else",
+    pods: [
+      { text: "Filecoin Onchain Cloud", href: EXTERNAL.filecoinCloud },
+      { text: " and " },
+      { text: "Fil One", href: EXTERNAL.filOne },
+      { text: " — this program funds both, and nothing else" },
+    ],
     initiatives: 14,
     amount: "$3.2M",
   },

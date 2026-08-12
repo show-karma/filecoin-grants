@@ -2,27 +2,36 @@
 import { KERNEL_METRICS } from "../../data/kernel";
 ---
 
+{
+  /*
+  Five metrics in a 2-up grid leave one empty cell. It is filled with the
+  <dl>'s ::after rather than a placeholder element, because a <dl> may contain
+  only <dt>/<dd> groups — a filler <div> there would be invalid HTML.
+  Within each group the <dt> leads in the DOM and `order` lifts the figure
+  above it visually.
+*/
+}
 <dl
-  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2"
+  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 sm:after:block sm:after:bg-tint sm:after:content-['']"
 >
   {
     KERNEL_METRICS.map((metric) => (
-      <div class="bg-white p-5">
-        <dd class="font-mono text-2xl font-medium tracking-tight text-ink">
+      <div class="flex flex-col bg-white p-5">
+        <dt class="order-2 mt-1.5 text-sm leading-snug text-body">
+          {metric.label}
+        </dt>
+        <dd class="order-1 font-mono text-2xl font-medium tracking-tight text-ink">
           {metric.value}
         </dd>
-        <dt class="mt-1.5 text-sm leading-snug text-body">{metric.label}</dt>
-        <p
+        <dd
           class:list={[
-            "mt-2 font-mono text-xs leading-snug",
-            metric.noteTone === "warn" ? "text-bad" : "text-muted",
+            "order-3 mt-2 font-mono text-xs leading-snug",
+            metric.noteTone === "warn" ? "text-warn" : "text-muted",
           ]}
         >
           {metric.note}
-        </p>
+        </dd>
       </div>
     ))
   }
-  {/* Keeps the 5-item grid from leaving a ragged white cell. */}
-  <div class="hidden bg-tint sm:block" aria-hidden="true"></div>
 </dl>

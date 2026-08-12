@@ -65,7 +65,10 @@ const fullTitle = title === SITE.title ? title : `${title} · ${SITE.title}`;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content={SITE.title} />
-    <meta name="twitter:card" content="summary_large_image" />
+    {
+      /* No share image ships yet — upgrade to summary_large_image once one does. */
+    }
+    <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
 

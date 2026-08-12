@@ -33,7 +33,7 @@ const [featured, ...rest] = posts;
       <p
         class="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1"
       >
-        <span class="h-1.5 w-1.5 rounded-full bg-ok" aria-hidden="true"></span>
+        <span class="sync-dot" aria-hidden="true"></span>
         <span class="font-mono text-[0.6875rem] tracking-[0.14em] uppercase"
           >Updated {LAST_UPDATED}</span
         >
@@ -56,7 +56,7 @@ const [featured, ...rest] = posts;
   </section>
 
   <!-- Objectives -->
-  <Section id="objectives" tint>
+  <Section id="objectives">
     <SectionHeader
       eyebrow="Objectives"
       title="Three objectives everything ladders up to"
@@ -68,13 +68,13 @@ const [featured, ...rest] = posts;
   </Section>
 
   <!-- Reporting -->
-  <Section id="reporting">
+  <Section id="reporting" tint>
     <SectionHeader
       eyebrow="Tracking"
       title="How we report"
       intro="Progress is published on a fixed cadence, so anyone can see what's moving. Reports cover delivery against milestones, health metrics for each funded function, and the network-level impact the work is meant to produce."
     />
-    <div class="mt-10 grid gap-5 md:grid-cols-3">
+    <div class="mt-10 space-y-5">
       {REPORT_CADENCES.map((report) => <ReportCard report={report} />)}
     </div>
     <p class="mt-8 text-sm text-muted">
@@ -85,7 +85,7 @@ const [featured, ...rest] = posts;
   </Section>
 
   <!-- Blog -->
-  <Section id="blog" tint>
+  <Section id="blog">
     <SectionHeader
       eyebrow="From the blog"
       title="Follow along"
@@ -134,7 +134,7 @@ const [featured, ...rest] = posts;
   </Section>
 
   <!-- Funding CTA -->
-  <Section id="funding">
+  <Section id="funding" tint>
     <SectionHeader
       eyebrow="Get funded"
       title="Where your work fits"

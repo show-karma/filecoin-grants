@@ -1,0 +1,33 @@
+---
+/**
+ * Program-page hero: ruled eyebrow, display h1, intro.
+ *
+ * The eyebrow is deliberately allowed to shrink and wrap — "Revenue
+ * Development · Program overview" is ~310px of unbreakable monospace, which
+ * overflows a 320px viewport if it is held at max-content.
+ */
+type Props = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+};
+
+const { eyebrow, title, intro } = Astro.props;
+---
+
+<section class="bg-white pt-14 pb-14 sm:pt-20">
+  <div class="container-page">
+    <div class="flex items-center gap-4">
+      <span class="eyebrow min-w-0">{eyebrow}</span>
+      <span class="h-px flex-1 bg-line" aria-hidden="true"></span>
+    </div>
+
+    <h1 class="mt-5 max-w-2xl text-4xl leading-[1.08] sm:text-5xl lg:text-6xl">
+      {title}
+    </h1>
+
+    <p class="mt-6 max-w-2xl text-lg leading-relaxed">{intro}</p>
+
+    <slot />
+  </div>
+</section>

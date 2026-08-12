@@ -15,7 +15,9 @@ const toneClass = tone === "accent" ? "text-accent" : "text-muted";
 <a
   href={href}
   class:list={[
-    "group inline-flex items-baseline gap-1.5 font-mono text-xs tracking-wide underline-offset-4 hover:underline",
+    // py/-my expands the touch target well past the 16px text box without
+    // changing the vertical rhythm around it.
+    "group inline-flex items-baseline gap-1.5 py-2.5 -my-2.5 font-mono text-xs tracking-wide underline-offset-4 hover:underline",
     toneClass,
     className,
   ]}

@@ -17,9 +17,11 @@
   /* Neutrals — the page is near-black on white, with one tinted section band. */
   --color-ink: #0b0d10;
   --color-body: #3d4450;
-  --color-muted: #6f7885;
+  /* Darkened from #6f7885 so it clears 4.5:1 on both white and the tint. */
+  --color-muted: #5c6472;
   --color-line: #e4e7eb;
   --color-line-soft: #eef0f3;
+  --color-surface: #ffffff;
   --color-tint: #f3f5f8;
   --color-deep: #0c1322;
 
@@ -29,11 +31,21 @@
   --color-accent-rd: #b23a2e;
   --color-accent-rev: #22688f;
 
-  /* Kernel tiers, ordered by how replaceable the function is. */
-  --color-tier-irreplaceable: #c0483c;
-  --color-tier-essential: #c2870f;
+  /*
+   * Kernel tiers, ordered by how replaceable the function is. Each tier has
+   * two values: a saturated FILL that carries white text on card headers, and
+   * a darker TEXT variant for the same colour set on white or the tint, where
+   * the fill would not clear 4.5:1.
+   */
+  --color-tier-irreplaceable: #b23f34;
+  --color-tier-essential: #9a6b06;
   --color-tier-important: #1c7a66;
   --color-tier-nice: #7a3fd0;
+
+  --color-tier-irreplaceable-text: #9d3529;
+  --color-tier-essential-text: #7a5400;
+  --color-tier-important-text: #156353;
+  --color-tier-nice-text: #6733bb;
 
   /* Status */
   --color-ok: #1a7f37;
@@ -61,7 +73,7 @@
   }
 
   body {
-    background-color: var(--color-surface, #ffffff);
+    background-color: var(--color-surface);
     color: var(--color-body);
     font-family: var(--font-sans);
     font-synthesis-weight: none;
@@ -97,6 +109,43 @@
   }
 }
 
+/**
+ * Live "syncing" indicator: a solid dot with a ring pulsing outward from it.
+ * Used on the landing page's "Updated <date>" badge.
+ */
+@utility sync-dot {
+  position: relative;
+  display: inline-flex;
+  height: 0.375rem;
+  width: 0.375rem;
+  flex: none;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background-color: var(--color-ok);
+  }
+
+  &::before {
+    animation: sync-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
+@keyframes sync-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  75%,
+  100% {
+    transform: scale(2.75);
+    opacity: 0;
+  }
+}
+
 /* Small uppercase monospace label used above every section heading. */
 @utility eyebrow {
   font-family: var(--font-mono);
@@ -104,7 +153,7 @@
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--eyebrow-color, var(--color-accent));
+  color: var(--color-accent);
 }
 
 /* Monospace metadata: figures, dates, inline "→" links. */

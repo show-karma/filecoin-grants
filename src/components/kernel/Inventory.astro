@@ -1,6 +1,6 @@
 ---
 import { TIERS, FUNCTIONS, DOMAINS, type Tier } from "../../data/kernel";
-import { tierColor } from "./tier";
+import { tierColor, tierTextColor } from "./tier";
 import FunctionRow from "./FunctionRow.astro";
 
 /**
@@ -38,7 +38,7 @@ const PENDING_NOTE: Record<string, string> = {
             <h3
               id={`tier-${tier.id}`}
               class="font-mono text-xs font-medium tracking-[0.14em] uppercase"
-              style={`color:${tierColor(tier.id)}`}
+              style={`color:${tierTextColor(tier.id)}`}
             >
               {tier.name}
             </h3>

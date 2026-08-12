@@ -2,13 +2,14 @@
 title: "Announcing Filecoin ProPGF Batch 3 Selection Committee"
 date: 2026-05-28
 description: "The selection committee for Filecoin ProPGF Batch 3."
+author: "ProPGF Team"
 ---
 
-## **Committee Composition**
+## Committee Composition
 
-The Batch 3 Selection Committee brings together experts from across decentralized storage, crypto-economics, public goods funding, governance, ecosystem development, and open source operations. Members were chosen for their domain expertise, and demonstrated commitment to strengthening the Filecoin ecosystem.
+The Batch 3 Selection Committee brings together experts from across decentralized storage, crypto-economics, public goods funding, governance, ecosystem development, and open source operations. Members were chosen for their domain expertise and demonstrated commitment to strengthening the Filecoin ecosystem.
 
-### **Selection Committee Members (Batch 3):**
+### Selection Committee Members (Batch 3):
 
 - Akersh Srivastava - Head of Product, Filecoin Foundation
 - Clara Tsao - A Founding Officer, Filecoin Foundation
@@ -24,7 +25,7 @@ The Batch 3 Selection Committee brings together experts from across decentralize
 
 Together, they bring a balanced mix of technical depth, ecosystem experience, operational rigor, and global representation.
 
-## **ProPGF Batch 3: Review & Decision Timeline**
+## ProPGF Batch 3: Review & Decision Timeline
 
 The Selection Committee will operate on the following timeline for Batch 3:
 
@@ -34,18 +35,18 @@ The Selection Committee will operate on the following timeline for Batch 3:
 - **16 June 2026 – Final Application Deadline.** Last day to submit Batch 3 applications.
 - **End of June 2026 – Early Bird Reviews Completed.** Reviews finalized for all early bird submissions.
 - **Mid-July 2026 – All Funding Decisions Shared.** Final decisions communicated to all remaining applicants.
-- **July - August 2026 – KYC & Payouts.** Selected projects will begin the KYC and onboarding process in July. Payouts will be processed after KYC is successfully completed, in line with the agreed milestone structure.
+- **July–August 2026 – KYC & Payouts.** Selected projects will begin the KYC and onboarding process in July. Payouts will be processed after KYC is successfully completed, in line with the agreed milestone structure.
 
-## **Responsibilities of the Selection Committee**
+## Responsibilities of the Selection Committee
 
 The Selection Committee plays a pivotal role in ensuring milestone-based funding goes toward high-impact work for the Filecoin network. Their responsibilities include:
 
-### **1. Assessing Alignment with Filecoin Network Growth**
+### 1. Assessing Alignment with Filecoin Network Growth
 
 - **Core Infrastructure Maintenance.** Committee members assess whether a project contributes to the foundational work that keeps the protocol reliable, performant, and safe. This includes implementations, critical libraries, dependencies, and essential services that the rest of the ecosystem builds on top of.
 - **RFP Responses.** Committee members evaluate whether a project meaningfully responds to published RFPs and delivers support or innovation work in service of ecosystem pods (working group structures focused on product-market fit exploration in key verticals, including Web3 Builders and Web2 Object Storage).
 
-### **2. Reviewing Application Responses Thoughtfully**
+### 2. Reviewing Application Responses Thoughtfully
 
 The application form is designed to give reviewers clarity on:
 
@@ -55,7 +56,7 @@ The application form is designed to give reviewers clarity on:
 - Why the work matters for Filecoin right now
 - Reviewers use this information to identify what aligns best with Filecoin's ecosystem priorities.
 
-### **3. Conducting Reviews, Interviews & Final Alignment**
+### 3. Conducting Reviews, Interviews & Final Alignment
 
 The committee will:
 
@@ -64,7 +65,7 @@ The committee will:
 - Collaborate to align on recommended projects
 - Make final decisions on which proposals should receive funding under Batch 3
 
-### **4. Defining What Should Be Funded**
+### 4. Defining What Should Be Funded
 
 At a high level, reviewers will prioritize:
 
@@ -75,7 +76,7 @@ At a high level, reviewers will prioritize:
 
 Funding will go to critical, enabling, and meaningfully incremental work with measurable outcomes.
 
-## **Looking Ahead**
+## Looking Ahead
 
 The Batch 3 Selection Committee plays an important role in driving a sustainable, milestone-based funding system for the Filecoin ecosystem. Their work ensures that capital supports projects driving real progress in infrastructure, research, tooling, and community growth.
 

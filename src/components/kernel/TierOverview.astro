@@ -3,8 +3,17 @@ import { TIERS } from "../../data/kernel";
 import { tierColor } from "./tier";
 ---
 
-<!-- Wide table on desktop; the same rows stack into cards on small screens. -->
-<div class="overflow-x-auto">
+<!--
+  The table keeps its full width and scrolls horizontally on small screens.
+  tabindex/role make the scroll container reachable by keyboard, which a bare
+  overflow container is not.
+-->
+<div
+  class="overflow-x-auto"
+  tabindex="0"
+  role="region"
+  aria-label="Kernel tier overview"
+>
   <table class="w-full min-w-[46rem] border-collapse text-left">
     <thead>
       <tr class="border-b border-ink">
@@ -53,7 +62,7 @@ import { tierColor } from "./tier";
             <td class="py-5 pr-6">
               {tier.slaMet === null ? (
                 <>
-                  <p class="font-mono text-lg text-muted" aria-label="No data">
+                  <p class="font-mono text-lg text-muted" aria-hidden="true">
                     —
                   </p>
                   <p class="mono-meta mt-1 uppercase">No data</p>

@@ -17,7 +17,8 @@ const variants = {
 <a
   href={href}
   class:list={[
-    "inline-flex items-center justify-center rounded-md px-5 py-2.5 text-sm font-medium transition-opacity",
+    // py-3 keeps the button at the 44px minimum touch target.
+    "inline-flex items-center justify-center rounded-md px-5 py-3 text-sm font-medium transition-opacity",
     variants[variant],
     className,
   ]}

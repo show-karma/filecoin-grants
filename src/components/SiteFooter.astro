@@ -9,12 +9,15 @@ import { SITE, FOOTER_NAV } from "../data/site";
     <p class="text-muted">
       {SITE.title} · {SITE.administeredBy}
     </p>
-    <nav aria-label="Footer" class="flex items-center gap-6">
+    <nav
+      aria-label="Footer"
+      class="flex flex-wrap items-center gap-x-6 gap-y-1"
+    >
       {
         FOOTER_NAV.map((item) => (
           <a
             href={item.href}
-            class="text-body transition-colors hover:text-ink"
+            class="inline-block py-3 text-body transition-colors hover:text-ink"
           >
             {item.label}
           </a>

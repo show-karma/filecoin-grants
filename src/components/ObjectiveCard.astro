@@ -1,13 +1,14 @@
 ---
 import ArrowLink from "./ArrowLink.astro";
-import type { Objective } from "../data/landing";
+import type { Objective, TextSegment } from "../data/landing";
 
 type Props = { objective: Objective };
 const { objective: o } = Astro.props;
 
-const rows = [
-  { label: "Model", value: o.model },
-  { label: "Measured", value: o.measured },
+/** Plain rows are a single unlinked segment, so both render through one path. */
+const rows: { label: string; value: TextSegment[] }[] = [
+  { label: "Model", value: [{ text: o.model }] },
+  { label: "Measured", value: [{ text: o.measured }] },
   ...(o.pods ? [{ label: "Pods", value: o.pods }] : []),
 ];
 ---
@@ -29,7 +30,22 @@ const rows = [
         rows.map((row) => (
           <div class="flex flex-col gap-1 sm:flex-row sm:gap-6">
             <dt class="mono-meta w-24 shrink-0 uppercase">{row.label}</dt>
-            <dd class="text-sm leading-relaxed">{row.value}</dd>
+            <dd class="text-sm leading-relaxed">
+              {row.value.map((segment) =>
+                segment.href ? (
+                  <a
+                    href={segment.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-accent underline-offset-4 hover:underline"
+                  >
+                    {segment.text}
+                  </a>
+                ) : (
+                  segment.text
+                ),
+              )}
+            </dd>
           </div>
         ))
       }
