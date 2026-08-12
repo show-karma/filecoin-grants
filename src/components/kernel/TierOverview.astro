@@ -29,8 +29,9 @@ import { tierColor } from "./tier";
           <tr class="border-b border-line align-top">
             <td class="py-5 pr-6">
               <div class="flex gap-3">
+                {/* Square-capped rule, as in the design — not a pill. */}
                 <span
-                  class="mt-1 w-[3px] shrink-0 self-stretch rounded-full"
+                  class="mt-1 w-[3px] shrink-0 self-stretch"
                   style={`background:${tierColor(tier.id)}`}
                   aria-hidden="true"
                 />
