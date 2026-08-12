@@ -37,45 +37,44 @@ const nav = [
   <Section id="objective">
     <SectionHeader eyebrow="Objective" title="Fund what's missing" />
 
-    <div class="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-14">
-      <div class="space-y-5 text-[0.95rem] leading-relaxed">
-        <p>
-          R&D funds work aimed at a specific gap in the network: something
-          missing, thinly covered, or dependent on a single implementation. The
-          strongest proposals name that gap plainly and explain why closing it
-          matters now rather than later.
-        </p>
-        <p>
-          Most of this work sits alongside the pods, supporting what they're
-          building without duplicating what they already own.
-        </p>
-        <p>
-          There are several ways R&D work pays off. It can produce findings the
-          ecosystem uses whether or not the work continues, add a second
-          implementation where the network currently depends on one, or take up
-          an available route into ongoing Kernel or Revenue Development funding.
-        </p>
-        <p class="pt-1">
-          <Button href={RND_OPEN_RFPS.href}>Get notified when RFPs open</Button>
-        </p>
-      </div>
+    {/* Stacked, as in the design — the criteria card sits below the prose. */}
+    <div class="mt-8 max-w-3xl space-y-5 text-[0.95rem] leading-relaxed">
+      <p>
+        R&D funds work aimed at a specific gap in the network: something
+        missing, thinly covered, or dependent on a single implementation. The
+        strongest proposals name that gap plainly and explain why closing it
+        matters now rather than later.
+      </p>
+      <p>
+        Most of this work sits alongside the pods, supporting what they're
+        building without duplicating what they already own.
+      </p>
+      <p>
+        There are several ways R&D work pays off. It can produce findings the
+        ecosystem uses whether or not the work continues, add a second
+        implementation where the network currently depends on one, or take up an
+        available route into ongoing Kernel or Revenue Development funding.
+      </p>
+      <p class="pt-1">
+        <Button href={RND_OPEN_RFPS.href}>Get notified when RFPs open</Button>
+      </p>
+    </div>
 
-      <div
-        id="scope"
-        class="scroll-mt-24 space-y-6 rounded-lg border border-line bg-white p-6"
-      >
+    <div
+      id="scope"
+      class="mt-10 scroll-mt-24 space-y-6 rounded-lg border border-line bg-white p-6 sm:p-7"
+    >
+      <CriteriaList
+        label="We're looking for"
+        items={RND_LOOKING_FOR}
+        tone="in"
+      />
+      <div class="border-t border-line-soft pt-6">
         <CriteriaList
-          label="We're looking for"
-          items={RND_LOOKING_FOR}
-          tone="in"
+          label="Not in scope"
+          items={RND_NOT_IN_SCOPE}
+          tone="out"
         />
-        <div class="border-t border-line-soft pt-6">
-          <CriteriaList
-            label="Not in scope"
-            items={RND_NOT_IN_SCOPE}
-            tone="out"
-          />
-        </div>
       </div>
     </div>
   </Section>

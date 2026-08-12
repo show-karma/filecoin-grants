@@ -38,7 +38,8 @@ const { pod } = Astro.props;
     </div>
 
     <p class="mt-5">
-      <ArrowLink href={pod.href} label={pod.linkText} tone="muted" />
+      {/* Reads as a hyperlink: accent colour, underlined at rest. */}
+      <ArrowLink href={pod.href} label={pod.linkText} class="underline" />
     </p>
   </div>
 </article>
