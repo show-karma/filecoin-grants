@@ -52,15 +52,13 @@ const rows: { label: string; value: TextSegment[] }[] = [
     </dl>
   </div>
 
-  <div
-    class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-4"
-  >
-    <p class="font-mono text-xs text-muted">
-      <span class="font-medium text-ink">{o.initiatives}</span> initiatives
-    </p>
-    <div class="flex items-center gap-5">
-      <span class="font-mono text-sm font-medium text-ink">{o.amount}</span>
-      <ArrowLink href={o.href} label={o.program} />
-    </div>
+  {
+    /*
+    o.initiatives and o.amount are deliberately not rendered yet — the figures
+    return once the rest of the numerical data is live. The data is kept.
+  */
+  }
+  <div class="mt-6 flex justify-end border-t border-line-soft pt-4">
+    <ArrowLink href={o.href} label={o.program} />
   </div>
 </article>

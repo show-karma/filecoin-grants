@@ -27,6 +27,7 @@ export const PODS: Pod[] = [
       "The developer platform and integration layer",
       "Payment rails and proof-gated settlement",
       "Onboarding for Web3 and AI builders",
+      "Large-scale data onboarding, storage provider coordination, and retrieval markets",
     ],
     linkText: "filecoin.cloud",
     href: EXTERNAL.filecoinCloud,
@@ -45,9 +46,6 @@ export const PODS: Pod[] = [
     href: EXTERNAL.filOne,
   },
 ];
-
-export const PODS_FOOTNOTE =
-  "Consolidated from three pods to two in 2026, concentrating effort on the network's two demand surfaces. Work that no single pod should own on its own is what this program funds.";
 
 export type FundingFact = { label: string; value: string; note: string };
 

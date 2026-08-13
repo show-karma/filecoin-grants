@@ -11,6 +11,7 @@ export const EXTERNAL = {
   discord: "https://discord.gg/yeQ2hcd2TD",
   github: "https://github.com/filecoin-project",
   slack: "https://filecoin.io/slack",
+  forum: "https://github.com/filecoin-project/community/discussions",
 } as const;
 
 /**
@@ -53,19 +54,3 @@ export const SITE = {
     "Filecoin's public goods funding puts capital behind the infrastructure, growth work, and research the network depends on. This is where that work is tracked — objective by objective, milestone by milestone.",
   administeredBy: "administered by the Blueshift Foundation",
 } as const;
-
-export type NavItem = { label: string; href: string };
-
-/** Landing-page navigation. Program pages pass their own section nav. */
-export const MAIN_NAV: NavItem[] = [
-  { label: "Objectives", href: "/#objectives" },
-  { label: "Reporting", href: "/#reporting" },
-  { label: "Blog", href: "/blog/" },
-  { label: "Funding", href: "/#funding" },
-];
-
-export const FOOTER_NAV: NavItem[] = [
-  { label: "Objectives", href: "/#objectives" },
-  { label: "Reporting", href: "/#reporting" },
-  { label: "Apply", href: "/#funding" },
-];

@@ -110,7 +110,7 @@ export const NEXT_ROUND = {
   title: "FY27 intake opens October 2026",
   description:
     "Applications close in November, awards are published in December, and the new term begins in January. Existing grantees re-apply on the same cycle.",
-  ctaText: "Get notified",
+  ctaText: "Apply",
   ctaHref: "https://app.filpgf.io/programs/1479/",
 };
 

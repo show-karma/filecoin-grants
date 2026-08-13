@@ -9,12 +9,7 @@ import ReportCard from "../components/ReportCard.astro";
 import ArrowLink from "../components/ArrowLink.astro";
 import Button from "../components/Button.astro";
 import PostMeta from "../components/PostMeta.astro";
-import {
-  LAST_UPDATED,
-  HEADLINE_STATS,
-  OBJECTIVES,
-  REPORT_CADENCES,
-} from "../data/landing";
+import { HEADLINE_STATS, OBJECTIVES, REPORT_CADENCES } from "../data/landing";
 import { SITE, EXTERNAL, reportUrl } from "../data/site";
 
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
@@ -30,18 +25,7 @@ const [featured, ...rest] = posts;
   <!-- Hero -->
   <section class="bg-white pt-16 pb-14 sm:pt-24 sm:pb-16">
     <div class="container-page">
-      <p
-        class="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1"
-      >
-        <span class="sync-dot" aria-hidden="true"></span>
-        <span class="font-mono text-[0.6875rem] tracking-[0.14em] uppercase"
-          >Updated {LAST_UPDATED}</span
-        >
-      </p>
-
-      <h1
-        class="mt-8 max-w-3xl text-5xl leading-[1.05] sm:text-6xl lg:text-7xl"
-      >
+      <h1 class="max-w-3xl text-5xl leading-[1.05] sm:text-6xl lg:text-7xl">
         The work behind the network, in the open.
       </h1>
 

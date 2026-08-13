@@ -7,10 +7,9 @@ import {
 } from "./site";
 
 /**
- * Figures shown on the landing page. These are published numbers, not live
- * reads — swap this module for an API call when the metrics endpoints exist.
+ * Figures shown on the landing page. These are placeholder numbers, not live
+ * reads — swap this module for an API call once the metrics endpoints exist.
  */
-export const LAST_UPDATED = "07 Jun 2026";
 
 export type Stat = {
   value: string;
@@ -36,7 +35,7 @@ export const HEADLINE_STATS: Stat[] = [
     value: "3",
     label: "Funding Initiatives",
     linkText: "Kernel · Revenue Dev · R&D",
-    href: "/blog/propgf-batch-3-call-for-builders/",
+    href: "#objectives",
   },
   {
     value: "86%",
@@ -121,7 +120,8 @@ export type ReportCadence = {
   title: string;
   description: string;
   linkText: string;
-  href: string;
+  /** Omitted while a report has no destination yet — renders as plain text. */
+  href?: string;
 };
 
 export const REPORT_CADENCES: ReportCadence[] = [
@@ -146,7 +146,6 @@ export const REPORT_CADENCES: ReportCadence[] = [
     title: "Health & impact metrics",
     description:
       "The network-level numbers each program is judged against — resilience, paid usage, and what research has graduated.",
-    linkText: "View the metrics",
-    href: EXTERNAL.financials,
+    linkText: "Coming soon",
   },
 ];

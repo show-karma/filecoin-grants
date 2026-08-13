@@ -37,6 +37,19 @@ Components import only those types, so moving to live data means replacing the
 exports in `src/data/` with API reads — no component or page changes required.
 The relevant modules are `landing.ts`, `kernel.ts` and `programs.ts`.
 
+### Held back pending live data
+
+Per review feedback, some built sections are deliberately not rendered yet:
+
+- **Kernel inventory and metrics** — `Inventory.astro`, `MetricGrid.astro` and
+  their data are intact; `src/pages/kernel.astro` just does not render them.
+  Re-add both sections, their nav entries and the "See the function inventory"
+  button to switch them back on.
+- **Objective card figures** — `initiatives` and `amount` stay in
+  `src/data/landing.ts` but are not rendered by `ObjectiveCard.astro`.
+- **Health & impact metrics** — the card shows "Coming soon" instead of a link,
+  via an optional `href` on `ReportCadence`.
+
 ### Known data gaps
 
 The Kernel report declares **5 Irreplaceable** and **24 Essential** functions,
