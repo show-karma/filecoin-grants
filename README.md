@@ -27,6 +27,27 @@ src/
 public/          Static assets served as-is (favicons, robots.txt, CNAME)
 ```
 
+## Live data
+
+Two of the landing-page headline stats are read from the Karma GAP API **at
+build time** (`src/lib/karma.ts`), so pages stay static and ship no client
+JavaScript. A scheduled rebuild is what keeps them fresh.
+
+| Stat                | Source                                                      |
+| ------------------- | ----------------------------------------------------------- |
+| Total Projects      | distinct `projectUID` across `/communities/filecoin/grants` |
+| Checkpoints cleared | completed milestones ÷ total, truncated to a whole percent  |
+| Deployed to date    | **placeholder** — only 14 of 52 grants carry an `amount`    |
+| Funding Initiatives | static (Kernel, Revenue Development, R&D)                   |
+
+The API can never break a build: any failure falls back to `FALLBACK_COUNTS`
+and logs a warning. Update those constants when the real numbers move, so a
+fallback build is never far off.
+
+Known discrepancy: app.filpgf.io shows `98/195` where this computes `98/197`.
+The completed count matches exactly; the totals differ by two, so the two are
+reading the same data with a slightly different filter. Worth reconciling.
+
 ## Data seam
 
 **Every figure on the site is static.** Headline stats, Kernel SLA percentages,

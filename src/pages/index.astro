@@ -9,13 +9,21 @@ import ReportCard from "../components/ReportCard.astro";
 import ArrowLink from "../components/ArrowLink.astro";
 import Button from "../components/Button.astro";
 import PostMeta from "../components/PostMeta.astro";
-import { HEADLINE_STATS, OBJECTIVES, REPORT_CADENCES } from "../data/landing";
+import {
+  buildHeadlineStats,
+  OBJECTIVES,
+  REPORT_CADENCES,
+} from "../data/landing";
+import { fetchLiveCounts } from "../lib/karma";
 import { SITE, EXTERNAL, reportUrl } from "../data/site";
 
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
 const [featured, ...rest] = posts;
+
+// Read once per build; falls back to committed values if the API is down.
+const headlineStats = buildHeadlineStats(await fetchLiveCounts());
 ---
 
 <BaseLayout
@@ -34,7 +42,7 @@ const [featured, ...rest] = posts;
       </p>
 
       <div class="mt-12">
-        <StatGrid stats={HEADLINE_STATS} />
+        <StatGrid stats={headlineStats} />
       </div>
     </div>
   </section>
