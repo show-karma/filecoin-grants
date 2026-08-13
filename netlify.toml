@@ -14,14 +14,8 @@
   autoLaunch = false
 
 # Redirects — https://docs.netlify.com/routing/redirects/
-# The Hugo site published /propgf and /batches/*. Those pages are folded into
-# the objective-led IA, so keep the URLs alive rather than serving 404s.
-[[redirects]]
-  from = "/propgf/*"
-  to = "/#objectives"
-  status = 301
-  force = true
-
+# /propgf is a real page again. /batches/* is not rebuilt, so keep those URLs
+# alive rather than serving 404s.
 [[redirects]]
   from = "/batches/*"
   to = "/#objectives"

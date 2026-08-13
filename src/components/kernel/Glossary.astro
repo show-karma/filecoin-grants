@@ -1,19 +1,6 @@
 ---
 import { GLOSSARY } from "../../data/kernel";
-
-/**
- * Definitions carry **bold** emphasis on the load-bearing phrase. Rendering it
- * here keeps the data file free of markup.
- */
-const renderEmphasis = (text: string) =>
-  text
-    .split(/(\*\*[^*]+\*\*)/g)
-    .map((part) =>
-      part.startsWith("**") && part.endsWith("**")
-        ? `<strong class="font-semibold text-ink">${part.slice(2, -2)}</strong>`
-        : part,
-    )
-    .join("");
+import { renderInline } from "../../lib/inline";
 ---
 
 <dl
@@ -25,7 +12,7 @@ const renderEmphasis = (text: string) =>
         <dt class="font-semibold text-ink">{entry.term}</dt>
         <dd
           class="mt-2 text-sm leading-relaxed"
-          set:html={renderEmphasis(entry.definition)}
+          set:html={renderInline(entry.definition)}
         />
       </div>
     ))

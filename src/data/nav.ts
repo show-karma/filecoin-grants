@@ -36,10 +36,8 @@ const applications = (id: string) =>
 export const MAIN_NAV: NavEntry[] = [
   {
     label: "ProPGF",
-    // The Hugo site pointed Overview at /propgf, which the rebuild folds into
-    // the objectives section on the landing page.
     items: [
-      { label: "Overview", href: "/#objectives" },
+      { label: "Overview", href: "/propgf/" },
       { label: "Financials", href: EXTERNAL.financials },
     ],
     groups: [
