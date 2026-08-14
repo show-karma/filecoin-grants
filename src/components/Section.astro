@@ -1,0 +1,23 @@
+---
+/** Full-bleed section band. `tint` paints the alternating grey background. */
+type Props = {
+  id?: string;
+  tint?: boolean;
+  class?: string;
+};
+
+const { id, tint = false, class: className = "" } = Astro.props;
+---
+
+<section
+  id={id}
+  class:list={[
+    "scroll-mt-16 py-16 sm:py-24",
+    tint ? "bg-tint" : "bg-white",
+    className,
+  ]}
+>
+  <div class="container-page">
+    <slot />
+  </div>
+</section>

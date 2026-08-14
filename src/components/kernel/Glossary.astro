@@ -1,0 +1,20 @@
+---
+import { GLOSSARY } from "../../data/kernel";
+import { renderInline } from "../../lib/inline";
+---
+
+<dl
+  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2"
+>
+  {
+    GLOSSARY.map((entry) => (
+      <div class="bg-white p-5">
+        <dt class="font-semibold text-ink">{entry.term}</dt>
+        <dd
+          class="mt-2 text-sm leading-relaxed"
+          set:html={renderInline(entry.definition)}
+        />
+      </div>
+    ))
+  }
+</dl>

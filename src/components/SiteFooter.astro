@@ -1,0 +1,62 @@
+---
+import { SITE, KARMA } from "../data/site";
+import { FOOTER_NAV } from "../data/nav";
+---
+
+<footer class="border-t border-line bg-white">
+  <div
+    class="container-page flex flex-col gap-4 py-8 text-sm sm:flex-row sm:items-center sm:justify-between"
+  >
+    <p class="text-muted">
+      {SITE.title} · {SITE.administeredBy}
+    </p>
+    <nav
+      aria-label="Footer"
+      class="flex flex-wrap items-center gap-x-6 gap-y-1"
+    >
+      {
+        FOOTER_NAV.map((item) => (
+          <a
+            href={item.href}
+            class="inline-block py-3 text-body transition-colors hover:text-ink"
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+
+  {/* Karma attribution, carried over from the previous site (DEV-617). */}
+  <div class="border-t border-line-soft">
+    <div
+      class="container-page flex flex-col items-center gap-2 py-6 text-center"
+    >
+      <a
+        href={KARMA.siteUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2.5 py-1"
+      >
+        <span class="text-xs text-muted">Powered by</span>
+        <img
+          src="/karma-logo.svg"
+          alt="Karma"
+          width="60"
+          height="20"
+          class="h-5 w-[60px] object-contain"
+          loading="lazy"
+        />
+      </a>
+      <p class="text-xs text-muted">
+        Building transparent funding infrastructure for ecosystems.
+      </p>
+      <a
+        href={`mailto:${KARMA.contactEmail}`}
+        class="text-xs font-medium text-accent underline-offset-4 hover:underline"
+      >
+        {KARMA.contactEmail}
+      </a>
+    </div>
+  </div>
+</footer>

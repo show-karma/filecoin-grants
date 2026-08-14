@@ -1,0 +1,29 @@
+---
+/**
+ * The recurring section opener: a monospace eyebrow with a rule running off to
+ * the right, a display heading, and an optional measure-limited intro.
+ */
+type Props = {
+  eyebrow: string;
+  title: string;
+  intro?: string;
+  id?: string;
+  class?: string;
+};
+
+const { eyebrow, title, intro, id, class: className = "" } = Astro.props;
+---
+
+<div class={className}>
+  <div class="flex items-center gap-4">
+    <span class="eyebrow shrink-0">{eyebrow}</span>
+    <span class="h-px flex-1 bg-line" aria-hidden="true"></span>
+  </div>
+  <h2 id={id} class="mt-4 text-3xl sm:text-4xl">{title}</h2>
+  {
+    intro && (
+      <p class="mt-4 max-w-2xl text-base leading-relaxed sm:text-lg">{intro}</p>
+    )
+  }
+  <slot />
+</div>

@@ -1,0 +1,33 @@
+---
+import Button from "./Button.astro";
+
+/** The near-black announcement panel (Kernel's "next round opening"). */
+type Props = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  ctaText: string;
+  ctaHref: string;
+};
+
+const { eyebrow, title, description, ctaText, ctaHref } = Astro.props;
+---
+
+<div
+  class="flex flex-col gap-6 rounded-lg bg-deep p-6 sm:p-8 md:flex-row md:items-center md:justify-between"
+>
+  <div class="max-w-2xl">
+    <p
+      class="font-mono text-[0.6875rem] tracking-[0.14em] text-white/60 uppercase"
+    >
+      {eyebrow}
+    </p>
+    <h3 class="mt-2 text-xl text-white sm:text-2xl">{title}</h3>
+    <p class="mt-3 text-[0.95rem] leading-relaxed text-white/75">
+      {description}
+    </p>
+  </div>
+  <div class="shrink-0">
+    <Button href={ctaHref} variant="inverse">{ctaText}</Button>
+  </div>
+</div>

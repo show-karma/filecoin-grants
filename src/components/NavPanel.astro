@@ -1,0 +1,53 @@
+---
+import type { NavMenu } from "../data/nav";
+
+type Props = { menu: NavMenu };
+const { menu } = Astro.props;
+
+const linkAttrs = (href: string) =>
+  href.startsWith("http")
+    ? { target: "_blank", rel: "noopener noreferrer" }
+    : {};
+
+const itemClass =
+  "block rounded-md px-3 py-1.5 text-sm text-body hover:bg-tint hover:text-ink";
+
+/* Two groups sit side by side; a single group keeps the panel narrow. */
+const wide = (menu.groups?.length ?? 0) > 1;
+---
+
+<div
+  class:list={[
+    "absolute left-0 mt-1 rounded-lg border border-line bg-white p-2 shadow-lg",
+    wide ? "w-[26rem]" : "w-56",
+  ]}
+>
+  {
+    menu.items && (
+      <div class:list={[menu.groups && "border-b border-line-soft pb-2"]}>
+        {menu.items.map((item) => (
+          <a href={item.href} class={itemClass} {...linkAttrs(item.href)}>
+            {item.label}
+          </a>
+        ))}
+      </div>
+    )
+  }
+
+  {
+    menu.groups && (
+      <div class:list={["pt-2", wide && "grid grid-cols-2 gap-2"]}>
+        {menu.groups.map((group) => (
+          <div>
+            <p class="mono-meta px-3 pb-1 uppercase">{group.label}</p>
+            {group.items.map((item) => (
+              <a href={item.href} class={itemClass} {...linkAttrs(item.href)}>
+                {item.label}
+              </a>
+            ))}
+          </div>
+        ))}
+      </div>
+    )
+  }
+</div>

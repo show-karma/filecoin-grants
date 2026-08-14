@@ -1,19 +1,7 @@
-# Default config
-tabWidth: 4
-endOfLine: crlf
-singleQuote: true
-printWidth: 100000
-trailingComma: none
-bracketSameLine: true
-quoteProps: consistent
-experimentalTernaries: true
+plugins:
+  - prettier-plugin-astro
 
-# Overrided config
 overrides:
-  - files: ["*.md", "*.json", "*.yaml"]
+  - files: ["*.astro"]
     options:
-      tabWidth: 2
-      singleQuote: false
-  - files: ["*.scss"]
-    options:
-      singleQuote: false
+      parser: astro

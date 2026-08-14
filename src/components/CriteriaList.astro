@@ -1,0 +1,33 @@
+---
+/** In-scope / out-of-scope list with ✓ and ✕ markers. */
+type Props = {
+  label: string;
+  items: string[];
+  tone: "in" | "out";
+};
+
+const { label, items, tone } = Astro.props;
+const isIn = tone === "in";
+---
+
+<div>
+  <p class="mono-meta uppercase">{label}</p>
+  <ul class="mt-3 space-y-2.5">
+    {
+      items.map((item) => (
+        <li class="flex gap-3">
+          <span
+            class:list={[
+              "mt-0.5 shrink-0 font-mono text-sm",
+              isIn ? "text-ok" : "text-bad",
+            ]}
+            aria-hidden="true"
+          >
+            {isIn ? "✓" : "✕"}
+          </span>
+          <span class="text-[0.95rem] leading-relaxed">{item}</span>
+        </li>
+      ))
+    }
+  </ul>
+</div>
