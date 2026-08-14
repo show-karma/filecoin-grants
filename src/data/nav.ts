@@ -46,10 +46,7 @@ export const MAIN_NAV: NavEntry[] = [
         items: [
           { label: "Batch 1", href: projects(PROGRAMS.batch1) },
           { label: "Batch 2", href: projects(PROGRAMS.batch2) },
-          {
-            label: "Batch 3",
-            href: `${EXTERNAL.app}/programs/${PROGRAMS.batch3}/`,
-          },
+          { label: "Batch 3", href: projects(PROGRAMS.batch3) },
           { label: "Pods Track", href: projects(PROGRAMS.pods) },
         ],
       },
