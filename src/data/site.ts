@@ -48,6 +48,16 @@ export const programReportUrl = (type: keyof typeof REPORT_TYPES) =>
   `${PROGRAM_REPORTS_URL}&type=${REPORT_TYPES[type]}`;
 
 /**
+ * Sign-in entry point, carried over from the Hugo site's navbar button.
+ * Admin and reviewer access is resolved inside the Karma app after login —
+ * the site only needs to get people there.
+ */
+export const LOGIN = {
+  label: "Login",
+  href: `${EXTERNAL.app}/?login=true`,
+} as const;
+
+/**
  * Karma hosts (DEV-617). The product domain moved to karmahq.org; mailboxes
  * and the GAP API stay on .xyz until those moves land.
  */
