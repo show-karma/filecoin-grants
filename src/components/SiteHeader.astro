@@ -63,13 +63,6 @@ const linkAttrs = (href: string) =>
           ),
         )
       }
-      <a
-        href={LOGIN.href}
-        class="ml-1 rounded-md border border-line px-3.5 py-2 text-sm text-body transition-colors hover:border-muted/50 hover:text-ink"
-        {...linkAttrs(LOGIN.href)}
-      >
-        {LOGIN.label}
-      </a>
       {
         cta && (
           <a
@@ -81,6 +74,13 @@ const linkAttrs = (href: string) =>
           </a>
         )
       }
+      <a
+        href={LOGIN.href}
+        class="ml-2 rounded-md border border-line px-3.5 py-2 text-sm text-body transition-colors hover:border-muted/50 hover:text-ink"
+        {...linkAttrs(LOGIN.href)}
+      >
+        {LOGIN.label}
+      </a>
     </nav>
 
     <!-- Mobile nav -->
@@ -149,24 +149,24 @@ const linkAttrs = (href: string) =>
             ),
           )
         }
-        <a
-          href={LOGIN.href}
-          class="mt-2 block rounded-md border border-line px-3 py-2 text-center text-sm text-body"
-          {...linkAttrs(LOGIN.href)}
-        >
-          {LOGIN.label}
-        </a>
         {
           cta && (
             <a
               href={cta.href}
-              class="mt-1 block rounded-md bg-deep px-3 py-2 text-center text-sm font-medium text-white"
+              class="mt-2 block rounded-md bg-deep px-3 py-2 text-center text-sm font-medium text-white"
               {...linkAttrs(cta.href)}
             >
               {cta.label}
             </a>
           )
         }
+        <a
+          href={LOGIN.href}
+          class="mt-1 block rounded-md border border-line px-3 py-2 text-center text-sm text-body"
+          {...linkAttrs(LOGIN.href)}
+        >
+          {LOGIN.label}
+        </a>
       </nav>
     </details>
   </div>
