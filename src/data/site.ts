@@ -10,6 +10,7 @@ export const EXTERNAL = {
   twitter: "https://twitter.com/Filecoin",
   discord: "https://discord.gg/yeQ2hcd2TD",
   github: "https://github.com/filecoin-project",
+  skills: "https://github.com/show-karma/skills",
   slack: "https://filecoin.io/slack",
   forum: "https://github.com/filecoin-project/community/discussions",
 } as const;
