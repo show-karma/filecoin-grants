@@ -78,6 +78,7 @@ export const MAIN_NAV: NavEntry[] = [
       { label: "Twitter", href: EXTERNAL.twitter },
       { label: "Discord", href: EXTERNAL.discord },
       { label: "GitHub", href: EXTERNAL.github },
+      { label: "Skill", href: EXTERNAL.skills },
     ],
   },
 ];
