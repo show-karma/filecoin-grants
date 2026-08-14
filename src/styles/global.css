@@ -25,6 +25,13 @@
   --color-tint: #f3f5f8;
   --color-deep: #0c1322;
 
+  /*
+   * Brand blue. Site chrome — the wordmark, the footer contact — uses this so
+   * it stays constant, because --color-accent below is overridden per program
+   * page and would otherwise turn the logo red on /rnd.
+   */
+  --color-brand: #1a5fd0;
+
   /* Program accents. Each program page recolours its eyebrows and rules. */
   --color-accent: #1a5fd0;
   --color-accent-kernel: #1a5fd0;
