@@ -1,0 +1,144 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/Section.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import DarkCallout from "../components/DarkCallout.astro";
+import CriteriaList from "../components/CriteriaList.astro";
+import PageHero from "../components/PageHero.astro";
+import TierOverview from "../components/kernel/TierOverview.astro";
+import TierCard from "../components/kernel/TierCard.astro";
+import Timeline from "../components/kernel/Timeline.astro";
+import Glossary from "../components/kernel/Glossary.astro";
+import { TIERS, NEXT_ROUND } from "../data/kernel";
+
+const nav = [
+  { label: "Objective", href: "#objective" },
+  { label: "Categories", href: "#categories" },
+  { label: "Terms", href: "#terms" },
+];
+
+const KERNEL_FUNDS = [
+  "Maintenance of functions the network cannot operate without",
+  "A second implementation where a single one is a systemic risk",
+  "Monitoring, testnets, and incident response that keep the network observable",
+  "Security and upgrade work required to stay production-safe",
+];
+
+const KERNEL_DOES_NOT_FUND = [
+  "New features or product expansion — that is Revenue Development",
+  "Exploratory or unproven work — that is R&D",
+  "Functions with no maintainer willing to report health metrics",
+];
+---
+
+<BaseLayout
+  title="Kernel"
+  description="Kernel funds the functions Filecoin depends on to keep producing blocks, proving storage, and staying observable. It is treated as a near-fixed cost rather than a growth bet."
+  nav={nav}
+  cta={{ label: "Apply · FY27", href: NEXT_ROUND.ctaHref }}
+  breadcrumb="Kernel"
+  accent="kernel"
+>
+  <PageHero
+    eyebrow="Kernel · Program overview"
+    title="What keeps the network running."
+    intro="Kernel funds the functions Filecoin depends on to keep producing blocks, proving storage, and staying observable. It is treated as a near-fixed cost rather than a growth bet: the goal is not more features, it is that nothing essential quietly stops being maintained."
+  >
+    <div class="mt-12">
+      <TierOverview />
+    </div>
+  </PageHero>
+
+  <!-- Objective -->
+  <Section id="objective">
+    <SectionHeader eyebrow="Objective" title="Keep the floor from moving" />
+
+    <div class="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-14">
+      <div class="space-y-5 text-[0.95rem] leading-relaxed">
+        <p>
+          Most of what Filecoin runs on is maintained by small teams, and much
+          of it has no second implementation. When one of those goes unfunded,
+          nothing breaks on the day it happens — the repo just goes quiet, the
+          maintainer moves on, and the network carries a dependency nobody is
+          watching. Kernel exists to make that failure mode visible and to pay
+          for it not to happen.
+        </p>
+        <p>
+          The program starts from a map, not a wishlist. Every capability the
+          network needs is written down as a <strong
+            class="font-semibold text-ink">function</strong
+          >, independent of which repo currently provides it. Each function is
+          placed in a tier according to how replaceable it is, and each tier
+          carries a different funding posture — some are non-negotiable, some
+          are funded for redundancy, some are funded only for maintenance.
+        </p>
+        <p>
+          Funding follows an annual term with audits rather than milestones,
+          because keeping something working is a continuous obligation and not a
+          deliverable. Teams are assessed against agreed metrics for resilience
+          and operational continuity: is the function still healthy, still
+          maintained, still measurable.
+        </p>
+      </div>
+
+      <div class="space-y-6 rounded-lg border border-line bg-white p-6">
+        <CriteriaList label="Kernel funds" items={KERNEL_FUNDS} tone="in" />
+        <div class="border-t border-line-soft pt-6">
+          <CriteriaList
+            label="Kernel does not fund"
+            items={KERNEL_DOES_NOT_FUND}
+            tone="out"
+          />
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Timeline -->
+  <Section id="timeline" tint>
+    <SectionHeader
+      eyebrow="Timeline"
+      title="One term, two audits"
+      intro="Kernel grants run on an annual term. Audits fall mid-term and at close, and each one checks the agreed resilience metrics rather than a feature list."
+    />
+    <div class="mt-8">
+      <DarkCallout {...NEXT_ROUND} />
+    </div>
+    <div class="mt-10">
+      <Timeline />
+    </div>
+  </Section>
+
+  <!-- Categories -->
+  <Section id="categories">
+    <SectionHeader
+      eyebrow="Categories"
+      title="Four tiers, set by what happens without it"
+      intro="A function's tier is decided by substitutability, not by how much anyone likes it. That single judgement then drives how much scrutiny it gets, whether redundancy is required, and how negotiable the budget is."
+    />
+    <div class="mt-10 grid gap-5 lg:grid-cols-2">
+      {TIERS.map((tier) => <TierCard tier={tier} />)}
+    </div>
+  </Section>
+
+  {
+    /*
+    The inventory and metrics sections are built and ready (Inventory.astro,
+    MetricGrid.astro, and the data in src/data/kernel.ts) but are held back
+    until the Kernel metrics are live. Re-add both sections, their nav entries
+    and the "See the function inventory" button to switch them back on.
+  */
+  }
+
+  <!-- Terms -->
+  <Section id="terms" tint>
+    <SectionHeader
+      eyebrow="Terms"
+      title="What these words mean here"
+      intro="Kernel uses a few words in a specific way. Getting them straight is most of understanding the program."
+    />
+    <div class="mt-10">
+      <Glossary />
+    </div>
+  </Section>
+</BaseLayout>

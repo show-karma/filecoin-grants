@@ -1,0 +1,16 @@
+---
+type Props = { date: Date; author?: string };
+const { date, author } = Astro.props;
+
+const formatted = date.toLocaleDateString("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+---
+
+<p class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-accent">
+  <time datetime={date.toISOString()}>{formatted}</time>
+  {author && <span> · {author}</span>}
+</p>

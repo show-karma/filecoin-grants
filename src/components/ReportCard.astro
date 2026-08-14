@@ -1,0 +1,24 @@
+---
+import ArrowLink from "./ArrowLink.astro";
+import type { ReportCadence } from "../data/landing";
+
+type Props = { report: ReportCadence };
+const { report } = Astro.props;
+---
+
+<article class="rounded-lg border border-line bg-white p-6">
+  <p class="eyebrow">{report.cadence}</p>
+  <h3 class="mt-2.5 text-lg">{report.title}</h3>
+  <p class="mt-2 text-[0.95rem] leading-relaxed">{report.description}</p>
+  <p class="mt-4">
+    {
+      report.href ? (
+        <ArrowLink href={report.href} label={report.linkText} tone="muted" />
+      ) : (
+        <span class="font-mono text-xs tracking-wide text-muted">
+          {report.linkText}
+        </span>
+      )
+    }
+  </p>
+</article>

@@ -1,0 +1,45 @@
+---
+import ArrowLink from "../ArrowLink.astro";
+import type { Pod } from "../../data/programs";
+
+type Props = { pod: Pod };
+const { pod } = Astro.props;
+---
+
+<article class="overflow-hidden rounded-lg border border-line bg-white">
+  <header
+    class="flex flex-wrap items-center justify-between gap-3 bg-accent px-5 py-3.5"
+  >
+    <h3 class="text-lg text-white">{pod.name}</h3>
+    <p
+      class="font-mono text-[0.6875rem] tracking-[0.14em] text-white/85 uppercase"
+    >
+      {pod.kicker}
+    </p>
+  </header>
+
+  <div class="p-5 sm:p-6">
+    <p class="text-[0.95rem] leading-relaxed">{pod.description}</p>
+
+    <div class="mt-5 border-t border-line-soft pt-4">
+      <p class="mono-meta uppercase">This pod owns</p>
+      <ul class="mt-2.5 space-y-1.5">
+        {
+          pod.owns.map((item) => (
+            <li class="flex gap-2.5 text-[0.95rem] leading-relaxed">
+              <span class="mt-1.5 text-accent" aria-hidden="true">
+                ▪
+              </span>
+              <span>{item}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <p class="mt-5">
+      {/* Reads as a hyperlink: accent colour, underlined at rest. */}
+      <ArrowLink href={pod.href} label={pod.linkText} class="underline" />
+    </p>
+  </div>
+</article>

@@ -1,0 +1,40 @@
+---
+import type { Tier } from "../../data/kernel";
+import { tierColor } from "./tier";
+
+type Props = { tier: Tier };
+const { tier } = Astro.props;
+
+const count =
+  tier.functions === null ? "inventory pending" : `${tier.functions} functions`;
+---
+
+<article class="overflow-hidden rounded-lg border border-line bg-white">
+  <header
+    class="flex items-center justify-between gap-4 px-5 py-3"
+    style={`background:${tierColor(tier.id)}`}
+  >
+    <h3
+      class="font-mono text-xs font-medium tracking-[0.14em] text-white uppercase"
+    >
+      {tier.name}
+    </h3>
+    <p class="font-mono text-xs text-white/85">{count}</p>
+  </header>
+
+  <div class="p-5">
+    <p class="font-semibold text-ink">{tier.rule}</p>
+    <p class="mt-2.5 text-[0.95rem] leading-relaxed">{tier.detail}</p>
+
+    <dl class="mt-5 space-y-2.5 border-t border-line-soft pt-4">
+      <div class="flex flex-col gap-1 sm:flex-row sm:gap-5">
+        <dt class="mono-meta w-20 shrink-0 uppercase">Example</dt>
+        <dd class="text-sm leading-relaxed">{tier.example}</dd>
+      </div>
+      <div class="flex flex-col gap-1 sm:flex-row sm:gap-5">
+        <dt class="mono-meta w-20 shrink-0 uppercase">Posture</dt>
+        <dd class="text-sm leading-relaxed">{tier.posture}</dd>
+      </div>
+    </dl>
+  </div>
+</article>

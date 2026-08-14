@@ -1,6 +1,16 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# environment / local
 .env
+.env.production
 .netlify
-.hugo_build.lock
-node_modules
-public
-resources
+.DS_Store
+
+# logs
+*.log
+.vercel

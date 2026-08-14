@@ -1,0 +1,98 @@
+---
+import { TIERS, tierStats } from "../../data/kernel";
+import { tierColor } from "./tier";
+---
+
+<!--
+  The table keeps its full width and scrolls horizontally on small screens.
+  tabindex/role make the scroll container reachable by keyboard, which a bare
+  overflow container is not.
+-->
+<div
+  class="overflow-x-auto"
+  tabindex="0"
+  role="region"
+  aria-label="Kernel tier overview"
+>
+  <table class="w-full min-w-[46rem] border-collapse text-left">
+    <thead>
+      <tr class="border-b border-ink">
+        <th scope="col" class="mono-meta pb-2.5 uppercase">Tier</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">Functions</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">SLA met · 90d</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">Funding posture</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        TIERS.map((tier) => {
+          const stats = tierStats(tier.id);
+          return (
+            <tr class="border-b border-line align-top">
+              <td class="py-5 pr-6">
+                <div class="flex gap-4">
+                  {/*
+                  A fixed-height pill, not a full-height rule: in the design it
+                  runs from the top of the tier name to the end of the first
+                  description line and stays that length whatever the row
+                  height.
+                */}
+                  <span
+                    class="mt-1 h-11 w-[6px] shrink-0 rounded-full"
+                    style={`background:${tierColor(tier.id)}`}
+                    aria-hidden="true"
+                  />
+                  <div class="max-w-[16rem]">
+                    <p class="font-semibold text-ink">{tier.name}</p>
+                    <p class="mt-1 text-sm leading-snug text-body">
+                      {tier.rule}
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <td class="py-5 pr-6">
+                {tier.functions === null ? (
+                  <>
+                    <p class="font-mono text-sm text-muted">Pending</p>
+                    <p class="mono-meta mt-1 uppercase">Not yet inventoried</p>
+                  </>
+                ) : (
+                  <>
+                    <p class="font-mono text-lg font-medium text-ink">
+                      {tier.functions}
+                    </p>
+                    <p class="mono-meta mt-1 uppercase">
+                      {stats.listed === tier.functions
+                        ? "All listed"
+                        : `${stats.listed} listed`}
+                    </p>
+                  </>
+                )}
+              </td>
+              <td class="py-5 pr-6">
+                {stats.slaMet === null ? (
+                  <>
+                    <p class="font-mono text-lg text-muted" aria-hidden="true">
+                      —
+                    </p>
+                    <p class="mono-meta mt-1 uppercase">No data</p>
+                  </>
+                ) : (
+                  <>
+                    <p class="font-mono text-lg font-medium text-ink">
+                      {stats.slaMet}
+                    </p>
+                    <p class="mono-meta mt-1 uppercase">
+                      {stats.measured} measured
+                    </p>
+                  </>
+                )}
+              </td>
+              <td class="py-5 text-sm text-body">{tier.postureShort}</td>
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</div>

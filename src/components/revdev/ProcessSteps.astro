@@ -1,0 +1,37 @@
+---
+import { REVDEV_PROCESS } from "../../data/programs";
+
+/**
+ * Steps stack in one column on mobile, where a horizontal rail means nothing,
+ * and run 3-up from sm (the design's 3 + 2 layout). The rail is hidden on the
+ * last item of each row so no line dangles into empty space.
+ */
+const ITEM =
+  "relative pr-4 after:absolute after:top-[5px] after:right-0 after:left-3 after:hidden after:h-px after:bg-line sm:after:block sm:nth-[3n]:after:hidden sm:last:after:hidden";
+---
+
+<ol class="grid grid-cols-1 gap-y-7 sm:grid-cols-3">
+  {
+    REVDEV_PROCESS.map((step, i) => (
+      <li class={ITEM}>
+        <span
+          class:list={[
+            "relative block h-2.5 w-2.5 rounded-full border-2",
+            i === 0 ? "border-accent bg-accent" : "border-line bg-white",
+          ]}
+          aria-hidden="true"
+        />
+        <p class="mono-meta mt-3 uppercase">Step {i + 1}</p>
+        <p
+          class:list={[
+            "mt-1 text-[0.95rem] font-semibold",
+            i === 0 ? "text-accent" : "text-ink",
+          ]}
+        >
+          {step.title}
+        </p>
+        <p class="mt-1 text-sm leading-snug text-body">{step.detail}</p>
+      </li>
+    ))
+  }
+</ol>

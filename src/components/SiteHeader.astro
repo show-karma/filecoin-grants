@@ -1,0 +1,190 @@
+---
+import Wordmark from "./Wordmark.astro";
+import NavPanel from "./NavPanel.astro";
+import { isMenu, type NavEntry } from "../data/nav";
+
+type Props = {
+  nav: NavEntry[];
+  cta?: { label: string; href: string };
+  breadcrumb?: string;
+};
+
+const { nav, cta, breadcrumb } = Astro.props;
+
+const isExternal = (href: string) => href.startsWith("http");
+const linkAttrs = (href: string) =>
+  isExternal(href) ? { target: "_blank", rel: "noopener noreferrer" } : {};
+---
+
+<header
+  class="sticky top-0 z-40 border-b border-line bg-white/90 backdrop-blur-sm"
+>
+  <div class="container-page flex h-16 items-center justify-between gap-6">
+    <Wordmark breadcrumb={breadcrumb} />
+
+    <!-- Desktop nav -->
+    <nav
+      aria-label="Main"
+      class="hidden items-center gap-1 md:flex"
+      data-site-nav
+    >
+      {
+        nav.map((entry) =>
+          isMenu(entry) ? (
+            <details class="group relative" data-nav-menu>
+              <summary class="flex cursor-pointer list-none items-center gap-1.5 rounded-md px-2.5 py-2 text-sm text-body hover:text-ink [&::-webkit-details-marker]:hidden">
+                {entry.label}
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="transition-transform group-open:rotate-180"
+                  aria-hidden="true"
+                >
+                  <path d="M2.5 4.5 6 8l3.5-3.5" />
+                </svg>
+              </summary>
+              <NavPanel menu={entry} />
+            </details>
+          ) : (
+            <a
+              href={entry.href}
+              class="rounded-md px-2.5 py-2 text-sm text-body transition-colors hover:text-ink"
+              {...linkAttrs(entry.href)}
+            >
+              {entry.label}
+            </a>
+          ),
+        )
+      }
+      {
+        cta && (
+          <a
+            href={cta.href}
+            class="ml-2 rounded-md bg-deep px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            {...linkAttrs(cta.href)}
+          >
+            {cta.label}
+          </a>
+        )
+      }
+    </nav>
+
+    <!-- Mobile nav -->
+    <details class="group relative md:hidden" data-nav-menu>
+      <summary
+        class="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-line text-ink [&::-webkit-details-marker]:hidden"
+        aria-label="Toggle menu"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M4 7h16M4 12h16M4 17h16" class="group-open:hidden"></path>
+          <path d="M6 6l12 12M18 6L6 18" class="hidden group-open:block"></path>
+        </svg>
+      </summary>
+      <nav
+        aria-label="Main"
+        class="absolute right-0 mt-2 max-h-[75vh] w-64 overflow-y-auto rounded-lg border border-line bg-white p-2 shadow-lg"
+      >
+        {
+          nav.map((entry) =>
+            isMenu(entry) ? (
+              <div class="border-b border-line-soft py-2 last:border-0">
+                <p class="mono-meta px-3 pb-1 uppercase">{entry.label}</p>
+                {entry.items?.map((item) => (
+                  <a
+                    href={item.href}
+                    class="block rounded-md px-3 py-2 text-sm text-body hover:bg-tint hover:text-ink"
+                    {...linkAttrs(item.href)}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+                {entry.groups?.map((group) => (
+                  <>
+                    <p class="mono-meta px-3 pt-2 pb-1 text-muted uppercase">
+                      {group.label}
+                    </p>
+                    {group.items.map((item) => (
+                      <a
+                        href={item.href}
+                        class="block rounded-md px-3 py-2 text-sm text-body hover:bg-tint hover:text-ink"
+                        {...linkAttrs(item.href)}
+                      >
+                        {item.label}
+                      </a>
+                    ))}
+                  </>
+                ))}
+              </div>
+            ) : (
+              <a
+                href={entry.href}
+                class="block rounded-md px-3 py-2 text-sm text-body hover:bg-tint hover:text-ink"
+                {...linkAttrs(entry.href)}
+              >
+                {entry.label}
+              </a>
+            ),
+          )
+        }
+        {
+          cta && (
+            <a
+              href={cta.href}
+              class="mt-1 block rounded-md bg-deep px-3 py-2 text-center text-sm font-medium text-white"
+              {...linkAttrs(cta.href)}
+            >
+              {cta.label}
+            </a>
+          )
+        }
+      </nav>
+    </details>
+  </div>
+</header>
+
+{
+  /*
+  The menus are <details>, so they open and are keyboard-operable with no
+  JavaScript. This only adds the behaviour a bare <details> lacks: opening one
+  closes the others, and clicking away or pressing Escape closes them.
+*/
+}
+<script>
+  const menus = Array.from(
+    document.querySelectorAll<HTMLDetailsElement>("[data-nav-menu]"),
+  );
+
+  const closeAll = (except?: HTMLDetailsElement) => {
+    for (const menu of menus) if (menu !== except) menu.open = false;
+  };
+
+  for (const menu of menus) {
+    menu.addEventListener("toggle", () => {
+      if (menu.open) closeAll(menu);
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const target = event.target as Node;
+    if (!menus.some((menu) => menu.contains(target))) closeAll();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeAll();
+  });
+</script>

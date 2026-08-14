@@ -1,0 +1,100 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/Section.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import ArrowLink from "../components/ArrowLink.astro";
+import CriteriaList from "../components/CriteriaList.astro";
+import PageHero from "../components/PageHero.astro";
+import {
+  RND_LOOKING_FOR,
+  RND_NOT_IN_SCOPE,
+  RND_OPEN_RFPS,
+} from "../data/programs";
+
+const nav = [
+  { label: "Objective", href: "#objective" },
+  { label: "Scope", href: "#scope" },
+  { label: "Open RFPs", href: "#rfps" },
+];
+---
+
+<BaseLayout
+  title="R&D"
+  description="R&D backs work that closes gaps in the network before they become problems. RFPs are published as gaps are identified and applications are reviewed as they arrive, with funding released in stages as the work proves out."
+  nav={nav}
+  cta={{ label: "Get notified", href: RND_OPEN_RFPS.href }}
+  breadcrumb="R&D"
+  accent="rd"
+>
+  <PageHero
+    eyebrow="R&D · Program overview"
+    title="Funding what the network needs next."
+    intro="R&D backs work that closes gaps in the network before they become problems. RFPs are published as gaps are identified and applications are reviewed as they arrive, with funding released in stages as the work proves out. The strongest proposals name the gap they close and say why it matters now."
+  />
+
+  <!-- Objective -->
+  <Section id="objective">
+    <SectionHeader eyebrow="Objective" title="Fund what's missing" />
+
+    {/* Stacked, as in the design — the criteria card sits below the prose. */}
+    <div class="mt-8 max-w-3xl space-y-5 text-[0.95rem] leading-relaxed">
+      <p>
+        R&D funds work aimed at a specific gap in the network: something
+        missing, thinly covered, or dependent on a single implementation. The
+        strongest proposals name that gap plainly and explain why closing it
+        matters now rather than later.
+      </p>
+      <p>
+        Most of this work sits alongside the pods, supporting what they're
+        building without duplicating what they already own.
+      </p>
+      <p>
+        There are several ways R&D work pays off. It can produce findings the
+        ecosystem uses whether or not the work continues, add a second
+        implementation where the network currently depends on one, or take up an
+        available route into ongoing Kernel or Revenue Development funding.
+      </p>
+    </div>
+
+    <div
+      id="scope"
+      class="mt-10 scroll-mt-24 space-y-6 rounded-lg border border-line bg-white p-6 sm:p-7"
+    >
+      <CriteriaList
+        label="We're looking for"
+        items={RND_LOOKING_FOR}
+        tone="in"
+      />
+      <div class="border-t border-line-soft pt-6">
+        <CriteriaList
+          label="Not in scope"
+          items={RND_NOT_IN_SCOPE}
+          tone="out"
+        />
+      </div>
+    </div>
+  </Section>
+
+  <!-- Open RFPs -->
+  <Section id="rfps" tint>
+    <SectionHeader
+      eyebrow="Open RFPs"
+      title="What we're asking for"
+      intro="R&D is request-driven — the usual way in is a response to a published RFP rather than an unsolicited proposal."
+    />
+
+    <div
+      class="mt-8 max-w-2xl rounded-lg border border-dashed p-6"
+      style="border-color: color-mix(in srgb, var(--color-accent) 35%, white); background: color-mix(in srgb, var(--color-accent) 5%, white)"
+    >
+      <p class="eyebrow">{RND_OPEN_RFPS.eyebrow}</p>
+      <h3 class="mt-2.5 text-xl">{RND_OPEN_RFPS.title}</h3>
+      <p class="mt-3 text-[0.95rem] leading-relaxed">
+        {RND_OPEN_RFPS.description}
+      </p>
+      <p class="mt-5">
+        <ArrowLink href={RND_OPEN_RFPS.href} label={RND_OPEN_RFPS.linkText} />
+      </p>
+    </div>
+  </Section>
+</BaseLayout>

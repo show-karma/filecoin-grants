@@ -1,0 +1,28 @@
+---
+type Props = { breadcrumb?: string };
+const { breadcrumb } = Astro.props;
+---
+
+{
+  /* min-w-0 + truncate keeps long breadcrumbs ("Revenue Development") from
+    pushing the header nav off a 320px viewport. */
+}
+<div class="flex min-w-0 items-baseline gap-2 font-mono text-sm">
+  <a
+    href="/"
+    class="shrink-0 py-2.5 -my-2.5 font-semibold tracking-tight text-ink"
+    aria-label="filpgf.io home"
+  >
+    fil<span class="text-accent">pgf</span>.io
+  </a>
+  {
+    breadcrumb && (
+      <>
+        <span class="shrink-0 text-muted" aria-hidden="true">
+          /
+        </span>
+        <span class="truncate font-semibold text-ink">{breadcrumb}</span>
+      </>
+    )
+  }
+</div>

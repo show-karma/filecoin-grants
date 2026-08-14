@@ -1,0 +1,161 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/Section.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import Button from "../components/Button.astro";
+import ArrowLink from "../components/ArrowLink.astro";
+import { renderInline } from "../lib/inline";
+import {
+  PROPGF_HERO,
+  PROPGF_FOCUS,
+  PROPGF_TIMELINE,
+  PROPGF_DETAILS,
+  PROPGF_CONNECT,
+  PROPGF_CTA,
+} from "../data/propgf";
+---
+
+<BaseLayout
+  title="ProPGF"
+  description="Filecoin ProPGF Batch 3 — a milestone-based funding program designed to accelerate innovation and strengthen the Filecoin ecosystem."
+  breadcrumb="ProPGF"
+>
+  <!-- Hero -->
+  <section class="bg-white pt-14 pb-14 sm:pt-20">
+    <div class="container-page">
+      <div class="flex items-center gap-4">
+        <span class="eyebrow min-w-0">{PROPGF_HERO.eyebrow}</span>
+        <span class="h-px flex-1 bg-line" aria-hidden="true"></span>
+      </div>
+
+      <h1
+        class="mt-5 max-w-2xl text-4xl leading-[1.08] sm:text-5xl lg:text-6xl"
+      >
+        {PROPGF_HERO.title}
+      </h1>
+
+      <p
+        class="mt-6 max-w-2xl text-lg leading-relaxed"
+        set:html={renderInline(PROPGF_HERO.intro)}
+      />
+      <p
+        class="mt-4 max-w-2xl text-[0.95rem] leading-relaxed"
+        set:html={renderInline(PROPGF_HERO.description)}
+      />
+
+      <div class="mt-8">
+        <Button href={PROPGF_HERO.applyHref}>{PROPGF_HERO.applyText}</Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- What Batch 3 funds -->
+  <Section id="funds" tint>
+    <SectionHeader
+      eyebrow="Scope"
+      title={PROPGF_FOCUS.title}
+      intro={PROPGF_FOCUS.intro}
+    />
+    <div class="mt-10 grid gap-5 lg:grid-cols-2">
+      {
+        PROPGF_FOCUS.items.map((item) => (
+          <article class="rounded-lg border border-line bg-white p-6">
+            <h3 class="text-lg">{item.title}</h3>
+            <p class="mt-3 text-[0.95rem] leading-relaxed">
+              {item.description}
+            </p>
+            {item.href && item.linkText && (
+              <p class="mt-5">
+                <ArrowLink href={item.href} label={item.linkText} />
+              </p>
+            )}
+          </article>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- Timeline -->
+  <Section id="timeline">
+    <SectionHeader
+      eyebrow={PROPGF_TIMELINE.eyebrow}
+      title={PROPGF_TIMELINE.title}
+      intro={PROPGF_TIMELINE.intro}
+    />
+    <ol class="mt-10 space-y-px overflow-hidden rounded-lg border border-line">
+      {
+        PROPGF_TIMELINE.phases.map((phase) => (
+          <li class="flex flex-col gap-2 border-b border-line bg-white p-5 last:border-0 sm:flex-row sm:gap-6">
+            <p class="mono-meta w-8 shrink-0 pt-0.5">{phase.number}</p>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h3 class="text-base">{phase.title}</h3>
+                <p class="mono-meta">{phase.dates}</p>
+              </div>
+              <p class="mt-1.5 text-[0.95rem] leading-relaxed">
+                {phase.description}
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <!-- Program details -->
+  <Section id="details" tint>
+    <SectionHeader eyebrow="Program details" title="How the round runs" />
+    <div class="mt-10 grid gap-5 lg:grid-cols-2">
+      {
+        PROPGF_DETAILS.map((detail) => (
+          <article class="rounded-lg border border-line bg-white p-6">
+            <h3 class="text-lg">{detail.title}</h3>
+            <p
+              class="mt-3 text-[0.95rem] leading-relaxed"
+              set:html={renderInline(detail.description)}
+            />
+            {detail.href && detail.linkText && (
+              <p class="mt-5">
+                <ArrowLink
+                  href={detail.href}
+                  label={detail.linkText}
+                  tone="muted"
+                />
+              </p>
+            )}
+          </article>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- Stay connected -->
+  <Section id="connect">
+    <SectionHeader eyebrow="Stay connected" title={PROPGF_CONNECT.title} />
+    <div class="mt-10 grid gap-5 lg:grid-cols-2">
+      {
+        PROPGF_CONNECT.items.map((item) => (
+          <article class="rounded-lg border border-line bg-white p-6">
+            <h3 class="text-lg">{item.title}</h3>
+            <p
+              class="mt-3 text-[0.95rem] leading-relaxed"
+              set:html={renderInline(item.description)}
+            />
+          </article>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- CTA -->
+  <Section id="past-rounds" tint>
+    <SectionHeader
+      eyebrow="Past rounds"
+      title={PROPGF_CTA.title}
+      intro={PROPGF_CTA.description}
+    />
+    <div class="mt-8">
+      <Button href={PROPGF_CTA.buttonHref}>{PROPGF_CTA.buttonText}</Button>
+    </div>
+  </Section>
+</BaseLayout>

@@ -1,0 +1,91 @@
+---
+import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { SITE } from "../data/site";
+import { MAIN_NAV, type NavEntry } from "../data/nav";
+
+type Props = {
+  title: string;
+  description?: string;
+  /** Section nav for this page. Defaults to the landing-page nav. */
+  nav?: NavEntry[];
+  cta?: { label: string; href: string };
+  /** Renders "filpgf.io / Kernel" in place of the plain wordmark. */
+  breadcrumb?: string;
+  /** Program accent, applied to eyebrows and rules across the page. */
+  accent?: "default" | "kernel" | "rd" | "rev";
+  ogType?: "website" | "article";
+};
+
+const {
+  title,
+  description = SITE.description,
+  nav = MAIN_NAV,
+  cta,
+  breadcrumb,
+  accent = "default",
+  ogType = "website",
+} = Astro.props;
+
+/**
+ * Program pages override --color-accent so every eyebrow, rule and link picks
+ * up their colour. "default" deliberately emits no override — pointing the
+ * token at itself would be a self-referential cycle and unset it.
+ */
+const ACCENTS: Record<string, string | undefined> = {
+  default: undefined,
+  kernel: "var(--color-accent-kernel)",
+  rd: "var(--color-accent-rd)",
+  rev: "var(--color-accent-rev)",
+};
+
+const accentStyle = ACCENTS[accent]
+  ? `--color-accent: ${ACCENTS[accent]}`
+  : undefined;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const fullTitle = title === SITE.title ? title : `${title} · ${SITE.title}`;
+---
+
+<!doctype html>
+<html lang="en" style={accentStyle}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={SITE.title} />
+    {
+      /* No share image ships yet — upgrade to summary_large_image once one does. */
+    }
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <slot name="head" />
+  </head>
+  <body class="antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-deep focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+    >
+      Skip to content
+    </a>
+    <SiteHeader nav={nav} cta={cta} breadcrumb={breadcrumb} />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>
