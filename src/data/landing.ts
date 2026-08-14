@@ -20,34 +20,40 @@ export type Stat = {
 };
 
 /**
- * Grant funding, read off the Financials tab on app.filpgf.io (Total grant and
- * Disbursed columns, summed across all 52 grants).
+ * Money contracted out, by round. Supplied by the programme team on
+ * 14 Aug 2026 — these supersede the figures on the Financials tab, which lag
+ * behind recently signed contracts and cancelled milestones.
  *
- * Transcribed rather than fetched: /v2/communities/:slug/payouts requires a
- * JWT, so this cannot be read at build time. Refresh when the financials move.
+ * This is what is **committed**, not what has been paid out. Two rounds carry
+ * caveats from the team:
+ * - Batch 1 is below its original award because some milestones were cancelled
+ *   over performance and shifting priorities.
+ * - Batch 3 exceeds its $2M hard commitment pool because some contracts carry
+ *   soft commitments that fall into the next round.
  *
- * Caveats worth keeping in view when updating:
- * - One Batch 3 grant (Curio) has no amount recorded, so `granted` is a floor.
- * - One Pods Track row reports more disbursed than granted ($467k vs $466k).
+ * For reference, the Financials tab last read $4,992,936 disbursed against
+ * these commitments. It cannot be fetched at build time —
+ * /v2/communities/:slug/payouts requires a JWT.
  */
 export const FINANCIALS = {
-  programmes: [
-    {
-      name: "ProPGF Batch 1",
-      grants: 14,
-      granted: 3_741_800,
-      disbursed: 3_263_600,
-    },
-    {
-      name: "ProPGF Batch 2",
-      grants: 16,
-      granted: 3_175_700,
-      disbursed: 1_165_999,
-    },
-    { name: "ProPGF Batch 3", grants: 19, granted: 2_168_267, disbursed: 0 },
-    { name: "Pods Track", grants: 3, granted: 880_974, disbursed: 563_337 },
+  updated: "14 Aug 2026",
+  rounds: [
+    { name: "ProPGF Batch 1", committed: 3_371_800 },
+    { name: "ProPGF Batch 2", committed: 3_171_198 },
+    { name: "Pods Round 1", committed: 880_973.81 },
+    { name: "ProPGF Batch 3", committed: 2_419_266 },
+    // Two separate commitments inside the same round.
+    { name: "Pods Round 2", committed: 156_870 + 82_474.19 },
   ],
 };
+
+/** Total contracted out — $10,082,582 at the last refresh. */
+export const totalCommitted = (): number =>
+  FINANCIALS.rounds.reduce((total, round) => total + round.committed, 0);
+
+/** Compact display form, e.g. 10082582 -> "$10.08M". */
+export const asMillions = (value: number): string =>
+  `$${(value / 1_000_000).toFixed(2)}M`;
 
 /**
  * Portfolio completion, following the Bi-Weekly Check-In Report's own
@@ -98,11 +104,8 @@ export const portfolioCompletion = (): number => {
  */
 export const buildHeadlineStats = (counts: LiveCounts): Stat[] => [
   {
-    // Supplied by the programme team. For reference when refreshing, the
-    // Financials tab sums to $9,966,741 granted against $4,992,936 disbursed
-    // (see FINANCIALS above for the split).
-    value: "$9.76M",
-    label: "Deployed to date",
+    value: asMillions(totalCommitted()),
+    label: "Committed to date",
     linkText: "Funded Projects",
     href: PROGRAM_PROJECTS_URL,
   },

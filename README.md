@@ -37,7 +37,7 @@ JavaScript. A scheduled rebuild is what keeps them fresh.
 | ------------------- | ----------------------------------------------------------- |
 | Total Projects      | distinct `projectUID` across `/communities/filecoin/grants` |
 | Checkpoints cleared | completed milestones ÷ total, truncated to a whole percent  |
-| Deployed to date    | **placeholder** — only 14 of 52 grants carry an `amount`    |
+| Committed to date   | supplied by the programme team, by round (see `FINANCIALS`) |
 | Funding Initiatives | static (Kernel, Revenue Development, R&D)                   |
 
 The API can never break a build: any failure falls back to `FALLBACK_COUNTS`
