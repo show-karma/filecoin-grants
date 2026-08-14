@@ -15,7 +15,7 @@ This RFP is the clear starting set of requests for Batch 3, but we expect to ref
 
 ## Understanding "Pods"
 
-A pod is a small, mission-focused team inside the Filecoin ecosystem with a specific product or go-to-market mandate. For example, one pod ships [Filecoin's developer-facing storage platform](https://filecoin.cloud/); another runs [enterprise sales into traditional storage buyers](https://fil.one/); a third focuses on [onboarding very large datasets](https://www.karmahq.xyz/project/large-data-onboarding-pod-ldo-pod/about). Pods own product and revenue for their slice of the ecosystem, and they're shipping at a faster cadence than ever. The grants below fund work alongside the pods — work that helps them succeed while sitting outside what any one pod should reasonably do on its own.
+A pod is a small, mission-focused team inside the Filecoin ecosystem with a specific product or go-to-market mandate. For example, one pod ships [Filecoin's developer-facing storage platform](https://filecoin.cloud/); another runs [enterprise sales into traditional storage buyers](https://fil.one/); a third focuses on [onboarding very large datasets](https://www.karmahq.org/project/large-data-onboarding-pod-ldo-pod/about). Pods own product and revenue for their slice of the ecosystem, and they're shipping at a faster cadence than ever. The grants below fund work alongside the pods — work that helps them succeed while sitting outside what any one pod should reasonably do on its own.
 
 ## Four Focus Areas
 

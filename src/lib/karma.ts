@@ -9,7 +9,9 @@
  * reason is logged.
  */
 
-const API = "https://gapapi.karmahq.xyz";
+import { KARMA } from "../data/site";
+
+const API = KARMA.apiHost;
 const COMMUNITY = "filecoin";
 const TIMEOUT_MS = 15_000;
 

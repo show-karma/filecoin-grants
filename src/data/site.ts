@@ -47,6 +47,17 @@ export const reportUrl = (type: keyof typeof REPORT_TYPES) =>
 export const programReportUrl = (type: keyof typeof REPORT_TYPES) =>
   `${PROGRAM_REPORTS_URL}&type=${REPORT_TYPES[type]}`;
 
+/**
+ * Karma hosts (DEV-617). The product domain moved to karmahq.org; mailboxes
+ * and the GAP API stay on .xyz until those moves land.
+ */
+export const KARMA = {
+  siteUrl: "https://karmahq.org",
+  widgetHost: "https://www.karmahq.org",
+  contactEmail: "info@karmahq.xyz",
+  apiHost: "https://gapapi.karmahq.xyz",
+} as const;
+
 export const SITE = {
   name: "filpgf.io",
   title: "Filecoin Public Goods Funding",

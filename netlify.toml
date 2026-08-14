@@ -31,9 +31,15 @@
     X-Frame-Options = "SAMEORIGIN"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
-    # The site ships no client-side JavaScript and self-hosts its fonts.
-    # 'unsafe-inline' on style-src covers the inline style attributes used for
-    # per-tier and per-program accent colours.
+    # The site ships no third-party JavaScript, and the GAP API is read at
+    # build time rather than from the browser, so no external origins are
+    # needed. 'unsafe-inline' on style-src covers the inline style attributes
+    # used for per-tier and per-program accent colours.
+    #
+    # NOTE: the Karma chat widget is deliberately not loaded here. It injects
+    # an unlayered `.hidden { display: none }` rule, which outranks Tailwind's
+    # layered utilities and hides the header nav site-wide. Adding it back
+    # needs that collision solved first.
     Content-Security-Policy = "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'"
 
 # HTML must revalidate so content changes go live on deploy.
