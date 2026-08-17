@@ -6,7 +6,7 @@ type Props = { report: ReportCadence };
 const { report } = Astro.props;
 ---
 
-<article class="rounded-lg border border-line bg-white p-6">
+<article class="rounded-lg border border-line bg-surface p-6">
   <p class="eyebrow">{report.cadence}</p>
   <h3 class="mt-2.5 text-lg">{report.title}</h3>
   <p class="mt-2 text-[0.95rem] leading-relaxed">{report.description}</p>

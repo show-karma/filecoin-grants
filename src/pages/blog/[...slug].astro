@@ -3,7 +3,7 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostMeta from "../../components/PostMeta.astro";
 import ArrowLink from "../../components/ArrowLink.astro";
-import { reportUrl } from "../../data/site";
+import { ASK_KARMA } from "../../data/site";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
@@ -22,10 +22,10 @@ const { Content } = await render(post);
 <BaseLayout
   title={post.data.title}
   description={post.data.description}
-  cta={{ label: "Latest report", href: reportUrl("biweeklyProgress") }}
+  cta={ASK_KARMA}
   ogType="article"
 >
-  <article class="bg-white pt-12 pb-20 sm:pt-16">
+  <article class="bg-surface pt-12 pb-20 sm:pt-16">
     <div class="container-page">
       <p class="mb-8">
         <ArrowLink href="/blog/" label="All posts" tone="muted" />

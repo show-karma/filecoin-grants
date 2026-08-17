@@ -59,6 +59,16 @@ export const LOGIN = {
 } as const;
 
 /**
+ * Karma's assistant, running under the Filecoin tenant. A full public page in
+ * the app — no login needed, it answers as a visitor — so the site links
+ * straight to it rather than embedding anything.
+ */
+export const ASK_KARMA = {
+  label: "Ask Karma",
+  href: `${EXTERNAL.app}/ask-karma`,
+} as const;
+
+/**
  * Karma hosts (DEV-617). The product domain moved to karmahq.org; mailboxes
  * and the GAP API stay on .xyz until those moves land.
  */

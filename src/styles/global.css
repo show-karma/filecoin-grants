@@ -4,6 +4,13 @@
 @import "@fontsource-variable/inter-tight";
 @import "@fontsource-variable/jetbrains-mono";
 
+/*
+ * Dark mode is a class on <html>, not a media query: the header toggle has to
+ * be able to override the OS preference. BaseLayout's inline head script is
+ * what puts the class there before first paint.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans:
     "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
@@ -24,6 +31,20 @@
   --color-surface: #ffffff;
   --color-tint: #f3f5f8;
   --color-deep: #0c1322;
+
+  /*
+   * Text sitting on a saturated fill — accent and tier card headers. White in
+   * light mode; in dark mode the fills brighten, so it flips to near-black
+   * rather than staying white. Literal `text-white` is still correct on
+   * --color-deep, which is dark in both themes.
+   */
+  --color-on-fill: #ffffff;
+  /*
+   * The two foregrounds that sit on --color-deep. Constant in both themes,
+   * because the panels they belong to are dark in both themes.
+   */
+  --color-deep-fg: #ffffff;
+  --color-code-fg: #e6e9ef;
 
   /*
    * Brand blue. Site chrome — the wordmark, the footer contact — uses this so
@@ -56,10 +77,63 @@
   --color-warn: #c0561a;
 }
 
+/*
+ * Dark palette. A plain rule, not a second @theme block: the utilities are
+ * already generated from the light values above and compile to var()
+ * references, so redefining the same custom properties under .dark is all it
+ * takes to repaint the site.
+ *
+ * Every value here was checked to clear 4.5:1 against both --color-surface and
+ * --color-tint. The accents and tiers had to brighten, because the light
+ * values were tuned against white; where they are used as a *fill* the text on
+ * top comes from --color-on-fill, which flips with them.
+ *
+ * --color-accent is overridden too, for the pages that do not set it. Program
+ * pages point it at one of the --color-accent-* tokens through an inline style
+ * on <html>, which beats this rule — and since that inline value is a var()
+ * reference, overriding the program tokens below is what carries /kernel,
+ * /rnd and /revenue-development into the dark theme.
+ */
+.dark {
+  --color-ink: #f2f4f8;
+  --color-body: #b7bec9;
+  --color-muted: #98a1ae;
+  --color-line: #2a313c;
+  --color-line-soft: #202631;
+  --color-surface: #0f1216;
+  --color-tint: #171c23;
+  /* Lifted off the page background so bg-deep panels still read as panels. */
+  --color-deep: #1b2436;
+
+  --color-on-fill: #0f1216;
+
+  --color-brand: #7aa9f7;
+
+  --color-accent: #7aa9f7;
+  --color-accent-kernel: #7aa9f7;
+  --color-accent-rd: #e07a6c;
+  --color-accent-rev: #5ba3cf;
+
+  --color-tier-irreplaceable: #d9604f;
+  --color-tier-essential: #c98a12;
+  --color-tier-important: #2f9c80;
+  --color-tier-nice: #9a6ade;
+
+  --color-ok: #46b876;
+  --color-bad: #e2685a;
+  --color-warn: #dd8544;
+}
+
 @layer base {
   html {
+    color-scheme: light;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+  }
+
+  /* Scrollbars and form controls follow the theme. */
+  html.dark {
+    color-scheme: dark;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -211,7 +285,7 @@
 
   & pre {
     background: var(--color-deep);
-    color: #e6e9ef;
+    color: var(--color-code-fg);
     padding: 1.125rem 1.25rem;
     border-radius: 6px;
     overflow-x: auto;

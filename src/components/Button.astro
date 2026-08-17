@@ -10,7 +10,9 @@ const isExternal = href.startsWith("http");
 
 const variants = {
   solid: "bg-deep text-white hover:opacity-90",
-  inverse: "bg-white text-ink hover:bg-tint",
+  // Only ever sits on a --color-deep panel, which is dark in both themes,
+  // so this pair stays constant rather than following the theme.
+  inverse: "bg-deep-fg text-deep hover:opacity-90",
 };
 ---
 

@@ -1,0 +1,100 @@
+---
+/**
+ * Light/dark switch for the header. The class itself is applied by the inline
+ * script in BaseLayout before first paint; this only flips it and remembers
+ * the choice.
+ */
+type Props = { class?: string };
+
+const { class: className = "" } = Astro.props;
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  aria-label="Switch theme"
+  class:list={[
+    "flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-body transition-colors hover:text-ink",
+    className,
+  ]}
+>
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="dark:hidden"
+    aria-hidden="true"
+  >
+    <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path>
+  </svg>
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="hidden dark:block"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path
+      d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+    ></path>
+  </svg>
+</button>
+
+{
+  /*
+  Astro emits one copy of a component script however many times the component
+  is rendered, so the desktop and mobile buttons share this listener.
+*/
+}
+<script>
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]"),
+  );
+  const system = window.matchMedia("(prefers-color-scheme: dark)");
+
+  const label = (dark: boolean) => `Switch to ${dark ? "light" : "dark"} theme`;
+
+  const paint = (dark: boolean) => {
+    document.documentElement.classList.toggle("dark", dark);
+    for (const button of buttons)
+      button.setAttribute("aria-label", label(dark));
+  };
+
+  paint(document.documentElement.classList.contains("dark"));
+
+  for (const button of buttons) {
+    button.addEventListener("click", () => {
+      const dark = !document.documentElement.classList.contains("dark");
+      paint(dark);
+      try {
+        // Matching the OS again drops the override, so the site resumes
+        // following it.
+        if (dark === system.matches) localStorage.removeItem("theme");
+        else localStorage.setItem("theme", dark ? "dark" : "light");
+      } catch {
+        // Storage unavailable — the choice just does not survive the page.
+      }
+    });
+  }
+
+  system.addEventListener("change", (event) => {
+    let stored = null;
+    try {
+      stored = localStorage.getItem("theme");
+    } catch {
+      // Treated as "no override", same as the inline script does.
+    }
+    if (stored === null) paint(event.matches);
+  });
+</script>

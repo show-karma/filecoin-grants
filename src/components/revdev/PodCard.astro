@@ -6,13 +6,13 @@ type Props = { pod: Pod };
 const { pod } = Astro.props;
 ---
 
-<article class="overflow-hidden rounded-lg border border-line bg-white">
+<article class="overflow-hidden rounded-lg border border-line bg-surface">
   <header
     class="flex flex-wrap items-center justify-between gap-3 bg-accent px-5 py-3.5"
   >
-    <h3 class="text-lg text-white">{pod.name}</h3>
+    <h3 class="text-lg text-on-fill">{pod.name}</h3>
     <p
-      class="font-mono text-[0.6875rem] tracking-[0.14em] text-white/85 uppercase"
+      class="font-mono text-[0.6875rem] tracking-[0.14em] text-on-fill/85 uppercase"
     >
       {pod.kicker}
     </p>

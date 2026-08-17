@@ -50,7 +50,7 @@ const PENDING_NOTE: Record<string, string> = {
           </div>
 
           {tier.functions === null ? (
-            <p class="mt-4 rounded-md bg-white/70 px-4 py-3 font-mono text-xs leading-relaxed text-muted">
+            <p class="mt-4 rounded-md bg-surface/70 px-4 py-3 font-mono text-xs leading-relaxed text-muted">
               {PENDING_NOTE[tier.id]}
             </p>
           ) : (
@@ -69,7 +69,7 @@ const PENDING_NOTE: Record<string, string> = {
               ))}
 
               {shown < tier.functions && (
-                <p class="mt-4 rounded-md bg-white/70 px-4 py-3 font-mono text-xs leading-relaxed text-muted">
+                <p class="mt-4 rounded-md bg-surface/70 px-4 py-3 font-mono text-xs leading-relaxed text-muted">
                   Showing {shown} of {tier.functions} functions in this tier.
                   The remainder are in the full inventory.
                 </p>
