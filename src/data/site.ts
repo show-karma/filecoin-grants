@@ -56,6 +56,12 @@ export const programReportUrl = (type: keyof typeof REPORT_TYPES) =>
 export const LOGIN = {
   label: "Login",
   href: `${EXTERNAL.app}/?login=true`,
+  /**
+   * Sign-in runs inside the overlay, on the app origin, so the session it
+   * creates is the app's own. `/ask-karma` is the route the app allows us to
+   * frame; `login=true` is what makes its navbar open Privy on load.
+   */
+  overlay: "/ask-karma?embed=1&login=true",
 } as const;
 
 /**
@@ -66,6 +72,8 @@ export const LOGIN = {
 export const ASK_KARMA = {
   label: "Ask Karma",
   href: `${EXTERNAL.app}/ask-karma`,
+  /** Opened in an overlay over the site; `href` is the no-JS fallback. */
+  overlay: "/ask-karma?embed=1",
 } as const;
 
 /**

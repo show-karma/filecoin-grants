@@ -3,11 +3,12 @@ import Wordmark from "./Wordmark.astro";
 import NavPanel from "./NavPanel.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 import { isMenu, type NavEntry } from "../data/nav";
+import AppOverlay from "./AppOverlay.astro";
 import { LOGIN } from "../data/site";
 
 type Props = {
   nav: NavEntry[];
-  cta?: { label: string; href: string };
+  cta?: { label: string; href: string; overlay?: string };
   breadcrumb?: string;
 };
 
@@ -69,6 +70,8 @@ const linkAttrs = (href: string) =>
           <a
             href={cta.href}
             class="ml-2 rounded-md bg-deep px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            data-app-overlay={cta.overlay}
+            data-app-overlay-label={cta.label}
             {...linkAttrs(cta.href)}
           >
             {cta.label}
@@ -78,6 +81,8 @@ const linkAttrs = (href: string) =>
       <a
         href={LOGIN.href}
         class="ml-2 rounded-md border border-line px-3.5 py-2 text-sm text-body transition-colors hover:border-muted/50 hover:text-ink"
+        data-app-overlay={LOGIN.overlay}
+        data-app-overlay-label="Sign in"
         {...linkAttrs(LOGIN.href)}
       >
         {LOGIN.label}
@@ -160,6 +165,8 @@ const linkAttrs = (href: string) =>
               <a
                 href={cta.href}
                 class="mt-2 block rounded-md bg-deep px-3 py-2 text-center text-sm font-medium text-white"
+                data-app-overlay={cta.overlay}
+                data-app-overlay-label={cta.label}
                 {...linkAttrs(cta.href)}
               >
                 {cta.label}
@@ -169,6 +176,8 @@ const linkAttrs = (href: string) =>
           <a
             href={LOGIN.href}
             class="mt-1 block rounded-md border border-line px-3 py-2 text-center text-sm text-body"
+            data-app-overlay={LOGIN.overlay}
+            data-app-overlay-label="Sign in"
             {...linkAttrs(LOGIN.href)}
           >
             {LOGIN.label}
@@ -210,3 +219,5 @@ const linkAttrs = (href: string) =>
     if (event.key === "Escape") closeAll();
   });
 </script>
+
+<AppOverlay />
