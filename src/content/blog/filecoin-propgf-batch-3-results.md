@@ -42,49 +42,49 @@ Amounts reflect commitments through December 2026.
 
 ### 🧩 Consensus Clients and Storage-Provider Software
 
-- **[Forest by ChainSafe](https://app.filpgf.io/project/forest---an-efficient-and-lightweight-filecoin-node) — $252,000.** An independent Rust Filecoin full node (sync, validation, RPC, snapshot export). Funded to sustain client diversity and network resilience, with a path toward higher-performance RPC and block production.
-- **[Curio by FilOz](https://app.filpgf.io/project/curio) — $213,332.** Core storage-provider software for deal-making, PDP, and HTTP retrieval — the runtime SPs rely on.
+- **[Forest by ChainSafe](https://app.filpgf.io/browse-applications/APP-P0UD8I92-78VVRM) — $252,000.** An independent Rust Filecoin full node (sync, validation, RPC, snapshot export). Funded to sustain client diversity and network resilience, with a path toward higher-performance RPC and block production.
+- **[Curio by FilOz](https://app.filpgf.io/browse-applications/APP-HDYJESMD-2WLL00) — $213,332.** Core storage-provider software for deal-making, PDP, and HTTP retrieval — the runtime SPs rely on.
 
 ### 🔌 RPC and Chain Access
 
-- **[Zondax Core Infra](https://app.filpgf.io/project/filecoin-core-infrastructure--integration-support) — $79,000.** Public RPC, archival nodes, and the Ledger hardware-wallet stack.
-- **[Chain.Love](https://app.filpgf.io/project/chainlove) — $53,500.** Chain sync and public RPC, including full-chain and FEVM archival endpoints.
-- **[Ankr](https://app.filpgf.io/project/ankr---filecoin-public-endpoint-infrastructure) — $28,000.** Chain sync and public RPC, providing critical redundancy across the network's endpoint fleet.
+- **[Zondax Core Infra](https://app.filpgf.io/browse-applications/APP-WVTOW236-LUGH7Y) — $79,000.** Public RPC, archival nodes, and the Ledger hardware-wallet stack.
+- **[Chain.Love](https://app.filpgf.io/browse-applications/APP-P706QNLF-NLQPG5) — $53,500.** Chain sync and public RPC, including full-chain and FEVM archival endpoints.
+- **[Ankr](https://app.filpgf.io/browse-applications/APP-ICVR43KL-H0P3K6) — $28,000.** Chain sync and public RPC, providing critical redundancy across the network's endpoint fleet.
 
 ### 🔎 Indexing and Data
 
-- **[IPNI](https://app.filpgf.io/project/ipni-interplanetary-network-indexer-1) — $85,000.** The network-wide indexer that advertises CID content records so applications, gateways, and storage providers can discover where data is stored — a real dependency for retrieval across the ecosystem.
-- **[Filecoin Data Portal](https://app.filpgf.io/project/filecoin-data-portal) — $140,000.** Aggregates Filecoin on- and off-chain data into open, queryable datasets and dashboards — a vendor-neutral open-data layer for the ecosystem.
-- **[Goldsky](https://app.filpgf.io/project/goldsky) — $42,996.** Chain ETL and indexing, including FEVM subgraph support.
-- **[Beryx](https://app.filpgf.io/project/beryx-filecoin-explorer-public-api-and-traces) — $12,000.** Chain ETL and indexing datasets.
+- **[IPNI](https://app.filpgf.io/browse-applications/APP-O66TN87V-3MDZFT) — $85,000.** The network-wide indexer that advertises CID content records so applications, gateways, and storage providers can discover where data is stored — a real dependency for retrieval across the ecosystem.
+- **[Filecoin Data Portal](https://app.filpgf.io/browse-applications/APP-0QLIOMS2-JSK1EM) — $140,000.** Aggregates Filecoin on- and off-chain data into open, queryable datasets and dashboards — a vendor-neutral open-data layer for the ecosystem.
+- **[Goldsky](https://app.filpgf.io/browse-applications/APP-RRMZE7XC-XAVG4W) — $42,996.** Chain ETL and indexing, including FEVM subgraph support.
+- **[Beryx](https://app.filpgf.io/browse-applications/APP-ZGCSXHWL-8PJG01) — $12,000.** Chain ETL and indexing datasets.
 
 ### 🧭 Explorers
 
-- **[BlockScout](https://app.filpgf.io/project/blockscout-block-explorer) — $5,000.** Mainnet block explorer with strong smart-contract verification (relied on across EVM chains), Lotus archive, indexing, and network-upgrade maintenance.
+- **[BlockScout](https://app.filpgf.io/browse-applications/APP-J8CF3XJY-CG03HL) — $5,000.** Mainnet block explorer with strong smart-contract verification (relied on across EVM chains), Lotus archive, indexing, and network-upgrade maintenance.
 
 ### 🎲 Randomness
 
-- **[Drand by Randamu](https://app.filpgf.io/project/drand-improving-the-gossipsub-libp2p-distribution-network-and-relays-services) — $31,000.** High-SLA HTTP and gossipsub relays plus quarterly resharing for the public randomness beacon that underpins Filecoin's block production and liveness.
+- **[Drand by Randamu](https://app.filpgf.io/browse-applications/APP-KOZT1PS1-T25XTE) — $31,000.** High-SLA HTTP and gossipsub relays plus quarterly resharing for the public randomness beacon that underpins Filecoin's block production and liveness.
 
 ### 🧪 Testnet and Network Stability
 
-- **[Plumbline, Calibration Net Stability](https://app.filpgf.io/project/plumbline--calibrationnet-stability-project) — $17,000.** Calibration testnet stability and calibnet miners, including faucet coordination — an efficiently priced replacement for more expensive faucets.
-- **[Filecoin Infrastructure Services by ChainSafe](https://app.filpgf.io/project/filecoin-infrastructure-services) — $8,400.** Snapshots, bootstrap nodes, and calibnet support.
+- **[Plumbline, Calibration Net Stability](https://app.filpgf.io/browse-applications/APP-U5CX297Z-XKDQDZ) — $17,000.** Calibration testnet stability and calibnet miners, including faucet coordination — an efficiently priced replacement for more expensive faucets.
+- **[Filecoin Infrastructure Services by ChainSafe](https://app.filpgf.io/browse-applications/APP-VQC3PIBY-G2UDZJ) — $8,400.** Snapshots, bootstrap nodes, and calibnet support.
 
 ### 📚 Documentation
 
-- **[Filecoin Docs](https://app.filpgf.io/project/filecoin-docs) — $150,000.** Network-wide documentation with source-code availability and source control.
+- **[Filecoin Docs](https://app.filpgf.io/browse-applications/APP-OFZ5ILTO-QC1XCM) — $150,000.** Network-wide documentation with source-code availability and source control.
 
 ### 🤝 Coordination and Settlement
 
-- **[FIL Ponto](https://app.filpgf.io/project/filponto-2) — $120,000.** Ecosystem coordination.
-- **[FVM Stablecoin Settlement](https://app.filpgf.io/project/secured-finance) — $65,000.** Stablecoin settlement infrastructure.
+- **[FIL Ponto](https://app.filpgf.io/browse-applications/APP-9PTCWEQL-HVKGV8) — $120,000.** Ecosystem coordination.
+- **[FVM Stablecoin Settlement](https://app.filpgf.io/browse-applications/APP-Z1L7URG7-TJ3G5D) — $65,000.** Stablecoin settlement infrastructure.
 
 ### 🧪 Non-Kernel / RFP Track
 
-- **[Synaps3](https://app.filpgf.io/project/synaps3) — $40,000.** RFP-track project supporting the broader Pods ecosystem.
-- **[Open Model](https://app.filpgf.io/project/openmodel) — $15,000.** Decentralized AI model distribution and compute on Filecoin.
-- **[js-libp2p](https://app.filpgf.io/project/js-libp2p) — $15,000.** Maintenance of the JavaScript libp2p networking stack used across the ecosystem.
+- **[Synaps3](https://app.filpgf.io/browse-applications/APP-UEB8YF3J-9QMLS2) — $40,000.** RFP-track project supporting the broader Pods ecosystem.
+- **[Open Model](https://app.filpgf.io/browse-applications/APP-41FY6MKU-26HL9O) — $15,000.** Decentralized AI model distribution and compute on Filecoin.
+- **[js-libp2p](https://app.filpgf.io/browse-applications/APP-8SSKSC9X-NYY1GT) — $15,000.** Maintenance of the JavaScript libp2p networking stack used across the ecosystem.
 
 ## 📈 What Batch 3 Signals
 
