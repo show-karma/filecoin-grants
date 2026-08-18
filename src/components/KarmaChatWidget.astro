@@ -21,15 +21,20 @@
 import { ASK_KARMA, KARMA } from "../data/site";
 
 const communityId = "filecoin";
+
+/* The widget posts to this URL as given — it is the endpoint, not an API root. */
+const AGENT_STREAM_PATH = "/v2/agent/stream";
+const apiOrigin = import.meta.env.PUBLIC_KARMA_API_ORIGIN ?? KARMA.apiHost;
 ---
 
 <script
   is:inline
   define:vars={{
     scriptSrc: `${KARMA.widgetHost}/widget/karma-chat.js`,
-    apiUrl: KARMA.apiHost,
+    apiUrl: `${apiOrigin}${AGENT_STREAM_PATH}`,
     communityId,
     title: ASK_KARMA.label,
+    placeholder: "Ask about Filecoin grants, programs, or applications...",
     fallbackHref: ASK_KARMA.href,
   }}
 >
@@ -72,7 +77,7 @@ const communityId = "filecoin";
     const start = async () => {
       if (ready) return true;
       await load();
-      window.KarmaChat.init({ apiUrl, communityId, title });
+      window.KarmaChat.init({ apiUrl, communityId, title, placeholder });
       contain();
       ready = true;
       return true;
