@@ -100,10 +100,9 @@ const appOrigin =
       frame = document.createElement("iframe");
       frame.src = `${origin}${path}`;
       frame.title = label;
-      // Transparent so the app's bare surface shows this backdrop through it,
-      // leaving the sign-in card as the only thing drawn.
       // Transparency comes from the framed document's own background, which
-      // the app paints as transparent on this route.
+      // the app paints as transparent on this route — so this backdrop shows
+      // through and the sign-in card is the only thing drawn.
       frame.className = "relative h-full w-full border-0 bg-transparent";
       frame.addEventListener("load", () => {
         status.hidden = true;
