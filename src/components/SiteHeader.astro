@@ -4,6 +4,7 @@ import NavPanel from "./NavPanel.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 import { isMenu, type NavEntry } from "../data/nav";
 import AppOverlay from "./AppOverlay.astro";
+import KarmaChatWidget from "./KarmaChatWidget.astro";
 import { LOGIN } from "../data/site";
 
 type Props = {
@@ -70,8 +71,7 @@ const linkAttrs = (href: string) =>
           <a
             href={cta.href}
             class="ml-2 rounded-md bg-deep px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            data-app-overlay={cta.overlay}
-            data-app-overlay-label={cta.label}
+            data-karma-chat-open={cta.overlay ? "" : undefined}
             {...linkAttrs(cta.href)}
           >
             {cta.label}
@@ -165,8 +165,7 @@ const linkAttrs = (href: string) =>
               <a
                 href={cta.href}
                 class="mt-2 block rounded-md bg-deep px-3 py-2 text-center text-sm font-medium text-white"
-                data-app-overlay={cta.overlay}
-                data-app-overlay-label={cta.label}
+                data-karma-chat-open={cta.overlay ? "" : undefined}
                 {...linkAttrs(cta.href)}
               >
                 {cta.label}
@@ -221,3 +220,4 @@ const linkAttrs = (href: string) =>
 </script>
 
 <AppOverlay />
+<KarmaChatWidget />

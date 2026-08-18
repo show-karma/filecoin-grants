@@ -1,0 +1,105 @@
+---
+/**
+ * Karma's chat widget, running natively on this page.
+ *
+ * The widget is a hosted bundle that mounts its own launcher and panel and
+ * talks to the Karma API directly — no iframe, so the chat is part of the page
+ * rather than a window onto the app.
+ *
+ * Two things it needs from us:
+ *
+ * 1. Its stylesheet is injected unlayered at runtime, and unlayered rules beat
+ *    every cascade layer. Its reset includes `.hidden { display: none }`, which
+ *    would outrank Tailwind's layered utilities and hide this site's header nav
+ *    (the nav is `hidden md:flex`). Moving those rules into the `karma-chat`
+ *    layer — declared first in global.css, so it sits below ours — fixes that.
+ *    This is why the widget was dropped during the Astro rebuild.
+ *
+ * 2. Its panel opens from its own launcher. The header's "Ask Karma" button
+ *    clicks that launcher, and falls back to the app if it is not there.
+ */
+import { ASK_KARMA, KARMA } from "../data/site";
+
+const communityId = "filecoin";
+---
+
+<script
+  is:inline
+  define:vars={{
+    scriptSrc: `${KARMA.widgetHost}/widget/karma-chat.js`,
+    apiUrl: KARMA.apiHost,
+    communityId,
+    title: ASK_KARMA.label,
+    fallbackHref: ASK_KARMA.href,
+  }}
+>
+  (() => {
+    const LAYER = "karma-chat";
+    let ready = false;
+
+    /* The widget appends its stylesheet to <head> on init. Wrapping the rules
+       in the layer named first in global.css drops them below this site's own
+       styles, while leaving the widget's own components styled. */
+    const contain = () => {
+      const sheet = document.querySelector("style[data-karma-chat]");
+      if (!sheet || sheet.dataset.layered === "true") return;
+      sheet.textContent = `@layer ${LAYER} {${sheet.textContent}}`;
+      sheet.dataset.layered = "true";
+    };
+
+    const launcher = () => document.querySelector(".karma-chat button");
+
+    const openChat = () => {
+      const button = launcher();
+      if (!button) return false;
+      button.click();
+      return true;
+    };
+
+    const load = () =>
+      new Promise((resolve, reject) => {
+        if (window.KarmaChat) return resolve();
+        const script = document.createElement("script");
+        script.src = scriptSrc;
+        script.async = true;
+        script.addEventListener("load", () => resolve());
+        script.addEventListener("error", () =>
+          reject(new Error("karma-chat failed to load")),
+        );
+        document.head.appendChild(script);
+      });
+
+    const start = async () => {
+      if (ready) return true;
+      await load();
+      window.KarmaChat.init({ apiUrl, communityId, title });
+      contain();
+      ready = true;
+      return true;
+    };
+
+    // Load on first idle rather than at parse time: it is a large bundle and
+    // nothing above the fold depends on it.
+    const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 2000));
+    idle(() => {
+      start().catch(() => {
+        /* Left to the header button, which falls back to the app. */
+      });
+    });
+
+    for (const trigger of document.querySelectorAll("[data-karma-chat-open]")) {
+      trigger.addEventListener("click", async (event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button > 0)
+          return;
+        event.preventDefault();
+        try {
+          await start();
+          if (openChat()) return;
+        } catch {
+          /* Fall through to the app. */
+        }
+        window.open(fallbackHref, "_blank", "noopener");
+      });
+    }
+  })();
+</script>

@@ -1,3 +1,15 @@
+/*
+ * Layer order, declared before anything else so it is the order that sticks:
+ * a layer first named later ranks above every layer named before it.
+ *
+ * `karma-chat` holds the chat widget's own stylesheet, which it injects
+ * unlayered at runtime. Unlayered rules beat every layer, so left alone its
+ * reset (`.hidden { display: none }`) outranks Tailwind's layered utilities
+ * and hides this site's header nav. KarmaChatWidget.astro moves those rules
+ * into this layer; naming it first is what puts them below our own styles.
+ */
+@layer karma-chat, theme, base, components, utilities;
+
 @import "tailwindcss";
 
 @import "@fontsource-variable/inter";
@@ -328,4 +340,45 @@
     color: var(--color-ink);
     font-weight: 600;
   }
+}
+
+/*
+ * Dark skin for the Karma chat widget.
+ *
+ * The widget ships a light theme only — its Tailwind build compiled the
+ * semantic colours to literal values, so there are no custom properties to
+ * override and no class hook to flip. These rules repaint its surfaces with
+ * this site's tokens when the site is dark. They are unlayered on purpose:
+ * the widget's own stylesheet lives in the `karma-chat` layer (see
+ * KarmaChatWidget.astro), so anything here outranks it without !important.
+ *
+ * Scoped to `.karma-chat`, the widget's documented root. If its internals are
+ * renamed upstream these stop matching and the panel returns to light — a
+ * mismatch, not a breakage.
+ */
+html.dark .karma-chat .bg-card,
+html.dark .karma-chat .bg-background,
+html.dark .karma-chat .bg-white {
+  background-color: var(--color-surface);
+}
+
+html.dark .karma-chat .text-card-foreground,
+html.dark .karma-chat .text-foreground {
+  color: var(--color-ink);
+}
+
+html.dark .karma-chat .text-muted-foreground {
+  color: var(--color-muted);
+}
+
+html.dark .karma-chat .border-border,
+html.dark .karma-chat .border-b,
+html.dark .karma-chat .border-t {
+  border-color: var(--color-line);
+}
+
+html.dark .karma-chat input,
+html.dark .karma-chat textarea {
+  background-color: var(--color-tint);
+  color: var(--color-ink);
 }
