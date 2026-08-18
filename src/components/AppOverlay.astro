@@ -11,9 +11,20 @@
  * trigger is still a plain link to the same URL, so the panel is an
  * enhancement, never the only way through.
  */
-import { EXTERNAL } from "../data/site";
+import { APP_PREVIEW_ORIGIN, EXTERNAL } from "../data/site";
 
-const appOrigin = import.meta.env.PUBLIC_APP_ORIGIN ?? EXTERNAL.app;
+/*
+ * Production always frames the real app. Preview builds frame the app's own
+ * preview instead, so the overlay can be reviewed here before the app change
+ * that permits the framing is live — a preview pointed at production would
+ * just be refused. PUBLIC_APP_ORIGIN overrides both, for local work.
+ */
+const isPreviewBuild = Boolean(
+  process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production",
+);
+const appOrigin =
+  import.meta.env.PUBLIC_APP_ORIGIN ??
+  (isPreviewBuild ? APP_PREVIEW_ORIGIN : EXTERNAL.app);
 ---
 
 <div

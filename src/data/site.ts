@@ -65,6 +65,19 @@ export const LOGIN = {
 } as const;
 
 /**
+ * Where the overlay loads the app from on preview builds.
+ *
+ * TESTING ONLY, and temporary: it pins the branch preview of gap-app-v2#2042,
+ * the PR that allows this site to frame Ask Karma. It lets the overlay be
+ * exercised on a Vercel preview before any of that reaches production.
+ * Production builds always use EXTERNAL.app — see appOrigin in AppOverlay.
+ *
+ * Remove this, and the branch it points at, once that PR is merged.
+ */
+export const APP_PREVIEW_ORIGIN =
+  "https://gap-app-v2-git-feat-filpgf-nav-and-filter-con-92c0fc-karma-devs.vercel.app";
+
+/**
  * Karma's assistant, running under the Filecoin tenant. A full public page in
  * the app — no login needed, it answers as a visitor — so the site links
  * straight to it rather than embedding anything.
