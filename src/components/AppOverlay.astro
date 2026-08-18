@@ -1,24 +1,19 @@
 ---
 /**
- * Opens a page from the app in a panel over the site, instead of navigating.
+ * Sign-in, run over the site instead of on a page of its own.
  *
- * The panel is an iframe on the app's own origin, which is the point: the
- * assistant talks to the app's session, and signing in through it produces a
- * real app session rather than one stranded on this origin. The app allows
- * exactly the framed route (`frame-ancestors` in gap-app-v2's next.config).
+ * The dialog is the app's, inside an iframe on the app's origin — that is the
+ * point: the session it creates belongs to the app, where a login performed on
+ * this origin would be stranded. The app serves that route as a bare surface
+ * (`embed=login`), painting nothing but the dialog, so what shows here is the
+ * sign-in card and this backdrop — the same shape the app itself presents,
+ * with no second panel wrapped around it.
  *
- * Any element with `data-app-overlay="<path>"` opens it. Without JavaScript the
- * trigger is still a plain link to the same URL, so the panel is an
- * enhancement, never the only way through.
+ * Any element with `data-app-overlay="<path>"` opens it. Without JavaScript
+ * the trigger is still a link to the same URL.
  */
 import { APP_PREVIEW_ORIGIN, EXTERNAL } from "../data/site";
 
-/*
- * Production always frames the real app. Preview builds frame the app's own
- * preview instead, so the overlay can be reviewed here before the app change
- * that permits the framing is live — a preview pointed at production would
- * just be refused. PUBLIC_APP_ORIGIN overrides both, for local work.
- */
 const isPreviewBuild = Boolean(
   process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production",
 );
@@ -30,68 +25,44 @@ const appOrigin =
 <div
   data-app-overlay-root
   data-app-origin={appOrigin}
-  class="fixed inset-0 z-[100] hidden items-center justify-center p-0 sm:p-6"
+  class="fixed inset-0 z-[100] hidden items-center justify-center p-4"
   role="dialog"
   aria-modal="true"
-  aria-label="Karma assistant"
+  aria-label="Sign in"
 >
-  <div data-app-overlay-backdrop class="absolute inset-0 bg-deep/60 backdrop-blur-[2px]"></div>
+  <div data-app-overlay-backdrop class="absolute inset-0 bg-deep/70"></div>
 
   <div
-    class="relative flex h-full w-full flex-col overflow-hidden bg-surface shadow-2xl sm:h-[86vh] sm:max-w-3xl sm:rounded-xl sm:border sm:border-line"
+    data-app-overlay-frame
+    class="relative h-[min(640px,88vh)] w-[min(420px,100%)]"
   >
-    <div class="flex items-center justify-between border-b border-line px-4 py-2.5">
-      <p data-app-overlay-title class="mono-meta uppercase">Ask Karma</p>
-      <div class="flex items-center gap-1">
-        <a
-          data-app-overlay-external
-          href={`${appOrigin}/ask-karma`}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="rounded-md px-2 py-1 text-sm text-body hover:text-ink"
-        >
-          Open in app ↗
-        </a>
-        <button
-          type="button"
-          data-app-overlay-close
-          aria-label="Close"
-          class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-body hover:text-ink"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <path d="M18 6 6 18M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div data-app-overlay-frame class="relative flex-1 bg-surface">
-      <div
-        data-app-overlay-status
-        class="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center"
-      >
-        <p data-app-overlay-status-text class="text-sm text-muted">Loading…</p>
-        <a
-          data-app-overlay-status-link
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="hidden text-sm text-accent underline underline-offset-2"
-        >
-          Open it in the app instead
-        </a>
-      </div>
-    </div>
+    <p
+      data-app-overlay-status
+      class="absolute inset-0 flex items-center justify-center text-sm text-white/80"
+    >
+      Loading&hellip;
+    </p>
   </div>
+
+  <button
+    type="button"
+    data-app-overlay-close
+    aria-label="Close"
+    class="absolute right-4 top-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-white/70 transition-colors hover:text-white"
+  >
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <path d="M18 6 6 18M6 6l12 12"></path>
+    </svg>
+  </button>
 </div>
 
 <script>
@@ -103,74 +74,45 @@ const appOrigin =
   if (root && triggers.length) {
     const origin = root.dataset.appOrigin ?? "";
     const frameHost = root.querySelector<HTMLElement>("[data-app-overlay-frame]")!;
-    const title = root.querySelector<HTMLElement>("[data-app-overlay-title]")!;
-    const external = root.querySelector<HTMLAnchorElement>("[data-app-overlay-external]")!;
     const closeButton = root.querySelector<HTMLButtonElement>("[data-app-overlay-close]")!;
     const backdrop = root.querySelector<HTMLElement>("[data-app-overlay-backdrop]")!;
-
     const status = root.querySelector<HTMLElement>("[data-app-overlay-status]")!;
-    const statusText = root.querySelector<HTMLElement>("[data-app-overlay-status-text]")!;
-    const statusLink = root.querySelector<HTMLAnchorElement>("[data-app-overlay-status-link]")!;
-
-    /*
-     * How long to sit on "Loading…" before offering the app link as a way out.
-     * Deliberately not a redirect: a cross-origin frame cannot be inspected and
-     * a refused one still fires `load` in some browsers, so no signal here is
-     * honest enough to justify pulling someone off the page they are on. The
-     * panel says what it knows and lets them choose.
-     */
-    const SLOW_LOAD_MS = 8000;
 
     let lastFocused: HTMLElement | null = null;
     let frame: HTMLIFrameElement | null = null;
-    let slowTimer = 0;
 
     const close = () => {
       root.classList.remove("flex");
       root.classList.add("hidden");
       document.documentElement.style.removeProperty("overflow");
-      window.clearTimeout(slowTimer);
-      // Drop the frame so the assistant stops running in the background and a
-      // reopen starts a fresh conversation.
+      // Drop the frame so a reopen starts clean rather than resuming a
+      // half-finished sign-in.
       frame?.remove();
       frame = null;
       lastFocused?.focus();
     };
 
     const open = (path: string, label: string) => {
-      const url = `${origin}${path}`;
       lastFocused = document.activeElement as HTMLElement | null;
-
-      title.textContent = label;
-      external.href = url;
-      statusLink.href = url;
-      statusText.textContent = "Loading…";
-      statusLink.classList.add("hidden");
-      status.classList.remove("hidden");
+      status.hidden = false;
 
       frame?.remove();
       frame = document.createElement("iframe");
-      frame.src = url;
+      frame.src = `${origin}${path}`;
       frame.title = label;
-      frame.className = "relative z-10 h-full w-full border-0";
-      frame.setAttribute("allow", "clipboard-write");
-
-      window.clearTimeout(slowTimer);
-      slowTimer = window.setTimeout(() => {
-        statusText.textContent = "Still loading.";
-        statusLink.classList.remove("hidden");
-      }, SLOW_LOAD_MS);
-
+      // Transparent so the app's bare surface shows this backdrop through it,
+      // leaving the sign-in card as the only thing drawn.
+      // Transparency comes from the framed document's own background, which
+      // the app paints as transparent on this route.
+      frame.className = "relative h-full w-full border-0 bg-transparent";
       frame.addEventListener("load", () => {
-        window.clearTimeout(slowTimer);
-        status.classList.add("hidden");
+        status.hidden = true;
       });
 
       frameHost.appendChild(frame);
 
       root.classList.remove("hidden");
       root.classList.add("flex");
-      // Keep the page behind from scrolling under the panel.
       document.documentElement.style.setProperty("overflow", "hidden");
       closeButton.focus();
     };
@@ -179,11 +121,10 @@ const appOrigin =
       trigger.addEventListener("click", (event) => {
         const path = trigger.dataset.appOverlay;
         if (!path) return;
-        // Let modified clicks (new tab, save) behave normally on the anchors.
         const mouse = event as MouseEvent;
         if (mouse.metaKey || mouse.ctrlKey || mouse.shiftKey || mouse.button > 0) return;
         event.preventDefault();
-        open(path, trigger.dataset.appOverlayLabel ?? "Ask Karma");
+        open(path, trigger.dataset.appOverlayLabel ?? "Sign in");
       });
     }
 

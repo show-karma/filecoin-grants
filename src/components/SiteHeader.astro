@@ -9,7 +9,7 @@ import { LOGIN } from "../data/site";
 
 type Props = {
   nav: NavEntry[];
-  cta?: { label: string; href: string; overlay?: string };
+  cta?: { label: string; href: string; chat?: boolean };
   breadcrumb?: string;
 };
 
@@ -71,7 +71,7 @@ const linkAttrs = (href: string) =>
           <a
             href={cta.href}
             class="ml-2 rounded-md bg-deep px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            data-karma-chat-open={cta.overlay ? "" : undefined}
+            data-karma-chat-open={cta.chat ? "" : undefined}
             {...linkAttrs(cta.href)}
           >
             {cta.label}
@@ -165,7 +165,7 @@ const linkAttrs = (href: string) =>
               <a
                 href={cta.href}
                 class="mt-2 block rounded-md bg-deep px-3 py-2 text-center text-sm font-medium text-white"
-                data-karma-chat-open={cta.overlay ? "" : undefined}
+                data-karma-chat-open={cta.chat ? "" : undefined}
                 {...linkAttrs(cta.href)}
               >
                 {cta.label}

@@ -61,7 +61,7 @@ export const LOGIN = {
    * creates is the app's own. `/ask-karma` is the route the app allows us to
    * frame; `login=true` is what makes its navbar open Privy on load.
    */
-  overlay: "/ask-karma?embed=1&login=true",
+  overlay: "/ask-karma?embed=login&login=true",
 } as const;
 
 /**
@@ -85,8 +85,8 @@ export const APP_PREVIEW_ORIGIN =
 export const ASK_KARMA = {
   label: "Ask Karma",
   href: `${EXTERNAL.app}/ask-karma`,
-  /** Opened in an overlay over the site; `href` is the no-JS fallback. */
-  overlay: "/ask-karma?embed=1",
+  /** Opens the chat widget in place; `href` is the fallback if it fails to load. */
+  chat: true,
 } as const;
 
 /**
