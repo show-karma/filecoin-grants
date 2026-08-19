@@ -26,6 +26,9 @@ importers:
       astro:
         specifier: ^5.12.0
         version: 5.18.2(@types/node@24.13.3)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.62.4)(typescript@5.9.3)(yaml@2.9.0)
+      blo:
+        specifier: ^2.0.0
+        version: 2.0.0
       tailwindcss:
         specifier: ^4.1.11
         version: 4.3.3
@@ -1016,6 +1019,9 @@ packages:
 
   base-64@1.0.0:
     resolution: {integrity: sha512-kwDPIFCGx0NZHog36dj+tHiwP4QMzsZ3AgMViUBKI0+V5n4U0ufTCUMhnQ04diaRI8EX/QcPfql7zlhZ7j4zgg==}
+
+  blo@2.0.0:
+    resolution: {integrity: sha512-VUUr1+vWisNSaHVswkbPbk1+GhygClKILkGchae7nsyuJ4ZVz5l1hEW4eR5F/ly/asM5vzigYGXjPnvrd//CVg==}
 
   boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
@@ -3079,6 +3085,8 @@ snapshots:
   bail@2.0.2: {}
 
   base-64@1.0.0: {}
+
+  blo@2.0.0: {}
 
   boolbase@1.0.0: {}
 

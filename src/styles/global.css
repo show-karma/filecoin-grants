@@ -4,17 +4,41 @@
  *
  * `karma-chat` holds the chat widget's own stylesheet, which it injects
  * unlayered at runtime. Unlayered rules beat every layer, so left alone its
- * reset (`.hidden { display: none }`) outranks Tailwind's layered utilities
- * and hides this site's header nav. KarmaChatWidget.astro moves those rules
- * into this layer; naming it first is what puts them below our own styles.
+ * `.hidden { display: none }` outranks Tailwind's layered utilities and hides
+ * this site's header nav (`hidden md:flex`). KarmaChatWidget.astro moves those
+ * rules into this layer.
+ *
+ * Its position is what makes the widget look like itself. Below `utilities`,
+ * so this site's own classes still win and the nav survives — but *above*
+ * `base`, because Tailwind's preflight there zeroes padding and border on
+ * every element, and the widget's `p-3`, `border-border` and `bg-brand-500`
+ * are the layered rules that have to answer it. Named first, as it was, the
+ * preflight won instead: the panel lost its padding, its borders went to
+ * currentColor and the send button turned transparent.
  */
-@layer karma-chat, theme, base, components, utilities;
+@layer theme, base, components, karma-chat, utilities;
 
 @import "tailwindcss";
 
-@import "@fontsource-variable/inter";
 @import "@fontsource-variable/inter-tight";
 @import "@fontsource-variable/jetbrains-mono";
+
+/*
+ * Inter, served from the identical woff2 the app self-hosts
+ * (gap-app-v2 `public/fonts/Inter/Inter.woff2`, loaded there via
+ * next/font/local).
+ *
+ * The fontsource build of Inter is the same typeface but not the same file, and
+ * the two rasterise differently — enough that the shared header's text did not
+ * match the app's pixel for pixel. One file removes the question.
+ */
+@font-face {
+  font-family: "Inter App";
+  src: url("/fonts/Inter.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /*
  * Dark mode is a class on <html>, not a media query: the header toggle has to
@@ -25,8 +49,7 @@
 
 @theme {
   --font-sans:
-    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    sans-serif;
+    "Inter App", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display:
     "Inter Tight Variable", "Inter Variable", ui-sans-serif, system-ui,
     sans-serif;
@@ -87,6 +110,80 @@
   --color-bad: #c0392b;
   /* Clearly orange rather than brown-gold, while still clearing 4.5:1 on white. */
   --color-warn: #c0561a;
+}
+
+/*
+ * Navbar parity tokens.
+ *
+ * The header is meant to be indistinguishable from the app's whitelabel navbar
+ * (gap-app-v2 `src/components/navbar/whitelabel-navbar.tsx`), which is built on
+ * Tailwind's zinc scale and its own semantic tokens rather than this site's
+ * palette. Close is not the same: side by side the greys read as two different
+ * products, so these carry the app's exact computed values instead of this
+ * site's near-equivalents.
+ *
+ * Every value here was measured off the running app in both themes — change
+ * them by measuring again, not by eye.
+ */
+:root {
+  --nav-surface: #ffffff;
+  --nav-border: rgb(228, 228, 231); /* zinc-200 */
+  --nav-title: rgb(24, 24, 27); /* zinc-900 */
+  --nav-subtle: rgb(113, 113, 122); /* zinc-500 — "Powered by" */
+  --nav-link: rgb(82, 82, 91); /* zinc-600 */
+  --nav-link-hover-surface: rgb(244, 244, 245); /* zinc-100 */
+  --nav-link-hover-text: rgb(24, 24, 27); /* zinc-900 */
+  --nav-field-surface: #ffffff;
+  --nav-field-border: rgb(230, 230, 230);
+  --nav-field-text: rgb(10, 10, 10);
+  --nav-icon: rgb(115, 115, 115); /* muted-foreground */
+  --nav-rule: rgb(228, 228, 231); /* the divider before sign-in */
+  --nav-accent: rgb(76, 111, 255); /* brand-blue, both themes */
+  --nav-button-surface: rgb(245, 245, 245);
+  --nav-button-text: rgb(23, 23, 23);
+  --nav-body: rgb(55, 65, 81);
+}
+
+.dark {
+  --nav-surface: rgb(24, 24, 27); /* zinc-900 */
+  --nav-border: rgb(39, 39, 42); /* zinc-800 */
+  --nav-title: #ffffff;
+  --nav-subtle: rgb(161, 161, 170); /* zinc-400 */
+  --nav-link: rgb(212, 212, 216); /* zinc-300 */
+  --nav-link-hover-surface: rgb(39, 39, 42); /* zinc-800 */
+  --nav-link-hover-text: #ffffff;
+  --nav-field-surface: rgb(0, 0, 0);
+  --nav-field-border: rgb(41, 41, 41);
+  --nav-field-text: rgb(250, 250, 250);
+  --nav-icon: rgb(163, 163, 163);
+  --nav-rule: rgb(63, 63, 70); /* zinc-700 */
+  --nav-button-surface: rgb(23, 23, 23);
+  --nav-button-text: rgb(245, 245, 245);
+  --nav-body: #ffffff;
+}
+
+/*
+ * The wordmark's face: the app's mono stack, copied verbatim.
+ *
+ * Verbatim is the most this side can do. The app names Fira Code first and
+ * ships no `@font-face` for it (the value is written as an inline style on
+ * <html> by its `store/tenant.ts`, from the tenant theme's `fonts.mono`), so
+ * the wordmark resolves to whatever monospace the machine happens to have —
+ * which is why the same page renders differently across OSes, and why the two
+ * headers can still differ by a few pixels here despite identical declarations.
+ *
+ * The stack below is the app's `fonts.mono`, copied exactly rather than
+ * improved on. Fira Code is not among the faces the app loads, so its wordmark
+ * actually renders in whatever monospace the reader's OS supplies. Serving a
+ * real webfont here would have been the better typography and the wrong answer:
+ * it made this wordmark a visibly different face from the app's on the same
+ * screen. Declaring the same stack lets both fall through to the same face,
+ * whatever that turns out to be per machine.
+ */
+@theme {
+  --font-nav-mono:
+    "Fira Code", Monaco, Consolas, monospace, ui-monospace, SFMono-Regular,
+    "SF Mono", Menlo, "Liberation Mono", monospace;
 }
 
 /*
@@ -167,6 +264,20 @@
     font-family: var(--font-sans);
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * ...but not in the header, which has to match the app's navbar exactly and
+   * the app sets neither. `font-synthesis-weight: none` suppresses the faux
+   * bold the app gets when a face lacks the requested weight — the wordmark
+   * asks for 600 — and `optimizeLegibility` changes kerning and ligatures. Both
+   * alter the drawn glyphs while leaving every measured box identical, which is
+   * exactly the kind of difference a getBoundingClientRect comparison misses.
+   */
+  header.sticky,
+  header.sticky * {
+    font-synthesis-weight: auto;
+    text-rendering: auto;
   }
 
   h1,
@@ -356,6 +467,17 @@
  * renamed upstream these stop matching and the panel returns to light — a
  * mismatch, not a breakage.
  */
+/*
+ * The widget's reset names a system font stack, which is what it falls back to
+ * off the app — where the panel renders in Inter like everything around it.
+ * Unlayered, so it outranks that reset without having to match its `:where()`
+ * selector; scoped to the widget, so nothing else moves.
+ */
+.karma-chat,
+.karma-chat * {
+  font-family: var(--font-sans);
+}
+
 html.dark .karma-chat .bg-card,
 html.dark .karma-chat .bg-background,
 html.dark .karma-chat .bg-white {

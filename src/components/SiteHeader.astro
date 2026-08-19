@@ -1,11 +1,31 @@
 ---
+/**
+ * The site header, built to match the app's whitelabel navbar
+ * (gap-app-v2 `src/components/navbar/whitelabel-navbar.tsx`) so the two read as
+ * one product: the same row — brand, search, links, assistant pill, theme
+ * toggle, rule, sign-in — at the same sizes, and the same full-width gutters
+ * rather than this site's centred measure.
+ *
+ * Two deliberate departures from the app:
+ *
+ * - Colours come from this site's tokens, not the app's zinc scale. They are
+ *   within a step or two of each other in light mode, and the tokens are what
+ *   carry this site's dark palette; hardcoding zinc would strand the header
+ *   the moment the theme flips.
+ * - The breadcrumb is this site's, and has no counterpart in the app.
+ *
+ * The dropdowns are `<details>`, so they open and take the keyboard with no
+ * JavaScript; the script below only adds what a bare `<details>` lacks.
+ */
 import Wordmark from "./Wordmark.astro";
 import NavPanel from "./NavPanel.astro";
 import ThemeToggle from "./ThemeToggle.astro";
+import NavbarSearch from "./NavbarSearch.astro";
+import AskKarmaButton from "./AskKarmaButton.astro";
 import { isMenu, type NavEntry } from "../data/nav";
-import AppOverlay from "./AppOverlay.astro";
+import { EXTERNAL } from "../data/site";
 import KarmaChatWidget from "./KarmaChatWidget.astro";
-import { LOGIN } from "../data/site";
+import AccountButton from "./AccountButton.astro";
 
 type Props = {
   nav: NavEntry[];
@@ -13,188 +33,214 @@ type Props = {
   breadcrumb?: string;
 };
 
-const { nav, cta, breadcrumb } = Astro.props;
+const { nav, breadcrumb } = Astro.props;
 
 const isExternal = (href: string) => href.startsWith("http");
 const linkAttrs = (href: string) =>
   isExternal(href) ? { target: "_blank", rel: "noopener noreferrer" } : {};
+
+const appOrigin = import.meta.env.PUBLIC_APP_ORIGIN ?? EXTERNAL.app;
+
+/* The app's `navStyles`, one for one. */
+const desktopLink =
+  "rounded-lg px-3 py-2 text-sm leading-normal font-medium text-[var(--nav-link)] transition-colors hover:bg-[var(--nav-link-hover-surface)] hover:text-[var(--nav-link-hover-text)]";
+const desktopTrigger = `inline-flex cursor-pointer list-none items-center gap-1 ${desktopLink} [&::-webkit-details-marker]:hidden`;
+const mobileLink =
+  "block rounded-lg px-3 py-2.5 text-sm leading-normal font-medium text-[var(--nav-link)] transition-colors hover:bg-[var(--nav-link-hover-surface)]";
+const mobileSubItem =
+  "block rounded-lg px-3 py-2 pl-6 text-sm leading-normal text-[var(--nav-link)] transition-colors hover:bg-[var(--nav-link-hover-surface)]";
+const mobileGroupItem =
+  "block rounded-lg px-3 py-2 pl-9 text-sm leading-normal text-[var(--nav-link)] transition-colors hover:bg-[var(--nav-link-hover-surface)]";
 ---
 
 <header
-  class="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur-sm"
+  class="sticky top-0 z-40 border-b border-[var(--nav-border)] bg-[var(--nav-surface)] text-[var(--nav-body)]"
 >
-  <div class="container-page flex h-16 items-center justify-between gap-6">
+  <div class="mx-auto flex h-16 items-center justify-between px-8 xl:px-24">
     <Wordmark breadcrumb={breadcrumb} />
 
     <!-- Desktop nav -->
-    <nav
-      aria-label="Main"
-      class="hidden items-center gap-1 md:flex"
-      data-site-nav
-    >
+    <div class="hidden items-center gap-1 lg:flex" data-site-nav>
+      {
+        /* `mr-2` as the app has it. The box's own sizing lives in the component:
+           240px where the row has room, shrinking from there, since it is what
+           gives way when the row runs out. */
+      }
+      <NavbarSearch id="navbar-search-desktop" class="mr-2" />
+
+      <nav aria-label="Main" class="flex items-center gap-1">
+        {
+          /* Only for someone already signed in — the app puts Dashboard in the
+             same place, right after the search. Hidden until the identity hint
+             says there is an account to go to; see scripts/identity-hint.ts for
+             why that is a display decision and nothing more. */
+        }
+        <a
+          href={`${appOrigin}/dashboard`}
+          class:list={["hidden", desktopLink]}
+          data-signed-in
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Dashboard
+        </a>
+        {
+          nav.map((entry) =>
+            isMenu(entry) ? (
+              <details class="group relative" data-nav-menu>
+                <summary class={desktopTrigger}>
+                  {entry.label}
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-3.5 w-3.5 transition-transform group-open:rotate-180"
+                    aria-hidden="true"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </summary>
+                <NavPanel menu={entry} />
+              </details>
+            ) : (
+              <a
+                href={entry.href}
+                class={desktopLink}
+                {...linkAttrs(entry.href)}
+              >
+                {entry.label}
+              </a>
+            ),
+          )
+        }
+      </nav>
+
+      <AskKarmaButton class="mr-1" />
+      <ThemeToggle />
+
+      <div class="mx-2 h-6 w-px shrink-0 bg-[var(--nav-rule)]"></div>
+
+      <AccountButton />
+    </div>
+
+    <!-- Mobile controls -->
+    <div class="flex items-center gap-2 lg:hidden">
+      <AskKarmaButton compact />
+      <ThemeToggle />
+
+      <button
+        type="button"
+        data-mobile-menu-toggle
+        aria-controls="site-mobile-menu"
+        aria-expanded="false"
+        aria-label="Toggle menu"
+        class="cursor-pointer rounded-lg p-2 text-[var(--nav-link)] transition-colors hover:bg-[var(--nav-link-hover-surface)]"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M4 6h16M4 12h16M4 18h16" data-menu-icon="closed"></path>
+          <path d="M6 6l12 12M18 6L6 18" data-menu-icon="open" class="hidden"
+          ></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div
+    id="site-mobile-menu"
+    hidden
+    class="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-[var(--nav-border)] bg-[var(--nav-surface)] px-4 py-3 lg:hidden"
+  >
+    <div class="mb-3">
+      <NavbarSearch id="navbar-search-mobile" class="w-full md:max-w-none" />
+    </div>
+
+    <nav aria-label="Main" class="space-y-1">
+      <a
+        href={`${appOrigin}/dashboard`}
+        class:list={["hidden", mobileLink]}
+        data-signed-in
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Dashboard
+      </a>
       {
         nav.map((entry) =>
           isMenu(entry) ? (
-            <details class="group relative" data-nav-menu>
-              <summary class="flex cursor-pointer list-none items-center gap-1.5 rounded-md px-2.5 py-2 text-sm text-body hover:text-ink [&::-webkit-details-marker]:hidden">
+            <div class="space-y-1 py-1">
+              <span class="block px-3 text-xs font-semibold uppercase tracking-wider text-[var(--nav-subtle)]">
                 {entry.label}
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.75"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="transition-transform group-open:rotate-180"
-                  aria-hidden="true"
+              </span>
+              {entry.items?.map((item) => (
+                <a
+                  href={item.href}
+                  class={mobileSubItem}
+                  {...linkAttrs(item.href)}
                 >
-                  <path d="M2.5 4.5 6 8l3.5-3.5" />
-                </svg>
-              </summary>
-              <NavPanel menu={entry} />
-            </details>
-          ) : (
-            <a
-              href={entry.href}
-              class="rounded-md px-2.5 py-2 text-sm text-body transition-colors hover:text-ink"
-              {...linkAttrs(entry.href)}
-            >
-              {entry.label}
-            </a>
-          ),
-        )
-      }
-      {
-        cta && (
-          <a
-            href={cta.href}
-            class="ml-2 rounded-md bg-deep px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            data-karma-chat-open={cta.chat ? "" : undefined}
-            {...linkAttrs(cta.href)}
-          >
-            {cta.label}
-          </a>
-        )
-      }
-      <a
-        href={LOGIN.href}
-        class="ml-2 rounded-md border border-line px-3.5 py-2 text-sm text-body transition-colors hover:border-muted/50 hover:text-ink"
-        data-app-overlay={LOGIN.overlay}
-        data-app-overlay-label="Sign in"
-        {...linkAttrs(LOGIN.href)}
-      >
-        {LOGIN.label}
-      </a>
-      <ThemeToggle class="ml-1" />
-    </nav>
-
-    <!-- Mobile controls -->
-    <div class="flex items-center gap-1 md:hidden">
-      <ThemeToggle />
-
-      <details class="group relative" data-nav-menu>
-        <summary
-          class="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-line text-ink [&::-webkit-details-marker]:hidden"
-          aria-label="Toggle menu"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <path d="M4 7h16M4 12h16M4 17h16" class="group-open:hidden"></path>
-            <path d="M6 6l12 12M18 6L6 18" class="hidden group-open:block"
-            ></path>
-          </svg>
-        </summary>
-        <nav
-          aria-label="Main"
-          class="absolute right-0 mt-2 max-h-[75vh] w-64 overflow-y-auto rounded-lg border border-line bg-surface p-2 shadow-lg"
-        >
-          {
-            nav.map((entry) =>
-              isMenu(entry) ? (
-                <div class="border-b border-line-soft py-2 last:border-0">
-                  <p class="mono-meta px-3 pb-1 uppercase">{entry.label}</p>
-                  {entry.items?.map((item) => (
+                  {item.label}
+                </a>
+              ))}
+              {entry.groups?.map((group) => (
+                <div class="space-y-0.5">
+                  <span class="block px-3 pl-6 text-xs font-medium text-[var(--nav-subtle)]">
+                    {group.label}
+                  </span>
+                  {group.items.map((item) => (
                     <a
                       href={item.href}
-                      class="block rounded-md px-3 py-2 text-sm text-body hover:bg-tint hover:text-ink"
+                      class={mobileGroupItem}
                       {...linkAttrs(item.href)}
                     >
                       {item.label}
                     </a>
                   ))}
-                  {entry.groups?.map((group) => (
-                    <>
-                      <p class="mono-meta px-3 pt-2 pb-1 text-muted uppercase">
-                        {group.label}
-                      </p>
-                      {group.items.map((item) => (
-                        <a
-                          href={item.href}
-                          class="block rounded-md px-3 py-2 text-sm text-body hover:bg-tint hover:text-ink"
-                          {...linkAttrs(item.href)}
-                        >
-                          {item.label}
-                        </a>
-                      ))}
-                    </>
-                  ))}
                 </div>
-              ) : (
-                <a
-                  href={entry.href}
-                  class="block rounded-md px-3 py-2 text-sm text-body hover:bg-tint hover:text-ink"
-                  {...linkAttrs(entry.href)}
-                >
-                  {entry.label}
-                </a>
-              ),
-            )
-          }
-          {
-            cta && (
-              <a
-                href={cta.href}
-                class="mt-2 block rounded-md bg-deep px-3 py-2 text-center text-sm font-medium text-white"
-                data-karma-chat-open={cta.chat ? "" : undefined}
-                {...linkAttrs(cta.href)}
-              >
-                {cta.label}
-              </a>
-            )
-          }
-          <a
-            href={LOGIN.href}
-            class="mt-1 block rounded-md border border-line px-3 py-2 text-center text-sm text-body"
-            data-app-overlay={LOGIN.overlay}
-            data-app-overlay-label="Sign in"
-            {...linkAttrs(LOGIN.href)}
-          >
-            {LOGIN.label}
-          </a>
-        </nav>
-      </details>
+              ))}
+            </div>
+          ) : (
+            <a href={entry.href} class={mobileLink} {...linkAttrs(entry.href)}>
+              {entry.label}
+            </a>
+          ),
+        )
+      }
+    </nav>
+
+    <div class="mt-3 border-t border-[var(--nav-border)] pt-3">
+      <AccountButton showName />
     </div>
   </div>
 </header>
 
-{
-  /*
-  The menus are <details>, so they open and are keyboard-operable with no
-  JavaScript. This only adds the behaviour a bare <details> lacks: opening one
-  closes the others, and clicking away or pressing Escape closes them.
-*/
-}
 <script>
+  import { readIdentityHint } from "../scripts/identity-hint";
+
+  /* Controls that only mean anything with an account. Revealed rather than
+     fetched: the page is static and cached, so the markup cannot know, and
+     asking would reflow the header. */
+  if (readIdentityHint()) {
+    for (const element of document.querySelectorAll<HTMLElement>(
+      "[data-signed-in]",
+    )) {
+      element.classList.remove("hidden");
+    }
+  }
+
   const menus = Array.from(
     document.querySelectorAll<HTMLDetailsElement>("[data-nav-menu]"),
   );
@@ -217,7 +263,41 @@ const linkAttrs = (href: string) =>
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeAll();
   });
+
+  /* The mobile menu is a panel across the whole bar rather than a dropdown off
+     the button, so it is a sibling of the row and toggled here. */
+  const toggle = document.querySelector<HTMLButtonElement>(
+    "[data-mobile-menu-toggle]",
+  );
+  const panel = document.getElementById("site-mobile-menu");
+
+  if (toggle && panel) {
+    const closedIcon = toggle.querySelector<SVGPathElement>(
+      '[data-menu-icon="closed"]',
+    )!;
+    const openIcon = toggle.querySelector<SVGPathElement>(
+      '[data-menu-icon="open"]',
+    )!;
+
+    const setOpen = (open: boolean) => {
+      panel.hidden = !open;
+      toggle.setAttribute("aria-expanded", String(open));
+      closedIcon.classList.toggle("hidden", open);
+      openIcon.classList.toggle("hidden", !open);
+    };
+
+    toggle.addEventListener("click", () => setOpen(panel.hidden));
+
+    // A link inside the panel navigates; leaving the menu open behind it means
+    // it is still there on the way back.
+    panel.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest("a")) setOpen(false);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !panel.hidden) setOpen(false);
+    });
+  }
 </script>
 
-<AppOverlay />
 <KarmaChatWidget />

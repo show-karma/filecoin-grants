@@ -1,4 +1,12 @@
 ---
+/**
+ * Desktop dropdown, built to the app's: one column of `px-2 py-1.5` rows in a
+ * `rounded-md border p-1` panel, with grouped links behind a submenu that
+ * flies out to the right rather than widening the panel into columns.
+ *
+ * The submenu opens on hover and on focus-within, so it needs no JavaScript
+ * and stays reachable from the keyboard — the app gets the same from Radix.
+ */
 import type { NavMenu } from "../data/nav";
 
 type Props = { menu: NavMenu };
@@ -10,44 +18,52 @@ const linkAttrs = (href: string) =>
     : {};
 
 const itemClass =
-  "block rounded-md px-3 py-1.5 text-sm text-body hover:bg-tint hover:text-ink";
-
-/* Two groups sit side by side; a single group keeps the panel narrow. */
-const wide = (menu.groups?.length ?? 0) > 1;
+  "flex items-center gap-2 whitespace-nowrap rounded-sm px-2 py-1.5 text-sm text-[var(--nav-link-hover-text)] transition-colors hover:bg-[var(--nav-link-hover-surface)]";
 ---
 
 <div
-  class:list={[
-    "absolute left-0 mt-1 rounded-lg border border-line bg-surface p-2 shadow-lg",
-    wide ? "w-[26rem]" : "w-56",
-  ]}
+  class="absolute left-0 top-full z-50 mt-1 w-max min-w-[180px] rounded-md border border-[var(--nav-field-border)] bg-[var(--nav-surface)] p-1 shadow-md"
 >
   {
-    menu.items && (
-      <div class:list={[menu.groups && "border-b border-line-soft pb-2"]}>
-        {menu.items.map((item) => (
-          <a href={item.href} class={itemClass} {...linkAttrs(item.href)}>
-            {item.label}
-          </a>
-        ))}
-      </div>
-    )
+    menu.items?.map((item) => (
+      <a href={item.href} class={itemClass} {...linkAttrs(item.href)}>
+        {item.label}
+      </a>
+    ))
   }
 
   {
-    menu.groups && (
-      <div class:list={["pt-2", wide && "grid grid-cols-2 gap-2"]}>
-        {menu.groups.map((group) => (
-          <div>
-            <p class="mono-meta px-3 pb-1 uppercase">{group.label}</p>
-            {group.items.map((item) => (
-              <a href={item.href} class={itemClass} {...linkAttrs(item.href)}>
-                {item.label}
-              </a>
-            ))}
-          </div>
-        ))}
+    menu.groups?.map((group) => (
+      <div class="group/sub relative">
+        <button
+          type="button"
+          class="flex w-full cursor-default items-center gap-2 whitespace-nowrap rounded-sm px-2 py-1.5 text-sm text-ink transition-colors group-hover/sub:bg-[var(--nav-link-hover-surface)] group-focus-within/sub:bg-[var(--nav-link-hover-surface)]"
+        >
+          {group.label}
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="ml-auto h-4 w-4"
+            aria-hidden="true"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
+
+        <div class="invisible absolute left-full top-0 -mt-1 ml-1 w-max min-w-[200px] rounded-md border border-line bg-surface p-1 opacity-0 shadow-md transition-opacity group-hover/sub:visible group-hover/sub:opacity-100 group-focus-within/sub:visible group-focus-within/sub:opacity-100">
+          {group.items.map((item) => (
+            <a href={item.href} class={itemClass} {...linkAttrs(item.href)}>
+              {item.label}
+            </a>
+          ))}
+        </div>
       </div>
-    )
+    ))
   }
 </div>

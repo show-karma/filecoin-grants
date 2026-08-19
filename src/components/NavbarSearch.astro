@@ -1,0 +1,215 @@
+---
+/**
+ * Project search, the app's navbar control rebuilt here.
+ *
+ * It queries the same public endpoint the app does — `/v2/search` on the GAP
+ * API, which needs no key and answers cross-origin, the same way the chat
+ * widget already talks to it — and sends a pick to that project's page on the
+ * app. A box that only looked the part and did nothing on Enter would be a
+ * dead control, so it does the search for real.
+ *
+ * Three characters is the API's own floor: shorter queries return nothing, so
+ * the request is not worth making.
+ */
+import { EXTERNAL, KARMA } from "../data/site";
+
+/*
+ * `w-full` up to a 240px cap, rather than a declared width, because this box is
+ * the row's shock absorber: 240 is where it sits when there is room, and it
+ * gives way first when there is not. A fixed `w-[240px]` looks identical at a
+ * wide viewport and then refuses to shrink at a narrow one, which put a
+ * horizontal scrollbar on the page at a 1080px viewport. Sizing it this way
+ * also keeps the box off the <input>'s intrinsic width, which reads font
+ * metrics a few pixels apart from the app's even on the identical font file.
+ */
+type Props = { id: string; class?: string };
+const { id, class: className = "" } = Astro.props;
+---
+
+<div
+  class:list={[
+    "relative min-w-20 md:ml-6 md:w-full md:max-w-[240px]",
+    className,
+  ]}
+  data-navbar-search
+  data-search-api={`${KARMA.apiHost}/v2/search`}
+  data-app-origin={EXTERNAL.app}
+>
+  <div
+    class="relative flex w-full cursor-text items-center gap-1.5 rounded-md border border-[var(--nav-field-border)] bg-[var(--nav-field-surface)] px-3 py-2 text-sm transition-[box-shadow,border-color,background-color] duration-100 ease-in-out hover:bg-[var(--nav-link-hover-surface)] focus-within:border-[var(--nav-field-border)] focus-within:bg-[var(--nav-field-surface)] focus-within:ring-2 focus-within:ring-[var(--nav-border)]"
+  >
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      class="h-4 w-4 shrink-0 text-[var(--nav-icon)]"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m20 20-3.5-3.5"></path>
+    </svg>
+    <input
+      id={id}
+      type="text"
+      autocomplete="off"
+      placeholder="Search Project"
+      aria-label="Search Project"
+      class="w-full min-w-0 flex-1 border-none bg-transparent p-0 text-sm leading-6 text-[var(--nav-field-text)] outline-none placeholder:text-[var(--nav-icon)]"
+    />
+  </div>
+
+  <div
+    data-search-results
+    hidden
+    class="absolute left-0 top-full z-50 mt-2 w-[min(100%,500px)] min-w-[350px] overflow-hidden rounded-lg border border-line bg-surface shadow-lg"
+  >
+  </div>
+</div>
+
+<script>
+  type SearchHit = {
+    uid: string;
+    title?: string | null;
+    name?: string | null;
+    slug?: string | null;
+    logoUrl?: string | null;
+    imageUrl?: string | null;
+  };
+
+  const MIN_QUERY = 3;
+  const DEBOUNCE_MS = 500;
+
+  for (const root of document.querySelectorAll<HTMLElement>(
+    "[data-navbar-search]",
+  )) {
+    const input = root.querySelector<HTMLInputElement>("input")!;
+    const panel = root.querySelector<HTMLElement>("[data-search-results]")!;
+    const endpoint = root.dataset.searchApi ?? "";
+    const appOrigin = root.dataset.appOrigin ?? "";
+
+    let timer: number | undefined;
+    // Only the newest query may paint: a slow earlier request must not land on
+    // top of the results for what the user has since typed.
+    let latest = 0;
+
+    const escape = (value: string) =>
+      value.replace(
+        /[&<>"']/g,
+        (char) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[char] ?? char,
+      );
+
+    const close = () => {
+      panel.hidden = true;
+      panel.innerHTML = "";
+    };
+
+    const message = (text: string) => {
+      panel.innerHTML = `<p class="py-6 text-center text-sm text-muted">${escape(text)}</p>`;
+      panel.hidden = false;
+    };
+
+    const row = (
+      href: string,
+      label: string,
+      image: string | null | undefined,
+      tag?: string,
+    ) => `
+      <a href="${escape(href)}" target="_blank" rel="noopener noreferrer"
+         class="flex w-full min-w-0 items-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-tint">
+        ${
+          image
+            ? `<img src="${escape(image)}" alt="" class="h-8 w-8 shrink-0 rounded-full object-cover" />`
+            : `<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tint text-xs font-semibold text-muted">${escape(label.slice(0, 1).toUpperCase())}</span>`
+        }
+        <span class="min-w-0 flex-1 truncate text-sm font-medium text-ink">${escape(label)}</span>
+        ${
+          tag
+            ? `<span class="ml-auto shrink-0 whitespace-nowrap rounded bg-tint px-2 py-0.5 text-xs font-medium text-muted">${escape(tag)}</span>`
+            : ""
+        }
+      </a>`;
+
+    const render = (data: {
+      projects?: SearchHit[];
+      communities?: SearchHit[];
+    }) => {
+      const communities = data.communities ?? [];
+      const projects = data.projects ?? [];
+      if (!communities.length && !projects.length) {
+        message("No results found.");
+        return;
+      }
+
+      panel.innerHTML = `<div class="max-h-72 w-full overflow-y-auto overflow-x-hidden"><div class="flex w-full min-w-0 flex-col gap-1 px-3 py-3">${[
+        ...communities.map((community) =>
+          row(
+            `${appOrigin}/community/${community.slug || community.uid}`,
+            community.name || "Untitled Community",
+            community.imageUrl,
+            "Community",
+          ),
+        ),
+        ...projects.map((project) =>
+          row(
+            `${appOrigin}/project/${project.slug || project.uid}/funding`,
+            project.title || "Untitled Project",
+            project.logoUrl,
+          ),
+        ),
+      ].join("")}</div></div>`;
+      panel.hidden = false;
+    };
+
+    const search = async (query: string) => {
+      const ticket = ++latest;
+      panel.innerHTML = `<div class="flex items-center justify-center py-6"><span class="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-transparent"></span></div>`;
+      panel.hidden = false;
+
+      try {
+        const response = await fetch(
+          `${endpoint}?q=${encodeURIComponent(query)}&limit=10`,
+        );
+        if (!response.ok) throw new Error(`search failed: ${response.status}`);
+        const data = await response.json();
+        if (ticket !== latest) return;
+        render(data);
+      } catch {
+        if (ticket !== latest) return;
+        message("Search is unavailable right now.");
+      }
+    };
+
+    input.addEventListener("input", () => {
+      window.clearTimeout(timer);
+      const query = input.value.trim();
+      if (query.length < MIN_QUERY) {
+        latest++;
+        close();
+        return;
+      }
+      timer = window.setTimeout(() => search(query), DEBOUNCE_MS);
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!root.contains(event.target as Node)) close();
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        close();
+        input.blur();
+      }
+    });
+  }
+</script>

@@ -3,7 +3,7 @@ export const EXTERNAL = {
   explorer: "https://app.filpgf.io/projects",
   reports: "https://app.filpgf.io/reports",
   financials: "https://app.filpgf.io/financials",
-  filecoin: "https://filecoin.io/",
+  filecoin: "https://www.filecoin.io/learn",
   filecoinCloud: "https://filecoin.cloud/",
   filOne: "https://fil.one/",
   retropgf: "https://www.fil-retropgf.io/",
@@ -12,7 +12,6 @@ export const EXTERNAL = {
   github: "https://github.com/filecoin-project",
   skills: "https://github.com/show-karma/skills",
   slack: "https://filecoin.io/slack",
-  forum: "https://github.com/filecoin-project/community/discussions",
 } as const;
 
 /**
@@ -36,7 +35,11 @@ export const PROGRAM_PROJECTS_URL = `${EXTERNAL.explorer}?programId=${PROGRAM_ID
  * manual date bump.
  */
 export const REPORT_TYPES = {
+  /** "Filecoin ProPGF Monthly" — the programme-wide monthly. */
+  propgfMonthly: "69e70e9a641448585f44e961",
+  /** "Monthly Pods Report" — the Pods track's own monthly. */
   monthlyPods: "6a23268272df01209256e5b9",
+  /** "Bi-Weekly Progress Report" */
   biweeklyProgress: "6a233d04e82a77f23c7838f7",
 } as const;
 
@@ -49,33 +52,35 @@ export const programReportUrl = (type: keyof typeof REPORT_TYPES) =>
   `${PROGRAM_REPORTS_URL}&type=${REPORT_TYPES[type]}`;
 
 /**
- * Sign-in entry point, carried over from the Hugo site's navbar button.
- * Admin and reviewer access is resolved inside the Karma app after login —
- * the site only needs to get people there.
+ * Sign-in entry point.
+ *
+ * The session belongs to the app, so the app runs the dialog: this is a
+ * hand-off to app.filpgf.io, which signs the visitor in on its own origin and
+ * returns them here. Sign-in was briefly framed on this site instead; that is
+ * gone, because Privy checks `frame-ancestors` against every ancestor of its
+ * auth iframe and blocks it on any host it has not been told about — which
+ * renders a dialog that looks fine and silently discards what you submit.
  */
 export const LOGIN = {
-  label: "Login",
+  /* The app's own wording for the same button. */
+  label: "Sign in",
   href: `${EXTERNAL.app}/?login=true`,
-  /**
-   * Sign-in runs inside the overlay, on the app origin, so the session it
-   * creates is the app's own. `/ask-karma` is the route the app allows us to
-   * frame; `login=true` is what makes its navbar open Privy on load.
-   */
-  overlay: "/ask-karma?embed=login&login=true",
 } as const;
 
 /**
- * Where the overlay loads the app from on preview builds.
+ * The identity hint: how this static site knows who is signed in.
  *
- * TESTING ONLY, and temporary: it pins the branch preview of gap-app-v2#2042,
- * the PR that allows this site to frame Ask Karma. It lets the overlay be
- * exercised on a Vercel preview before any of that reaches production.
- * Production builds always use EXTERNAL.app — see appOrigin in AppOverlay.
+ * app.filpgf.io writes a cookie on the shared parent domain with a display name
+ * and avatar, and the header reads it to show the account button instead of
+ * "Sign in". Display only — it carries no token and gates nothing.
  *
- * Remove this, and the branch it points at, once that PR is merged.
+ * Mirrors `tenantIdentityHintCookieDomain.filecoin` in gap-app-v2's
+ * tenant-config.ts. The two live in different repos: change both.
  */
-export const APP_PREVIEW_ORIGIN =
-  "https://gap-app-v2-git-feat-filpgf-nav-and-filter-con-92c0fc-karma-devs.vercel.app";
+export const IDENTITY_HINT = {
+  cookie: "karma_identity_hint",
+  cookieDomain: ".filpgf.io",
+} as const;
 
 /**
  * Karma's assistant, running under the Filecoin tenant. A full public page in
