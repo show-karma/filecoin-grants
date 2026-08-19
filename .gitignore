@@ -14,3 +14,6 @@ node_modules/
 # logs
 *.log
 .vercel
+
+# local overrides (point the build at a local API/widget/app)
+.env.local
