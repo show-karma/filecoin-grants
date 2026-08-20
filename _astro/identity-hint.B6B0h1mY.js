@@ -1,0 +1,1 @@
+const e={cookie:"karma_identity_hint"};function o(){const t=document.cookie.match(new RegExp(`(?:^|; )${e.cookie}=([^;]*)`));if(!t)return null;try{const n=JSON.parse(decodeURIComponent(t[1]));return n?.v===1&&n.name?n:null}catch{return null}}export{o as r};
