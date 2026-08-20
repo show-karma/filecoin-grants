@@ -74,6 +74,12 @@ const fullTitle = title === SITE.title ? title : `${title} · ${SITE.title}`;
           (stored === null &&
             window.matchMedia("(prefers-color-scheme: dark)").matches);
         document.documentElement.classList.toggle("dark", dark);
+        // Also state the resolved theme outright. The class alone only ever
+        // says "dark": in light mode the element carries nothing, which reads
+        // the same as "this page has no opinion" to anything watching from
+        // outside — the embedded chat widget among them, which then fell back
+        // to the OS preference and rendered a dark panel on a light page.
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
       })();
     </script>
     <title>{fullTitle}</title>

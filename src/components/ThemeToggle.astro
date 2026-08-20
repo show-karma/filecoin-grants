@@ -79,6 +79,9 @@ const { class: className = "" } = Astro.props;
 
   const paint = (dark: boolean) => {
     document.documentElement.classList.toggle("dark", dark);
+    // Kept in step with the class — see the note in BaseLayout: the attribute
+    // is what tells anything outside this page which theme is actually on.
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
     for (const button of buttons)
       button.setAttribute("aria-label", label(dark));
   };
