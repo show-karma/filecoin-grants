@@ -21,8 +21,9 @@ export type Stat = {
 
 /**
  * Money contracted out, by round. Supplied by the programme team on
- * 14 Aug 2026 — these supersede the figures on the Financials tab, which lag
- * behind recently signed contracts and cancelled milestones.
+ * 14 Aug 2026 — these supersede the figures on the app's Commitments &
+ * Disbursements tab (/financials), which lag behind recently signed contracts
+ * and cancelled milestones.
  *
  * This is what is **committed**, not what has been paid out. Two rounds carry
  * caveats from the team:
@@ -31,8 +32,8 @@ export type Stat = {
  * - Batch 3 exceeds its $2M hard commitment pool because some contracts carry
  *   soft commitments that fall into the next round.
  *
- * For reference, the Financials tab last read $4,992,936 disbursed against
- * these commitments. It cannot be fetched at build time —
+ * For reference, that tab last read $4,992,936 disbursed against these
+ * commitments. It cannot be fetched at build time —
  * /v2/communities/:slug/payouts requires a JWT.
  */
 export const FINANCIALS = {

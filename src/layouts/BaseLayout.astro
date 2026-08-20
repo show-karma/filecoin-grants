@@ -53,12 +53,41 @@ const fullTitle = title === SITE.title ? title : `${title} · ${SITE.title}`;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {
+      /*
+      Theme, resolved before the first paint so the page never flashes light.
+      Must stay `is:inline`: a bundled module script runs after paint. The
+      "theme" key holds "light" or "dark"; absent means follow the system.
+    */
+    }
+    <script is:inline>
+      (() => {
+        let stored = null;
+        try {
+          stored = localStorage.getItem("theme");
+        } catch {
+          // Storage can be unavailable (private browsing); fall back to the OS.
+        }
+        const dark =
+          stored === "dark" ||
+          (stored === null &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
 
-    <link rel="icon" href="/favicon.png" type="image/png" />
-    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    {
+      /*
+      One icon candidate only. Offering an SVG alongside a raster let browsers
+      pick different files and show different marks per browser; this is the
+      same ICO the app serves, so both properties share a tab icon.
+    */
+    }
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <meta property="og:type" content={ogType} />

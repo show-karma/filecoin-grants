@@ -1,0 +1,200 @@
+---
+/**
+ * Karma's chat widget, running natively on this page.
+ *
+ * The widget is a hosted bundle that mounts its own launcher and panel and
+ * talks to the Karma API directly — no iframe, so the chat is part of the page
+ * rather than a window onto the app.
+ *
+ * Two things it needs from us:
+ *
+ * 1. Its stylesheet is injected unlayered at runtime, and unlayered rules beat
+ *    every cascade layer. Its reset includes `.hidden { display: none }`, which
+ *    would outrank Tailwind's layered utilities and hide this site's header nav
+ *    (the nav is `hidden md:flex`). Moving those rules into the `karma-chat`
+ *    layer — declared first in global.css, so it sits below ours — fixes that.
+ *    This is why the widget was dropped during the Astro rebuild.
+ *
+ * 2. Its panel opens from its own launcher. The header's "Ask Karma" button
+ *    clicks that launcher, and falls back to the app if it is not there.
+ */
+import { ASK_KARMA, EXTERNAL, IDENTITY_HINT, KARMA } from "../data/site";
+
+const communityId = "filecoin";
+
+/* The widget posts to this URL as given — it is the endpoint, not an API root. */
+const AGENT_STREAM_PATH = "/v2/agent/stream";
+const apiOrigin = import.meta.env.PUBLIC_KARMA_API_ORIGIN ?? KARMA.apiHost;
+/* Lets a local build of the widget be loaded instead of the published one —
+   the same escape hatch PUBLIC_KARMA_API_ORIGIN gives for the API, and the only
+   way to exercise a widget change before it ships. */
+const widgetOrigin =
+  import.meta.env.PUBLIC_KARMA_WIDGET_ORIGIN ?? KARMA.widgetHost;
+const appOrigin = import.meta.env.PUBLIC_APP_ORIGIN ?? EXTERNAL.app;
+
+/*
+ * The assistant answers here as a visitor.
+ *
+ * This site has no session to pass it — the app owns sign-in, on its own
+ * origin, and a login there cannot be inherited here (Privy restores a session
+ * from origin-scoped storage, not from the cookie shared across the domain).
+ * So answers on this page are general, and someone asking about their own
+ * application should be told that before they act on the reply rather than
+ * after. Both phrasings send them to the app, which is the surface that knows
+ * who they are.
+ */
+const CHAT_NOTICE = {
+  signedOut: {
+    text: "Answers here are general.",
+    actionLabel: "Sign in for personalized answers",
+    actionHref: `${appOrigin}/?login=true`,
+  },
+  /* Already signed in — on the app, which this page cannot see. So the ask is
+     to continue there, not to sign in again. */
+  signedIn: {
+    text: "Answers here are general.",
+    actionLabel: "Ask in the app for personalized answers",
+    actionHref: `${appOrigin}/ask-karma`,
+  },
+} as const;
+---
+
+<script
+  is:inline
+  define:vars={{
+    scriptSrc: `${widgetOrigin}/widget/karma-chat.js`,
+    apiUrl: `${apiOrigin}${AGENT_STREAM_PATH}`,
+    communityId,
+    /* The panel's own title, which is the app's — the header button keeps
+       ASK_KARMA.label. The two are different things: one names the control,
+       the other names who is answering. */
+    title: "Karma Assistant",
+    placeholder: "Ask about Filecoin grants, programs, or applications...",
+    fallbackHref: ASK_KARMA.href,
+    chatNotice: CHAT_NOTICE,
+    hintCookie: IDENTITY_HINT.cookie,
+  }}
+>
+  (() => {
+    const LAYER = "karma-chat";
+    let ready = false;
+
+    /*
+       The widget appends its stylesheet to <head> on init.
+ 
+       A bundle whose utilities carry a `.karma-chat` scope needs nothing from
+       us: its rules cannot match anything outside the widget, and inside it
+       they outrank this site's same-named utilities on specificity.
+ 
+       An older, unscoped bundle emits bare `.hidden`, `.bg-card` and friends
+       into the same global namespace this site's Tailwind uses, and the two
+       then fight whichever way they are ordered. Dropping it into the layer
+       named first in global.css settles that in this site's favour, which
+       keeps the header nav visible — at the cost of the site repainting the
+       widget's panel. That trade is only worth making when there is no scope.
+    */
+    const contain = () => {
+      const sheet = document.querySelector("style[data-karma-chat]");
+      if (!sheet || sheet.dataset.layered === "true") return;
+      if (sheet.textContent.includes(".karma-chat .")) return;
+      sheet.textContent = `@layer ${LAYER} {${sheet.textContent}}`;
+      sheet.dataset.layered = "true";
+    };
+
+    /*
+       Opening the panel.
+
+       The current bundle exposes `open()`, which is the only way in once the
+       floating button is suppressed — there is no launcher left to click.
+       The published bundle predates both, so the old path stays as a fallback
+       until it ships: there, the floating button still exists and clicking it
+       is what opens the panel.
+    */
+    const openChat = () => {
+      if (typeof window.KarmaChat?.open === "function") {
+        window.KarmaChat.open();
+        return true;
+      }
+      const launcher = document.querySelector(".karma-chat button");
+      if (!launcher) return false;
+      launcher.click();
+      return true;
+    };
+
+    const load = () =>
+      new Promise((resolve, reject) => {
+        if (window.KarmaChat) return resolve();
+        const script = document.createElement("script");
+        script.src = scriptSrc;
+        script.async = true;
+        script.addEventListener("load", () => resolve());
+        script.addEventListener("error", () =>
+          reject(new Error("karma-chat failed to load")),
+        );
+        document.head.appendChild(script);
+      });
+
+    const start = async () => {
+      if (ready) return true;
+      await load();
+      // Which wording applies depends on whether the app has told this page
+      // who is signed in — the identity hint — so it is read at open time
+      // rather than baked into the page, which is static and cached.
+      const signedIn = document.cookie.includes(`${hintCookie}=`);
+      window.KarmaChat.init({
+        apiUrl,
+        communityId,
+        title,
+        placeholder,
+        notice: signedIn ? chatNotice.signedIn : chatNotice.signedOut,
+        /* The same header the app's panel draws: Karma's mark, its title, and
+           the badge naming the context the answers are scoped to. This site is
+           Karma's own surface for Filecoin, not a third party embedding the
+           widget, so the mark is ours to stamp. */
+        brand: "karma",
+        badge: "Community",
+        emptyDescription:
+          "Ask me about Filecoin grants, programs, or applications.",
+        /* Follows this site's own toggle, not the OS preference. */
+        theme: "auto",
+        /* No floating button: this site has its own trigger in the header, and
+           two entry points to the same panel is one more than it needs. The
+           panel hangs from under the 4rem header instead, as it does in the
+           app. */
+        placement: "anchored",
+      });
+      contain();
+      ready = true;
+      return true;
+    };
+
+    // Load on first idle rather than at parse time: it is a large bundle and
+    // nothing above the fold depends on it.
+    const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 2000));
+    idle(() => {
+      start().catch(() => {
+        /* Left to the header button, which falls back to the app. */
+      });
+    });
+
+    for (const trigger of document.querySelectorAll("[data-karma-chat-open]")) {
+      trigger.addEventListener("click", async (event) => {
+        if (
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.button > 0
+        )
+          return;
+        event.preventDefault();
+        try {
+          await start();
+          if (openChat()) return;
+        } catch {
+          /* Fall through to the app. */
+        }
+        window.open(fallbackHref, "_blank", "noopener");
+      });
+    }
+  })();
+</script>

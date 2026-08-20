@@ -1,0 +1,157 @@
+---
+/**
+ * Sign in, or whoever is already signed in.
+ *
+ * This site is static and on its own origin, so it cannot see the app's
+ * session. What it can see is the identity hint: a cookie the app writes on the
+ * shared parent domain carrying a display name and avatar (see
+ * `utilities/auth/identity-hint.ts` in gap-app-v2). When it is there, the
+ * button becomes the account button; when it is not, it stays "Sign in".
+ *
+ * Either way it is a link into the app. Nothing about an account can be done
+ * from a static page — no session to inspect, none to end — so the button's job
+ * is to say who you are and hand you to the place that can.
+ *
+ * THE HINT IS NOT A CREDENTIAL and this component never treats it as one. It
+ * decides one thing: which label to draw. A stale hint costs a wrong-looking
+ * button until the next navigation and can grant nothing, which is the property
+ * that makes reading it acceptable at all.
+ *
+ * Both states ship in the markup and are swapped on load: the page is static
+ * and cached, so the HTML cannot know which one applies, and fetching to find
+ * out would reflow the header.
+ *
+ * The signed-in shape is the app's own account button
+ * (`navbar-user-menu.tsx`): a `rounded-full border p-1` pill, a 32px round
+ * avatar, and the name in muted text beside it. The avatar follows the same
+ * order too — a Farcaster photo or resolved ENS avatar when the hint carries
+ * one, otherwise the `blo` identicon drawn from the address, which is what the
+ * app falls back to. Same library, same input, so the identicon is identical
+ * rather than merely similar — verified across the major version gap between
+ * this site's `blo` and the app's, which draw the same blockie. Only a session
+ * with no address at all — nothing to derive one from — reaches the outlined
+ * mark.
+ */
+import { EXTERNAL, LOGIN } from "../data/site";
+
+type Props = {
+  class?: string;
+  /**
+   * Force the name on at every width. The desktop bar already shows it from the
+   * breakpoint the bar itself appears at; this is for the mobile menu, which is
+   * below that and has the room regardless.
+   */
+  showName?: boolean;
+};
+const { class: className = "", showName = false } = Astro.props;
+
+/* Points the hand-off at a locally running app when one is configured, so it
+   can be exercised without bouncing off production. */
+const appOrigin = import.meta.env.PUBLIC_APP_ORIGIN ?? EXTERNAL.app;
+
+/* Matches the app's Sign in button — see SiteHeader's own note on tokens. */
+const signInClass =
+  "inline-flex h-8 items-center justify-center rounded-md bg-[var(--nav-button-surface)] px-2 text-sm font-medium text-[var(--nav-button-text)] shadow-sm transition-colors hover:opacity-90";
+---
+
+<div class:list={["shrink-0", className]} data-account data-app-origin={appOrigin}>
+  <a data-account-signin href={LOGIN.href} class={signInClass}>{LOGIN.label}</a>
+
+  <a
+    data-account-link
+    href={appOrigin}
+    class="hidden shrink-0 items-center rounded-full border border-[var(--nav-field-border)] p-1 transition-colors hover:bg-[var(--nav-link-hover-surface)]"
+  >
+    <span
+      data-account-avatar
+      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--nav-icon)]"
+    >
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-8 w-8"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="10" r="3"></circle>
+        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"></path>
+      </svg>
+    </span>
+    <span
+      data-account-name
+      class:list={[
+        // `inline-block`, not `inline`: max-width and therefore `truncate` do
+        // nothing on a non-replaced inline box, so a long name would push the
+        // pill instead of ellipsing inside it.
+        "max-w-[16ch] truncate px-2 text-sm text-[var(--nav-icon)] xl:max-w-[22ch]",
+        // Held back to `xl`, as the app holds it. Revealing it at `lg` — where
+        // the desktop bar itself appears — was measured to overflow the row by
+        // ~148px at a 1080px viewport and put a horizontal scrollbar on every
+        // page: this name is ~182px wide against the 42px of the bare avatar,
+        // and the row has no such room until `xl`.
+        showName ? "inline-block" : "hidden xl:inline-block",
+      ]}></span>
+  </a>
+</div>
+
+<script>
+  import { blo } from "blo";
+  import { readIdentityHint } from "../scripts/identity-hint";
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-account]")) {
+    const signIn = root.querySelector<HTMLAnchorElement>(
+      "[data-account-signin]",
+    )!;
+    const account = root.querySelector<HTMLAnchorElement>(
+      "[data-account-link]",
+    )!;
+    const nameEl = root.querySelector<HTMLElement>("[data-account-name]")!;
+    const avatarEl = root.querySelector<HTMLElement>("[data-account-avatar]")!;
+    const appOrigin = root.dataset.appOrigin ?? "";
+
+    // Sign-in is a hand-off: the app owns the session, so it runs the dialog on
+    // its own origin, and the visitor carries on from there.
+    signIn.href = `${appOrigin}/?login=true`;
+    account.href = appOrigin;
+
+    const hint = readIdentityHint();
+    if (hint?.name) {
+      nameEl.textContent = hint.name;
+      account.setAttribute("aria-label", `${hint.name} — open the app`);
+      // `blo` is deterministic from the address, so this is the same picture
+      // the app draws — no lookup, and nothing to get out of step.
+      const picture =
+        hint.avatar ??
+        (hint.address ? blo(hint.address as `0x${string}`) : null);
+      if (picture) {
+        const image = document.createElement("img");
+        image.src = picture;
+        image.alt = "";
+        // No border. The app's avatar carries `border-1 border-gray-100`, and
+        // `border-1` is not a Tailwind class — it compiles to nothing, so the
+        // app paints a full-bleed 32px image and only the *colour* of a
+        // zero-width border. Copying those class names literally put a real 1px
+        // ring here, which ate the outer pixels and made the avatar read
+        // smaller than the app's at the same measured 32x32.
+        image.className = "h-8 w-8 rounded-full object-cover";
+        avatarEl.replaceChildren(image);
+      }
+      // Drop the other state rather than hiding it. Adding `hidden` to the
+      // button would not even work — it already carries `inline-flex`, and
+      // Tailwind emits the display utilities in a fixed order, so which one
+      // wins has nothing to do with the order they are listed in. Removing it
+      // also keeps a second "Sign in" out of the accessibility tree.
+      signIn.remove();
+      account.classList.remove("hidden");
+      account.classList.add("inline-flex");
+    } else {
+      account.remove();
+    }
+  }
+</script>

@@ -1,4 +1,4 @@
-import { EXTERNAL } from "./site";
+import { EXTERNAL, reportUrl } from "./site";
 
 /**
  * Site navigation, restored from the Hugo site's menu so the header keeps the
@@ -35,10 +35,14 @@ const applications = (id: string) =>
 
 export const MAIN_NAV: NavEntry[] = [
   {
-    label: "ProPGF",
+    label: "Funding",
     items: [
       { label: "Overview", href: "/propgf/" },
-      { label: "Financials", href: EXTERNAL.financials },
+      {
+        label: "Commitments & Disbursements",
+        href: EXTERNAL.financials,
+      },
+      { label: "RetroPGF", href: EXTERNAL.retropgf },
     ],
     groups: [
       {
@@ -61,24 +65,45 @@ export const MAIN_NAV: NavEntry[] = [
       },
     ],
   },
-  { label: "RetroPGF", href: EXTERNAL.retropgf },
-  { label: "Blog", href: "/blog/" },
   {
-    label: "More",
+    label: "Reports",
     items: [
-      { label: "About Filecoin", href: EXTERNAL.filecoin },
-      { label: "Upcoming Events", href: "https://fil.org/events/" },
-      { label: "Forum", href: EXTERNAL.forum },
-      { label: "Community", href: "https://filecoin.io/community" },
+      {
+        label: "Filecoin ProPGF Monthly",
+        href: reportUrl("propgfMonthly"),
+      },
+      {
+        label: "Monthly Pods Report",
+        href: reportUrl("monthlyPods"),
+      },
+      {
+        label: "Bi-Weekly Progress Report",
+        href: reportUrl("biweeklyProgress"),
+      },
+      { label: "All reports", href: EXTERNAL.reports },
     ],
   },
+  { label: "Blog", href: "/blog/" },
   {
-    label: "Resources",
+    label: "About",
     items: [
-      { label: "Twitter", href: EXTERNAL.twitter },
+      { label: "Filecoin", href: EXTERNAL.filecoin },
+      { label: "Upcoming Events", href: "https://fil.org/events/" },
+    ],
+  },
+  /*
+   * The app builds this menu from the tenant's `socialLinks`, under the name
+   * its `socialLinksLabel` gives them — "Connect" for this tenant — including
+   * the "Social" label it gives the Twitter link. Kept verbatim so the two
+   * headers read as one.
+   */
+  {
+    label: "Connect",
+    items: [
+      { label: "Social", href: EXTERNAL.twitter },
       { label: "Discord", href: EXTERNAL.discord },
       { label: "GitHub", href: EXTERNAL.github },
-      { label: "Skill", href: EXTERNAL.skills },
+      { label: "Skills", href: EXTERNAL.skills },
     ],
   },
 ];

@@ -9,17 +9,17 @@ const count =
   tier.functions === null ? "inventory pending" : `${tier.functions} functions`;
 ---
 
-<article class="overflow-hidden rounded-lg border border-line bg-white">
+<article class="overflow-hidden rounded-lg border border-line bg-surface">
   <header
     class="flex items-center justify-between gap-4 px-5 py-3"
     style={`background:${tierColor(tier.id)}`}
   >
     <h3
-      class="font-mono text-xs font-medium tracking-[0.14em] text-white uppercase"
+      class="font-mono text-xs font-medium tracking-[0.14em] text-on-fill uppercase"
     >
       {tier.name}
     </h3>
-    <p class="font-mono text-xs text-white/85">{count}</p>
+    <p class="font-mono text-xs text-on-fill/85">{count}</p>
   </header>
 
   <div class="p-5">

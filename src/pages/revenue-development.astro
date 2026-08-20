@@ -59,7 +59,7 @@ const nav = [
       </p>
     </div>
 
-    <div class="mt-10 rounded-lg border border-line bg-white p-6 sm:p-7">
+    <div class="mt-10 rounded-lg border border-line bg-surface p-6 sm:p-7">
       <CriteriaList
         label="What a roadmap has to show"
         items={REVDEV_ROADMAP_CRITERIA}
@@ -93,7 +93,7 @@ const nav = [
     >
       {
         REVDEV_FUNDING_FACTS.map((fact) => (
-          <div class="bg-white p-5">
+          <div class="bg-surface p-5">
             <dt class="mono-meta uppercase">{fact.label}</dt>
             <dd class="mt-1.5 text-lg font-semibold text-ink">{fact.value}</dd>
             <dd class="mt-1 text-sm leading-snug text-body">{fact.note}</dd>

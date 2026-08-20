@@ -1,0 +1,112 @@
+---
+/**
+ * Light/dark switch for the header. The class itself is applied by the inline
+ * script in BaseLayout before first paint; this only flips it and remembers
+ * the choice.
+ */
+type Props = { class?: string };
+
+const { class: className = "" } = Astro.props;
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  aria-label="Switch theme"
+  class:list={[
+    "flex shrink-0 cursor-pointer items-center justify-center rounded-full p-2 text-[var(--nav-icon)] transition-colors hover:text-[var(--nav-link-hover-text)]",
+    className,
+  ]}
+>
+  {
+    /* lucide `moon` and `sun`, copied verbatim — the app draws these exact
+      paths at stroke-width 2, and a hand-approximated crescent reads as a
+      different icon set beside it. */
+  }
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="dark:hidden"
+    aria-hidden="true"
+  >
+    <path
+      d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"
+    ></path>
+  </svg>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="hidden dark:block"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2"></path>
+    <path d="M12 20v2"></path>
+    <path d="m4.93 4.93 1.41 1.41"></path>
+    <path d="m17.66 17.66 1.41 1.41"></path>
+    <path d="M2 12h2"></path>
+    <path d="M20 12h2"></path>
+    <path d="m6.34 17.66-1.41 1.41"></path>
+    <path d="m19.07 4.93-1.41 1.41"></path>
+  </svg>
+</button>
+
+{
+  /*
+  Astro emits one copy of a component script however many times the component
+  is rendered, so the desktop and mobile buttons share this listener.
+*/
+}
+<script>
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]"),
+  );
+  const system = window.matchMedia("(prefers-color-scheme: dark)");
+
+  const label = (dark: boolean) => `Switch to ${dark ? "light" : "dark"} theme`;
+
+  const paint = (dark: boolean) => {
+    document.documentElement.classList.toggle("dark", dark);
+    for (const button of buttons)
+      button.setAttribute("aria-label", label(dark));
+  };
+
+  paint(document.documentElement.classList.contains("dark"));
+
+  for (const button of buttons) {
+    button.addEventListener("click", () => {
+      const dark = !document.documentElement.classList.contains("dark");
+      paint(dark);
+      try {
+        // Matching the OS again drops the override, so the site resumes
+        // following it.
+        if (dark === system.matches) localStorage.removeItem("theme");
+        else localStorage.setItem("theme", dark ? "dark" : "light");
+      } catch {
+        // Storage unavailable — the choice just does not survive the page.
+      }
+    });
+  }
+
+  system.addEventListener("change", (event) => {
+    let stored = null;
+    try {
+      stored = localStorage.getItem("theme");
+    } catch {
+      // Treated as "no override", same as the inline script does.
+    }
+    if (stored === null) paint(event.matches);
+  });
+</script>

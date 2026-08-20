@@ -1,13 +1,55 @@
+/*
+ * Layer order, declared before anything else so it is the order that sticks:
+ * a layer first named later ranks above every layer named before it.
+ *
+ * `karma-chat` holds the chat widget's own stylesheet, which it injects
+ * unlayered at runtime. Unlayered rules beat every layer, so left alone its
+ * `.hidden { display: none }` outranks Tailwind's layered utilities and hides
+ * this site's header nav (`hidden md:flex`). KarmaChatWidget.astro moves those
+ * rules into this layer.
+ *
+ * Its position is what makes the widget look like itself. Below `utilities`,
+ * so this site's own classes still win and the nav survives — but *above*
+ * `base`, because Tailwind's preflight there zeroes padding and border on
+ * every element, and the widget's `p-3`, `border-border` and `bg-brand-500`
+ * are the layered rules that have to answer it. Named first, as it was, the
+ * preflight won instead: the panel lost its padding, its borders went to
+ * currentColor and the send button turned transparent.
+ */
+@layer theme, base, components, karma-chat, utilities;
+
 @import "tailwindcss";
 
-@import "@fontsource-variable/inter";
 @import "@fontsource-variable/inter-tight";
 @import "@fontsource-variable/jetbrains-mono";
 
+/*
+ * Inter, served from the identical woff2 the app self-hosts
+ * (gap-app-v2 `public/fonts/Inter/Inter.woff2`, loaded there via
+ * next/font/local).
+ *
+ * The fontsource build of Inter is the same typeface but not the same file, and
+ * the two rasterise differently — enough that the shared header's text did not
+ * match the app's pixel for pixel. One file removes the question.
+ */
+@font-face {
+  font-family: "Inter App";
+  src: url("/fonts/Inter.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * Dark mode is a class on <html>, not a media query: the header toggle has to
+ * be able to override the OS preference. BaseLayout's inline head script is
+ * what puts the class there before first paint.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans:
-    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    sans-serif;
+    "Inter App", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display:
     "Inter Tight Variable", "Inter Variable", ui-sans-serif, system-ui,
     sans-serif;
@@ -24,6 +66,20 @@
   --color-surface: #ffffff;
   --color-tint: #f3f5f8;
   --color-deep: #0c1322;
+
+  /*
+   * Text sitting on a saturated fill — accent and tier card headers. White in
+   * light mode; in dark mode the fills brighten, so it flips to near-black
+   * rather than staying white. Literal `text-white` is still correct on
+   * --color-deep, which is dark in both themes.
+   */
+  --color-on-fill: #ffffff;
+  /*
+   * The two foregrounds that sit on --color-deep. Constant in both themes,
+   * because the panels they belong to are dark in both themes.
+   */
+  --color-deep-fg: #ffffff;
+  --color-code-fg: #e6e9ef;
 
   /*
    * Brand blue. Site chrome — the wordmark, the footer contact — uses this so
@@ -56,10 +112,137 @@
   --color-warn: #c0561a;
 }
 
+/*
+ * Navbar parity tokens.
+ *
+ * The header is meant to be indistinguishable from the app's whitelabel navbar
+ * (gap-app-v2 `src/components/navbar/whitelabel-navbar.tsx`), which is built on
+ * Tailwind's zinc scale and its own semantic tokens rather than this site's
+ * palette. Close is not the same: side by side the greys read as two different
+ * products, so these carry the app's exact computed values instead of this
+ * site's near-equivalents.
+ *
+ * Every value here was measured off the running app in both themes — change
+ * them by measuring again, not by eye.
+ */
+:root {
+  --nav-surface: #ffffff;
+  --nav-border: rgb(228, 228, 231); /* zinc-200 */
+  --nav-title: rgb(24, 24, 27); /* zinc-900 */
+  --nav-subtle: rgb(113, 113, 122); /* zinc-500 — "Powered by" */
+  --nav-link: rgb(82, 82, 91); /* zinc-600 */
+  --nav-link-hover-surface: rgb(244, 244, 245); /* zinc-100 */
+  --nav-link-hover-text: rgb(24, 24, 27); /* zinc-900 */
+  --nav-field-surface: #ffffff;
+  --nav-field-border: rgb(230, 230, 230);
+  --nav-field-text: rgb(10, 10, 10);
+  --nav-icon: rgb(115, 115, 115); /* muted-foreground */
+  --nav-rule: rgb(228, 228, 231); /* the divider before sign-in */
+  --nav-accent: rgb(76, 111, 255); /* brand-blue, both themes */
+  --nav-button-surface: rgb(245, 245, 245);
+  --nav-button-text: rgb(23, 23, 23);
+  --nav-body: rgb(55, 65, 81);
+}
+
+.dark {
+  --nav-surface: rgb(24, 24, 27); /* zinc-900 */
+  --nav-border: rgb(39, 39, 42); /* zinc-800 */
+  --nav-title: #ffffff;
+  --nav-subtle: rgb(161, 161, 170); /* zinc-400 */
+  --nav-link: rgb(212, 212, 216); /* zinc-300 */
+  --nav-link-hover-surface: rgb(39, 39, 42); /* zinc-800 */
+  --nav-link-hover-text: #ffffff;
+  --nav-field-surface: rgb(0, 0, 0);
+  --nav-field-border: rgb(41, 41, 41);
+  --nav-field-text: rgb(250, 250, 250);
+  --nav-icon: rgb(163, 163, 163);
+  --nav-rule: rgb(63, 63, 70); /* zinc-700 */
+  --nav-button-surface: rgb(23, 23, 23);
+  --nav-button-text: rgb(245, 245, 245);
+  --nav-body: #ffffff;
+}
+
+/*
+ * The wordmark's face: the app's mono stack, copied verbatim.
+ *
+ * Verbatim is the most this side can do. The app names Fira Code first and
+ * ships no `@font-face` for it (the value is written as an inline style on
+ * <html> by its `store/tenant.ts`, from the tenant theme's `fonts.mono`), so
+ * the wordmark resolves to whatever monospace the machine happens to have —
+ * which is why the same page renders differently across OSes, and why the two
+ * headers can still differ by a few pixels here despite identical declarations.
+ *
+ * The stack below is the app's `fonts.mono`, copied exactly rather than
+ * improved on. Fira Code is not among the faces the app loads, so its wordmark
+ * actually renders in whatever monospace the reader's OS supplies. Serving a
+ * real webfont here would have been the better typography and the wrong answer:
+ * it made this wordmark a visibly different face from the app's on the same
+ * screen. Declaring the same stack lets both fall through to the same face,
+ * whatever that turns out to be per machine.
+ */
+@theme {
+  --font-nav-mono:
+    "Fira Code", Monaco, Consolas, monospace, ui-monospace, SFMono-Regular,
+    "SF Mono", Menlo, "Liberation Mono", monospace;
+}
+
+/*
+ * Dark palette. A plain rule, not a second @theme block: the utilities are
+ * already generated from the light values above and compile to var()
+ * references, so redefining the same custom properties under .dark is all it
+ * takes to repaint the site.
+ *
+ * Every value here was checked to clear 4.5:1 against both --color-surface and
+ * --color-tint. The accents and tiers had to brighten, because the light
+ * values were tuned against white; where they are used as a *fill* the text on
+ * top comes from --color-on-fill, which flips with them.
+ *
+ * --color-accent is overridden too, for the pages that do not set it. Program
+ * pages point it at one of the --color-accent-* tokens through an inline style
+ * on <html>, which beats this rule — and since that inline value is a var()
+ * reference, overriding the program tokens below is what carries /kernel,
+ * /rnd and /revenue-development into the dark theme.
+ */
+.dark {
+  --color-ink: #f2f4f8;
+  --color-body: #b7bec9;
+  --color-muted: #98a1ae;
+  --color-line: #2a313c;
+  --color-line-soft: #202631;
+  --color-surface: #0f1216;
+  --color-tint: #171c23;
+  /* Lifted off the page background so bg-deep panels still read as panels. */
+  --color-deep: #1b2436;
+
+  --color-on-fill: #0f1216;
+
+  --color-brand: #7aa9f7;
+
+  --color-accent: #7aa9f7;
+  --color-accent-kernel: #7aa9f7;
+  --color-accent-rd: #e07a6c;
+  --color-accent-rev: #5ba3cf;
+
+  --color-tier-irreplaceable: #d9604f;
+  --color-tier-essential: #c98a12;
+  --color-tier-important: #2f9c80;
+  --color-tier-nice: #9a6ade;
+
+  --color-ok: #46b876;
+  --color-bad: #e2685a;
+  --color-warn: #dd8544;
+}
+
 @layer base {
   html {
+    color-scheme: light;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+  }
+
+  /* Scrollbars and form controls follow the theme. */
+  html.dark {
+    color-scheme: dark;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -81,6 +264,20 @@
     font-family: var(--font-sans);
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * ...but not in the header, which has to match the app's navbar exactly and
+   * the app sets neither. `font-synthesis-weight: none` suppresses the faux
+   * bold the app gets when a face lacks the requested weight — the wordmark
+   * asks for 600 — and `optimizeLegibility` changes kerning and ligatures. Both
+   * alter the drawn glyphs while leaving every measured box identical, which is
+   * exactly the kind of difference a getBoundingClientRect comparison misses.
+   */
+  header.sticky,
+  header.sticky * {
+    font-synthesis-weight: auto;
+    text-rendering: auto;
   }
 
   h1,
@@ -211,7 +408,7 @@
 
   & pre {
     background: var(--color-deep);
-    color: #e6e9ef;
+    color: var(--color-code-fg);
     padding: 1.125rem 1.25rem;
     border-radius: 6px;
     overflow-x: auto;
@@ -254,4 +451,56 @@
     color: var(--color-ink);
     font-weight: 600;
   }
+}
+
+/*
+ * Dark skin for the Karma chat widget.
+ *
+ * The widget ships a light theme only — its Tailwind build compiled the
+ * semantic colours to literal values, so there are no custom properties to
+ * override and no class hook to flip. These rules repaint its surfaces with
+ * this site's tokens when the site is dark. They are unlayered on purpose:
+ * the widget's own stylesheet lives in the `karma-chat` layer (see
+ * KarmaChatWidget.astro), so anything here outranks it without !important.
+ *
+ * Scoped to `.karma-chat`, the widget's documented root. If its internals are
+ * renamed upstream these stop matching and the panel returns to light — a
+ * mismatch, not a breakage.
+ */
+/*
+ * The widget's reset names a system font stack, which is what it falls back to
+ * off the app — where the panel renders in Inter like everything around it.
+ * Unlayered, so it outranks that reset without having to match its `:where()`
+ * selector; scoped to the widget, so nothing else moves.
+ */
+.karma-chat,
+.karma-chat * {
+  font-family: var(--font-sans);
+}
+
+html.dark .karma-chat .bg-card,
+html.dark .karma-chat .bg-background,
+html.dark .karma-chat .bg-white {
+  background-color: var(--color-surface);
+}
+
+html.dark .karma-chat .text-card-foreground,
+html.dark .karma-chat .text-foreground {
+  color: var(--color-ink);
+}
+
+html.dark .karma-chat .text-muted-foreground {
+  color: var(--color-muted);
+}
+
+html.dark .karma-chat .border-border,
+html.dark .karma-chat .border-b,
+html.dark .karma-chat .border-t {
+  border-color: var(--color-line);
+}
+
+html.dark .karma-chat input,
+html.dark .karma-chat textarea {
+  background-color: var(--color-tint);
+  color: var(--color-ink);
 }

@@ -1,28 +1,79 @@
 ---
+/**
+ * Brand slot, matching the app's: the wordmark with a "Powered by Karma" line
+ * beneath it, the pair stacked and left-aligned.
+ *
+ * The breadcrumb is this site's own — the app has no page above the navbar to
+ * name — so it sits on the wordmark's line rather than displacing the Karma
+ * credit.
+ */
 type Props = { breadcrumb?: string };
 const { breadcrumb } = Astro.props;
 ---
 
-{
-  /* min-w-0 + truncate keeps long breadcrumbs ("Revenue Development") from
-    pushing the header nav off a 320px viewport. */
-}
-<div class="flex min-w-0 items-baseline gap-2 font-mono text-sm">
-  <a
-    href="/"
-    class="shrink-0 py-2.5 -my-2.5 font-semibold tracking-tight text-ink"
-    aria-label="filpgf.io home"
-  >
-    fil<span class="text-brand">pgf</span>.io
-  </a>
+<div class="flex shrink-0 flex-col items-start">
   {
-    breadcrumb && (
-      <>
-        <span class="shrink-0 text-muted" aria-hidden="true">
-          /
-        </span>
-        <span class="truncate font-semibold text-ink">{breadcrumb}</span>
-      </>
-    )
+    /* min-w-0 + truncate keeps long breadcrumbs ("Revenue Development") from
+      pushing the header nav off a 320px viewport. */
   }
+  <div class="flex min-w-0 items-baseline gap-2">
+    <a
+      href="/"
+      class="shrink-0 font-nav-mono text-lg font-semibold leading-normal tracking-tight text-[var(--nav-title)]"
+      aria-label="filpgf.io home"
+    >
+      {
+        /* The accent is the pair the app declares for this wordmark
+           (tenant-config `filecoin.header.wordmark`): the light one is this
+           site's brand colour, the dark one the brighter blue it switches to
+           for contrast on a dark bar. Hardcoded rather than `text-brand` so
+           both headers land on the same blue in both themes.
+
+           `font-sans` is not a style choice — it reproduces the app. Its
+           globals.css carries a universal `* { @apply font-body }`, and a
+           universal selector overrides *inheritance*, so the app's accent span
+           drops out of the mono face its parent sets and renders in Inter.
+           Three of the nine characters are therefore proportional, which is
+           what made this wordmark ~3px narrower than any mono stack could
+           reproduce here. */
+      }
+      fil<span class="font-sans text-[#1a5fd0] dark:text-[#0090ff]">pgf</span
+      >.io
+    </a>
+    {
+      breadcrumb && (
+        <>
+          <span
+            class="shrink-0 font-nav-mono text-sm text-[var(--nav-subtle)]"
+            aria-hidden="true"
+          >
+            /
+          </span>
+          <span class="truncate font-nav-mono text-sm font-semibold text-[var(--nav-title)]">
+            {breadcrumb}
+          </span>
+        </>
+      )
+    }
+  </div>
+
+  <span class="flex w-full items-center justify-end gap-1">
+    <span class="text-xs leading-normal text-[var(--nav-subtle)]"
+      >Powered by</span
+    >
+    <img
+      src="/karma-wordmark-light.svg"
+      alt="Karma"
+      width="40"
+      height="20"
+      class="block dark:hidden"
+    />
+    <img
+      src="/karma-wordmark-dark.svg"
+      alt="Karma"
+      width="40"
+      height="20"
+      class="hidden dark:block"
+    />
+  </span>
 </div>

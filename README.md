@@ -2,7 +2,8 @@
 
 Filecoin Public Goods Funding — the public site at [www.filpgf.io](https://www.filpgf.io).
 Built with [Astro](https://astro.build) and Tailwind CSS v4, deployed to Netlify as
-a fully static site with no client-side JavaScript.
+a fully static site. The only client-side JavaScript is the header: menu
+behaviour and the light/dark theme toggle.
 
 ## Commands
 
