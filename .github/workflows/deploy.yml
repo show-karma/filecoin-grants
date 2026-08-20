@@ -1,4 +1,11 @@
-name: Build and deploy
+# Builds the site on every PR and on main. It does NOT publish: Vercel serves
+# www.filpgf.io through its own git integration, and did so while this workflow
+# was also publishing the same build to GitHub Pages — a second copy that no
+# DNS pointed at.
+#
+# The build still earns its place here: `pnpm build` runs `astro check` first,
+# so a type error fails the PR instead of reaching Vercel.
+name: Build
 
 on:
   push:
@@ -7,10 +14,10 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: pages-${{ github.ref }}
+  group: build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -39,11 +46,3 @@ jobs:
           name: site
           path: dist
           retention-days: 14
-
-      # Only main publishes. Pull requests stop at the build above.
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
