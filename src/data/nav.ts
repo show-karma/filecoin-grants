@@ -37,7 +37,9 @@ export const MAIN_NAV: NavEntry[] = [
   {
     label: "Funding",
     items: [
-      { label: "Overview", href: "/propgf/" },
+      // The ProPGF overview (/propgf/) is deliberately not listed while no round
+      // is open; the page stays reachable by URL. Restore the "Overview" item
+      // here and in the app's whitelabel navbar together when a new RFP opens.
       {
         label: "Commitments & Disbursements",
         href: EXTERNAL.financials,

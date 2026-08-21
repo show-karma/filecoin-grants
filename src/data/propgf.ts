@@ -2,7 +2,8 @@ import { EXTERNAL } from "./site";
 
 /**
  * ProPGF Batch 3 overview — the page the old Hugo site served at /propgf and
- * the header's "ProPGF → Overview" item points at. Copy is carried over from
+ * the header's "Funding → Overview" item pointed at (hidden while no round is
+ * open; the page stays reachable by URL). Copy is carried over from
  * content/propgf/_index.md unchanged; only the presentation is new.
  */
 
