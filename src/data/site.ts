@@ -83,6 +83,31 @@ export const IDENTITY_HINT = {
 } as const;
 
 /**
+ * The token bridge: how the chat on this static site answers as the signed-in
+ * visitor.
+ *
+ * A Privy session lives in origin-scoped storage on app.filpgf.io, which this
+ * page cannot read. The app exposes one framable route for exactly this; the
+ * widget frames it (same site, so the frame sees the real session) and asks it
+ * for an access token over postMessage before each message.
+ *
+ * Mirrors `src/features/token-bridge/protocol.ts` and
+ * `utilities/token-bridge/origins.ts` in gap-app-v2. Change both ends.
+ */
+export const TOKEN_BRIDGE = {
+  path: "/auth/token-bridge",
+  messages: {
+    request: "karma-token-bridge:request",
+    response: "karma-token-bridge:response",
+    ready: "karma-token-bridge:ready",
+  },
+  /** How long to wait for the frame to load and Privy to rehydrate. */
+  handshakeTimeoutMs: 8000,
+  /** How long a single token request may take before the message goes anonymous. */
+  requestTimeoutMs: 5000,
+} as const;
+
+/**
  * Karma's assistant, running under the Filecoin tenant. A full public page in
  * the app — no login needed, it answers as a visitor — so the site links
  * straight to it rather than embedding anything.

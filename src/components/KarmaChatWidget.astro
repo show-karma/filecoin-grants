@@ -6,7 +6,7 @@
  * talks to the Karma API directly — no iframe, so the chat is part of the page
  * rather than a window onto the app.
  *
- * Two things it needs from us:
+ * Three things it needs from us:
  *
  * 1. Its stylesheet is injected unlayered at runtime, and unlayered rules beat
  *    every cascade layer. Its reset includes `.hidden { display: none }`, which
@@ -17,8 +17,16 @@
  *
  * 2. Its panel opens from its own launcher. The header's "Ask Karma" button
  *    clicks that launcher, and falls back to the app if it is not there.
+ *
+ * 3. A token, when the visitor is signed in to the app. This site has no
+ *    session of its own — sign-in lives on app.filpgf.io, and Privy keeps a
+ *    session in origin-scoped storage — so the app exposes a framable bridge
+ *    route that hands out the access token over postMessage. The widget asks
+ *    the bridge before every message and sends what it gets as a bearer; when
+ *    the bridge has nothing to give, the message goes out anonymous, which is
+ *    what every failure here degrades to.
  */
-import { ASK_KARMA, EXTERNAL, IDENTITY_HINT, KARMA } from "../data/site";
+import { ASK_KARMA, EXTERNAL, IDENTITY_HINT, KARMA, TOKEN_BRIDGE } from "../data/site";
 
 const communityId = "filecoin";
 
@@ -33,15 +41,14 @@ const widgetOrigin =
 const appOrigin = import.meta.env.PUBLIC_APP_ORIGIN ?? EXTERNAL.app;
 
 /*
- * The assistant answers here as a visitor.
+ * What the composer says about whose answers these are.
  *
- * This site has no session to pass it — the app owns sign-in, on its own
- * origin, and a login there cannot be inherited here (Privy restores a session
- * from origin-scoped storage, not from the cookie shared across the domain).
- * So answers on this page are general, and someone asking about their own
- * application should be told that before they act on the reply rather than
- * after. Both phrasings send them to the app, which is the surface that knows
- * who they are.
+ * The bridge is only framed when the identity hint says someone is signed in:
+ * it loads the app's auth stack, which is a lot to pay on behalf of a visitor
+ * who has no session to recover. The hint is display-only and may be stale,
+ * so it decides whether to *try*, never what the visitor gets — the bridge
+ * re-derives the session from Privy and says for itself whether anyone is
+ * signed in. A stale hint costs one wasted frame, and an anonymous answer.
  */
 const CHAT_NOTICE = {
   signedOut: {
@@ -49,14 +56,17 @@ const CHAT_NOTICE = {
     actionLabel: "Sign in for personalized answers",
     actionHref: `${appOrigin}/?login=true`,
   },
-  /* Already signed in — on the app, which this page cannot see. So the ask is
-     to continue there, not to sign in again. */
-  signedIn: {
+  /* The hint said signed in, but the bridge could not confirm it — session
+     expired, or the frame never answered. The app is where that gets sorted. */
+  unconfirmed: {
     text: "Answers here are general.",
     actionLabel: "Ask in the app for personalized answers",
     actionHref: `${appOrigin}/ask-karma`,
   },
 } as const;
+/* When the bridge confirms a session there is no notice at all: the answers
+   are the visitor's own, which needs no caveat, and the app's panel shows
+   nothing there either. */
 ---
 
 <script
@@ -73,6 +83,10 @@ const CHAT_NOTICE = {
     fallbackHref: ASK_KARMA.href,
     chatNotice: CHAT_NOTICE,
     hintCookie: IDENTITY_HINT.cookie,
+    bridgeUrl: `${appOrigin}${TOKEN_BRIDGE.path}`,
+    bridgeMessages: TOKEN_BRIDGE.messages,
+    bridgeHandshakeTimeoutMs: TOKEN_BRIDGE.handshakeTimeoutMs,
+    bridgeRequestTimeoutMs: TOKEN_BRIDGE.requestTimeoutMs,
   }}
 >
   (() => {
@@ -134,19 +148,105 @@ const CHAT_NOTICE = {
         document.head.appendChild(script);
       });
 
+    /*
+       The token bridge.
+
+       One hidden frame of the app's bridge route, mounted on demand. It is
+       trusted on exactly one thing: its origin. Every message is checked
+       against the origin the frame was created for, and every request is
+       posted to that origin alone — a frame that navigated elsewhere can
+       neither read a request nor forge an answer.
+
+       Two timeouts bound the cost of it not working: the handshake (frame
+       load plus Privy rehydration) and each request. Both resolve to "no
+       token", which the widget treats as an anonymous message — there is no
+       error path, because the visitor-grade answer is the right fallback for
+       every way this can fail.
+    */
+    const bridge = (() => {
+      const origin = new URL(bridgeUrl).origin;
+      const pending = new Map();
+      let frame = null;
+      let handshake = null;
+      let state = null;
+      let settleHandshake = null;
+
+      window.addEventListener("message", (event) => {
+        if (event.origin !== origin) return;
+        const data = event.data;
+        if (!data || typeof data !== "object") return;
+        if (data.type === bridgeMessages.ready) {
+          state = { authenticated: data.authenticated === true };
+          settleHandshake?.(state);
+          return;
+        }
+        if (data.type === bridgeMessages.response && pending.has(data.id)) {
+          pending.get(data.id)(typeof data.token === "string" ? data.token : null);
+          pending.delete(data.id);
+        }
+      });
+
+      /* Mount the frame and wait for its first `ready`. Idempotent: later
+         callers share the same promise, and the frame is never recreated. */
+      const mount = () => {
+        if (handshake) return handshake;
+        handshake = new Promise((resolve) => {
+          settleHandshake = resolve;
+          setTimeout(() => resolve(state), bridgeHandshakeTimeoutMs);
+        });
+        frame = document.createElement("iframe");
+        frame.src = bridgeUrl;
+        frame.title = "Karma session bridge";
+        frame.setAttribute("aria-hidden", "true");
+        frame.tabIndex = -1;
+        frame.style.cssText =
+          "position:absolute;width:0;height:0;border:0;visibility:hidden";
+        document.body.appendChild(frame);
+        return handshake;
+      };
+
+      const getToken = async () => {
+        const confirmed = await mount();
+        if (!confirmed || !frame?.contentWindow) return null;
+        return new Promise((resolve) => {
+          const id = crypto.randomUUID();
+          pending.set(id, resolve);
+          frame.contentWindow.postMessage(
+            { type: bridgeMessages.request, id },
+            origin,
+          );
+          setTimeout(() => {
+            if (pending.delete(id)) resolve(null);
+          }, bridgeRequestTimeoutMs);
+        });
+      };
+
+      return { mount, getToken };
+    })();
+
     const start = async () => {
       if (ready) return true;
       await load();
-      // Which wording applies depends on whether the app has told this page
-      // who is signed in — the identity hint — so it is read at open time
-      // rather than baked into the page, which is static and cached.
-      const signedIn = document.cookie.includes(`${hintCookie}=`);
+      // Which wording applies, and whether the bridge is worth framing, depend
+      // on whether the app has told this page who is signed in — the identity
+      // hint — so it is read at open time rather than baked into the page,
+      // which is static and cached.
+      const hinted = document.cookie.includes(`${hintCookie}=`);
+      const session = hinted ? await bridge.mount() : null;
+      const personalized = Boolean(session?.authenticated);
       window.KarmaChat.init({
         apiUrl,
         communityId,
         title,
         placeholder,
-        notice: signedIn ? chatNotice.signedIn : chatNotice.signedOut,
+        /* Asked before every message, so a token that expires mid-conversation
+           is refreshed by Privy rather than sent stale. */
+        getAuthToken: hinted ? bridge.getToken : undefined,
+        notice: personalized
+          ? undefined
+          : hinted
+            ? chatNotice.unconfirmed
+            : chatNotice.signedOut,
         /* The same header the app's panel draws: Karma's mark, its title, and
            the badge naming the context the answers are scoped to. This site is
            Karma's own surface for Filecoin, not a third party embedding the
