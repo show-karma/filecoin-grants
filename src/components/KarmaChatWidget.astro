@@ -171,6 +171,8 @@ const CHAT_NOTICE = {
       let state = null;
       let settleHandshake = null;
 
+      const listeners = new Set();
+
       window.addEventListener("message", (event) => {
         if (event.origin !== origin) return;
         const data = event.data;
@@ -178,6 +180,7 @@ const CHAT_NOTICE = {
         if (data.type === bridgeMessages.ready) {
           state = { authenticated: data.authenticated === true };
           settleHandshake?.(state);
+          for (const listener of listeners) listener(state);
           return;
         }
         if (data.type === bridgeMessages.response && pending.has(data.id)) {
@@ -221,7 +224,14 @@ const CHAT_NOTICE = {
         });
       };
 
-      return { mount, getToken };
+      /* Called on every `ready` the bridge sends — the first, and each later
+         flip of the signed-in state (sign-out in another tab, for one). */
+      const onState = (listener) => {
+        listeners.add(listener);
+        if (state) listener(state);
+      };
+
+      return { mount, getToken, onState };
     })();
 
     const start = async () => {
@@ -232,8 +242,30 @@ const CHAT_NOTICE = {
       // hint — so it is read at open time rather than baked into the page,
       // which is static and cached.
       const hinted = document.cookie.includes(`${hintCookie}=`);
-      const session = hinted ? await bridge.mount() : null;
-      const personalized = Boolean(session?.authenticated);
+      /* What the composer says while the bridge is still being asked, or
+         when it confirms a session: nothing. Only a refusal earns a note. */
+      const noticeFor = (session) =>
+        !hinted
+          ? chatNotice.signedOut
+          : session && !session.authenticated
+            ? chatNotice.unconfirmed
+            : undefined;
+      /* The bundle gained setNotice() later than init(); against an older
+         bundle the note has to be right at init, which means waiting for the
+         handshake first — the panel opens up to a handshake-timeout late, but
+         never says the wrong thing. */
+      const canUpdate = typeof window.KarmaChat.setNotice === "function";
+      if (hinted) {
+        const handshake = bridge.mount();
+        if (canUpdate) {
+          bridge.onState((session) => window.KarmaChat.setNotice(noticeFor(session)));
+          handshake.then((session) => {
+            if (!session) window.KarmaChat.setNotice(chatNotice.unconfirmed);
+          });
+        } else {
+          await handshake;
+        }
+      }
       window.KarmaChat.init({
         apiUrl,
         communityId,
@@ -242,11 +274,7 @@ const CHAT_NOTICE = {
         /* Asked before every message, so a token that expires mid-conversation
            is refreshed by Privy rather than sent stale. */
         getAuthToken: hinted ? bridge.getToken : undefined,
-        notice: personalized
-          ? undefined
-          : hinted
-            ? chatNotice.unconfirmed
-            : chatNotice.signedOut,
+        notice: canUpdate || !hinted ? noticeFor(null) : noticeFor(await bridge.mount()),
         /* The same header the app's panel draws: Karma's mark, its title, and
            the badge naming the context the answers are scoped to. This site is
            Karma's own surface for Filecoin, not a third party embedding the
