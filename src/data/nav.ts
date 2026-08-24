@@ -44,7 +44,7 @@ export const MAIN_NAV: NavEntry[] = [
         label: "Commitments & Disbursements",
         href: EXTERNAL.financials,
       },
-      { label: "RetroPGF", href: EXTERNAL.retropgf },
+      { label: "RetroPGF - Paused", href: EXTERNAL.retropgf },
     ],
     groups: [
       {
