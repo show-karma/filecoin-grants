@@ -12,26 +12,8 @@
  * up to an expiration window instead of merely failing a deploy.
  */
 
-import { KARMA } from "../data/site";
+import { apiOrigin } from "./api-origin";
 
-/*
- * The host is overridable so a deployment can be pointed at a staging or
- * tunnelled indexer without editing committed config — the same escape hatch
- * the chat widget has. Unset (the normal case, including production) it is the
- * real API, from the committed default in src/data/site.ts.
- *
- * `KARMA_API_ORIGIN` must be set on the Vercel project for that override to
- * apply now that the fetch runs on a function. `process.env` is read first
- * because it is the only source that exists at request time: Vite inlines
- * `import.meta.env` at build, so on a deployed function it is frozen to what
- * the build machine saw. The inlined value still covers `astro dev` and
- * `astro build`, where Astro loads `.env` into `import.meta.env` only.
- */
-const API =
-  (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
-    ?.KARMA_API_ORIGIN ||
-  (import.meta.env?.KARMA_API_ORIGIN as string | undefined) ||
-  KARMA.apiHost;
 const COMMUNITY = "filecoin";
 const TIMEOUT_MS = 15_000;
 
@@ -217,7 +199,7 @@ export function parseCommunityMetrics(payload: unknown): CommunityMetrics {
 
 export async function fetchCommunityMetrics(): Promise<CommunityMetrics> {
   try {
-    const response = await fetch(`${API}/v2/communities/${COMMUNITY}/metrics`, {
+    const response = await fetch(`${apiOrigin()}/v2/communities/${COMMUNITY}/metrics`, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
@@ -259,7 +241,7 @@ const isComplete = (milestone: Milestone) =>
 export async function fetchLiveCounts(): Promise<LiveCounts> {
   try {
     const response = await fetch(
-      `${API}/communities/${COMMUNITY}/grants?limit=200`,
+      `${apiOrigin()}/communities/${COMMUNITY}/grants?limit=200`,
       { signal: AbortSignal.timeout(TIMEOUT_MS) },
     );
 

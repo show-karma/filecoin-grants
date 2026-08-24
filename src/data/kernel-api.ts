@@ -18,7 +18,8 @@
  * leave the last good HTML live.
  */
 
-const DEFAULT_ORIGIN = "https://gapapi.karmahq.xyz";
+import { apiOrigin } from "../lib/api-origin";
+
 
 export const WINDOW_DAYS = 90;
 
@@ -795,10 +796,7 @@ export function assembleKernelData(
 /* Per-render fetch                                                     */
 /* ------------------------------------------------------------------ */
 
-type EnvBag = { env?: Record<string, string | undefined> };
-
 /**
- * `KERNEL_API_ORIGIN` must be set on the Vercel project (all environments) for
  * anything other than the public production API to be read.
  *
  * `process.env` is consulted first because it is the only one of the two that
@@ -809,11 +807,6 @@ type EnvBag = { env?: Record<string, string | undefined> };
  * while the inlined value still covers `astro dev` and `astro build`, where
  * Astro loads `.env` into `import.meta.env` and not into `process.env`.
  */
-function apiOrigin(): string {
-  const fromNode = (globalThis as { process?: EnvBag }).process?.env?.KERNEL_API_ORIGIN;
-  const fromAstro = import.meta.env?.KERNEL_API_ORIGIN as string | undefined;
-  return (fromNode || fromAstro || DEFAULT_ORIGIN).replace(/\/+$/, "");
-}
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url, {

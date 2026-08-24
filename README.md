@@ -117,9 +117,12 @@ Tokens are defined in `src/styles/global.css` under `@theme`.
 Vercel builds `pnpm run build`. The `@astrojs/vercel` adapter emits the static
 routes as files and `/` and `/kernel` as ISR functions revalidating every hour.
 
-Set `KERNEL_API_ORIGIN` and `KARMA_API_ORIGIN` on the Vercel project if either
-API should be read from somewhere other than its committed default — both are
-now read at request time, not only during the build.
+Set `KARMA_API_ORIGIN` on the Vercel project to point the site at a staging or
+tunnelled indexer. One variable covers every read — `/v2/communities/*`,
+`/v2/kernel/*` and `/v2/indicators/*` are all served by the same API. It must be
+a **runtime** variable: these two pages render on demand, and a build-only value
+never reaches the function. Unset, the committed host in `src/data/site.ts` is
+used, which is what production wants.
 
 The CSP, cache headers, and the 301s from the retired Hugo URLs (`/propgf/*`,
 `/batches/*`) still need porting to Vercel; the `netlify.toml` that declared
