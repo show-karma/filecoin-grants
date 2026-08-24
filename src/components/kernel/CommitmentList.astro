@@ -1,0 +1,53 @@
+---
+import type { Commitment } from "../../data/kernel-api";
+import CommitmentBlock from "./CommitmentBlock.astro";
+import { pluralize } from "./uptime";
+
+type Props = { commitments: Commitment[] };
+const { commitments } = Astro.props;
+
+/*
+ * The two kinds are never mixed in one list: a growth counter has no threshold
+ * and no verdict, so ranking it beside a health commitment would imply a
+ * pass/fail it can never have.
+ */
+const health = commitments.filter((c) => c.commitmentType !== "growth");
+const growth = commitments.filter((c) => c.commitmentType === "growth");
+
+const groups = [
+  {
+    key: "health",
+    title: "Health commitments",
+    note: `${health.length} ${pluralize(health.length, "metric")} · a threshold, met or missed`,
+    items: health,
+  },
+  {
+    key: "growth",
+    title: "Growth counters",
+    note: `${growth.length} ${pluralize(growth.length, "counter")} · tracked for direction, never pass/fail`,
+    items: growth,
+  },
+].filter((group) => group.items.length > 0);
+---
+
+{
+  groups.length === 0 ? (
+    <p class="mono-meta">no commitments reported</p>
+  ) : (
+    <div class="space-y-8">
+      {groups.map((group) => (
+        <section>
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-2">
+            <h4 class="text-[0.95rem] font-semibold">{group.title}</h4>
+            <p class="mono-meta">{group.note}</p>
+          </div>
+          <div class="mt-4 space-y-4">
+            {group.items.map((commitment) => (
+              <CommitmentBlock commitment={commitment} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}

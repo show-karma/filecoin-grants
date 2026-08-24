@@ -1,0 +1,327 @@
+---
+import type { Commitment } from "../../data/kernel-api";
+import MetricChart from "./MetricChart.astro";
+import UptimeStrip from "./UptimeStrip.astro";
+import {
+  barCaptionFor,
+  formatDay,
+  formatValue,
+  pluralize,
+  readingsInWindow,
+  toPeriods,
+  windowOf,
+} from "./uptime";
+
+type Props = { commitment: Commitment };
+const { commitment } = Astro.props;
+
+const isGrowth = commitment.commitmentType === "growth";
+const periods = toPeriods(commitment);
+/*
+ * Handed to both the strip and the chart so the two axes are labelled from one
+ * source. Left to their own defaults they drift: the strip would print the last
+ * bar's start date, the chart the window's end.
+ */
+const range = windowOf(commitment);
+const readings = readingsInWindow(commitment);
+
+/*
+ * Three states, not two. A growth counter is tracked for direction and never
+ * judged; a health commitment with no scored reading is unmeasured, which is
+ * not the same as failing — today that is every commitment, because no
+ * threshold has been signed off upstream.
+ */
+const status: "growth" | "meeting" | "failing" | "unmeasured" = isGrowth
+  ? "growth"
+  : commitment.sla.metPct === null || commitment.sla.scored === 0
+    ? "unmeasured"
+    : commitment.sla.passed === commitment.sla.scored
+      ? "meeting"
+      : "failing";
+
+const CHIP: Record<typeof status, { label: string; class: string }> = {
+  growth: {
+    label: "tracked for direction",
+    class: "border-line text-muted",
+  },
+  meeting: { label: "✓ meeting", class: "border-ok/40 text-ok" },
+  failing: { label: "not meeting", class: "border-bad/40 text-bad" },
+  unmeasured: { label: "not measured", class: "border-line text-muted" },
+};
+const chip = CHIP[status];
+
+const metaParts = [
+  commitment.team,
+  commitment.metricName,
+  commitment.cadence,
+  commitment.method,
+].filter((part): part is string => Boolean(part));
+
+/*
+ * The mockup shows `SOURCE GET api.github.com/...` and a SQL derivation. Our
+ * API has neither: `source` is a provenance enum ("auto" on every datapoint)
+ * and `proof` is always an OSO project page, not the measurement endpoint. So
+ * this links the one URL that genuinely exists and says what it is, rather than
+ * dressing it up as a request anyone could replay.
+ */
+const isUrl = (value: string | null) => Boolean(value && /^https?:\/\//.test(value));
+const proofUrl = isUrl(commitment.proof) ? commitment.proof : null;
+
+const slaMet =
+  commitment.sla.metPct === null
+    ? null
+    : `${Math.round(commitment.sla.metPct * 10) / 10}%`;
+
+const coverage = `${commitment.coverage.read} of ${commitment.coverage.expected} ${commitment.coverage.unit} read`;
+
+const thresholdSuffix =
+  commitment.thresholdOp && commitment.thresholdValue !== null
+    ? ` vs ${commitment.thresholdOp} ${formatValue(commitment.thresholdValue)}`
+    : "";
+const latestText = commitment.latest
+  ? `${formatValue(commitment.latest.value)}${thresholdSuffix}`
+  : "—";
+
+const interruptionWord = commitment.coverage.unit === "readings" ? "reading" : commitment.coverage.unit.replace(/s$/, "");
+const interruptionText = commitment.interruptions
+  .slice(0, 3)
+  .map(
+    (gap) =>
+      `${formatDay(gap.startDate)}${gap.length > 1 ? ` (${gap.length} ${pluralize(gap.length, interruptionWord)})` : ""}`,
+  )
+  .join(" · ");
+const extraInterruptions = Math.max(0, commitment.interruptions.length - 3);
+
+const stripCaption = [
+  barCaptionFor(commitment),
+  isGrowth ? "never pass/fail" : `SLA judged ${commitment.cadence}`,
+].join(" · ");
+
+const unit = commitment.unitOfMeasure ?? "";
+---
+
+<article class="rounded-lg border border-line bg-surface p-4 sm:p-5">
+  <header class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+    <h5 class="font-mono text-[0.8125rem] font-bold break-all text-ink">
+      {commitment.functionId}
+    </h5>
+    <span
+      class:list={[
+        "inline-block shrink-0 rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem]",
+        chip.class,
+      ]}
+    >
+      {chip.label}
+    </span>
+  </header>
+
+  {
+    metaParts.length > 0 && (
+      <p class="mono-meta mt-1.5">{metaParts.join(" · ")}</p>
+    )
+  }
+
+  {
+    commitment.slaStatement && (
+      <p class="mt-2.5 text-sm leading-relaxed">{commitment.slaStatement}</p>
+    )
+  }
+
+  {
+    proofUrl && (
+      <p class="mt-3 flex flex-wrap items-center gap-2">
+        <span class="mono-meta uppercase">Source</span>
+        <a
+          href={proofUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-mono text-xs break-all text-accent underline underline-offset-2"
+        >
+          OSO project page
+          {commitment.osoProjectSlug ? ` · ${commitment.osoProjectSlug}` : ""}
+          <span aria-hidden="true"> ↗</span>
+        </a>
+      </p>
+    )
+  }
+
+  <details class="mt-3 border-t border-line-soft pt-2.5">
+    <summary class="mono-meta cursor-pointer list-none marker:content-none">
+      <span aria-hidden="true">▸ </span>how this value is computed
+    </summary>
+    <dl class="mt-2 space-y-1.5">
+      <div class="flex flex-wrap gap-x-2">
+        <dt class="mono-meta uppercase">Metric</dt>
+        <dd class="font-mono text-xs break-all text-body">
+          {commitment.metricName}
+          {unit ? ` (${unit})` : ""}
+        </dd>
+      </div>
+      <div class="flex flex-wrap gap-x-2">
+        <dt class="mono-meta uppercase">Collection</dt>
+        <dd class="font-mono text-xs text-body">
+          {commitment.method || "unstated"} · read {commitment.cadence}
+        </dd>
+      </div>
+      {
+        commitment.thresholdOp && commitment.thresholdValue !== null ? (
+          <div class="flex flex-wrap gap-x-2">
+            <dt class="mono-meta uppercase">Judgement</dt>
+            <dd class="font-mono text-xs text-body">
+              value {commitment.thresholdOp} {formatValue(commitment.thresholdValue)}
+              {unit ? ` ${unit}` : ""}
+            </dd>
+          </div>
+        ) : (
+          <div class="flex flex-wrap gap-x-2">
+            <dt class="mono-meta uppercase">Judgement</dt>
+            <dd class="font-mono text-xs text-body">
+              {isGrowth
+                ? "none — a growth counter is read for direction, never pass/fail"
+                : "no threshold signed off yet, so no reading is scored"}
+            </dd>
+          </div>
+        )
+      }
+      {
+        proofUrl && (
+          <div class="flex flex-wrap gap-x-2">
+            <dt class="mono-meta uppercase">Proof</dt>
+            <dd class="min-w-0">
+              <a
+                href={commitment.proof}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-mono text-xs break-all text-accent underline underline-offset-2"
+              >
+                {commitment.proof}
+              </a>
+            </dd>
+          </div>
+        )
+      }
+      {
+        commitment.grantRef && (
+          <div class="flex flex-wrap gap-x-2">
+            <dt class="mono-meta uppercase">Grant</dt>
+            <dd class="font-mono text-xs text-body">{commitment.grantRef}</dd>
+          </div>
+        )
+      }
+    </dl>
+  </details>
+
+  <dl class="mt-4 grid grid-cols-1 gap-3 border-t border-line-soft pt-3 sm:grid-cols-3">
+    <div>
+      <dt class="mono-meta uppercase">{isGrowth ? "Scored" : "SLA met"}</dt>
+      <dd class="font-mono text-base text-ink">
+        {isGrowth ? "—" : (slaMet ?? "—")}
+      </dd>
+    </div>
+    <div>
+      <dt class="mono-meta uppercase">Coverage</dt>
+      <dd class="font-mono text-base text-ink">{coverage}</dd>
+    </div>
+    <div>
+      <dt class="mono-meta uppercase">Latest</dt>
+      <dd class="font-mono text-base text-ink">
+        {latestText}
+        {commitment.latest && unit && (
+          <span class="mono-meta"> {unit}</span>
+        )}
+      </dd>
+    </div>
+  </dl>
+
+  {
+    /* The chart below already says so when there is nothing to draw; two
+       identical notices in a row read as a bug. */
+    periods.length > 0 && (
+      <div class="mt-4">
+        <UptimeStrip
+          periods={periods}
+          caption={stripCaption}
+          startLabel={range ? formatDay(range.start) : undefined}
+          endLabel={range ? formatDay(range.end) : undefined}
+        />
+      </div>
+    )
+  }
+
+  {
+    commitment.interruptions.length > 0 && (
+      <p class="mt-3 rounded-md bg-bad/10 px-3 py-2 font-mono text-xs text-bad">
+        {commitment.interruptions.length}{" "}
+        {pluralize(commitment.interruptions.length, "interruption")} ·{" "}
+        {interruptionText}
+        {extraInterruptions > 0 && ` · +${extraInterruptions} more`}
+      </p>
+    )
+  }
+
+  <MetricChart commitment={commitment} />
+
+  <details class="mt-3 border-t border-line-soft pt-2.5">
+    <summary class="mono-meta cursor-pointer list-none marker:content-none">
+      <span aria-hidden="true">▸ </span>show the numbers
+    </summary>
+    {
+      readings.length === 0 ? (
+        <p class="mono-meta mt-2">no readings in the window</p>
+      ) : (
+        /* `min-w-0` and a table with no min-width: a `min-w-max` table's
+           intrinsic width escapes the scroll container and widens the whole
+           page on a phone. The cells are short enough to fit unaided. */
+        <div class="mt-2 max-h-80 min-w-0 overflow-auto">
+          <table class="w-full border-collapse text-left font-mono text-xs">
+            <thead>
+              <tr class="text-muted">
+                <th scope="col" class="border-b border-line py-1.5 pr-4 font-normal">
+                  date
+                </th>
+                {/* A metric name is one long snake_case token; without a
+                    break it becomes the table's minimum width and drags the
+                    page wider than the viewport. */}
+                <th scope="col" class="border-b border-line py-1.5 pr-4 font-normal break-all">
+                  {commitment.metricName}
+                  {unit ? ` (${unit})` : ""}
+                </th>
+                <th scope="col" class="border-b border-line py-1.5 font-normal">
+                  SLA
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {readings.map((reading) => (
+                <tr>
+                  <td class="border-b border-line-soft py-1 pr-4 text-body whitespace-nowrap">
+                    {reading.date.slice(0, 10)}
+                  </td>
+                  <td class="border-b border-line-soft py-1 pr-4 text-ink">
+                    {formatValue(reading.value)}
+                  </td>
+                  <td
+                    class:list={[
+                      "border-b border-line-soft py-1",
+                      reading.state === "met"
+                        ? "text-ok"
+                        : reading.state === "missed"
+                          ? "text-bad"
+                          : "text-muted",
+                    ]}
+                  >
+                    {reading.state === "met"
+                      ? "met"
+                      : reading.state === "missed"
+                        ? "missed"
+                        : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+  </details>
+</article>

@@ -101,15 +101,29 @@
    * flags).
    */
   --color-tier-irreplaceable: #c0483c;
-  --color-tier-essential: #c2870f;
-  --color-tier-important: #1c7a66;
-  --color-tier-nice: #7a3fd0;
+  --color-tier-essential: #c4890f;
+  --color-tier-important: #2c8073;
+  --color-tier-nice: #6a44cf;
 
   /* Status */
   --color-ok: #1a7f37;
   --color-bad: #c0392b;
   /* Clearly orange rather than brown-gold, while still clearing 4.5:1 on white. */
   --color-warn: #c0561a;
+
+  /*
+   * Kernel uptime-strip states, taken verbatim from the Kernel design
+   * (`--k-good` / `--k-bad` / `--k-warn` / `--k-none`).
+   *
+   * They exist separately from the status tokens above because these are
+   * FILLS — 3px bars, never text — so they are free to match the design
+   * exactly, where the text tokens are held to 4.5:1 and cannot be. Do not
+   * use them for type.
+   */
+  --color-strip-met: #1a7f4b;
+  --color-strip-missed: #d2593c;
+  --color-strip-indeterminate: #c4890f;
+  --color-strip-none: #dde3ec;
 }
 
 /*
@@ -231,6 +245,19 @@
   --color-ok: #46b876;
   --color-bad: #e2685a;
   --color-warn: #dd8544;
+
+  /*
+   * The strip's fills follow the theme like every other colour here. `none` in
+   * particular has to invert: the light value is a pale grey that reads as
+   * absence on white, and left alone on a dark page it becomes the brightest
+   * thing in the row — the state meaning "nothing was reported" would shout
+   * louder than a breach. It tracks --color-line instead, one step up so the
+   * bar is still distinguishable from the card behind it.
+   */
+  --color-strip-met: #46b876;
+  --color-strip-missed: #e2685a;
+  --color-strip-indeterminate: #d9a03a;
+  --color-strip-none: #333c49;
 }
 
 @layer base {

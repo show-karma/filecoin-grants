@@ -5,11 +5,18 @@ import {
   PROGRAM_REPORTS_URL,
   PROGRAM_PROJECTS_URL,
 } from "./site";
-import type { LiveCounts } from "../lib/karma";
+import {
+  FALLBACK_COUNTS,
+  FALLBACK_METRICS,
+  trackFor,
+  type CommunityMetrics,
+  type LiveCounts,
+} from "../lib/karma";
 
 /**
- * Figures shown on the landing page. These are placeholder numbers, not live
- * reads — swap this module for an API call once the metrics endpoints exist.
+ * Figures shown on the landing page. Where the community metrics endpoint can
+ * supply a figure, the committed constants below are the fallback rather than
+ * the source; where it cannot, they are the source. Each stat says which.
  */
 
 export type Stat = {
@@ -100,30 +107,79 @@ export const portfolioCompletion = (): number => {
 };
 
 /**
- * The headline stats. Two are read from the Karma GAP API at build time
- * (see src/lib/karma.ts); the other two are still placeholders — see below.
+ * "Committed to date" is the API's `funding.totals.allocated`, falling back to
+ * the hand-kept FINANCIALS sum when the endpoint has no funding block (which is
+ * still the case on production).
+ *
+ * The two disagree, and materially: FINANCIALS totals $10,082,582 against the
+ * API's $8,642,697. They differ on every round — Batch 1 +$370k, Batch 2
+ * -$1.05M, Pods Round 1 -$267k, Batch 3 -$251k — and "Pods Round 2" ($239,344)
+ * is absent from the API altogether, which looks like missing grant data
+ * upstream rather than a definitional difference. The programme team chose the
+ * API's figure knowingly, so the page now states one source rather than mixing
+ * two. FINANCIALS stays as the fallback and as the record of the discrepancy.
  */
-export const buildHeadlineStats = (counts: LiveCounts): Stat[] => [
+const committedToDate = (metrics: CommunityMetrics): number =>
+  metrics.allocated ?? totalCommitted();
+
+/**
+ * The API's mean supersedes the hand-maintained PORTFOLIO table, which changes
+ * the methodology: PORTFOLIO carries finished rounds at 100 where the API
+ * computes what it measures (95.1 for Batch 1). The displayed figure barely
+ * moves — 52% either way — but it is now reproducible and refreshes itself,
+ * instead of needing a hand edit every time a bi-weekly report publishes.
+ * PORTFOLIO stays as the fallback path.
+ *
+ * Truncated, as portfolioCompletion() is, so the page can never round up into
+ * claiming more progress than was actually cleared. A mean under 1% truncates
+ * to a bare "0%", which reads as a stalled portfolio rather than as an early
+ * round, so that drops to the report's figure as well.
+ */
+const checkpointsCleared = (metrics: CommunityMetrics): number => {
+  const live =
+    metrics.avgMilestoneCompletion === null
+      ? 0
+      : Math.trunc(metrics.avgMilestoneCompletion);
+  return live > 0 ? live : portfolioCompletion();
+};
+
+/**
+ * The headline stats. Three are read from the Karma GAP API at build time (see
+ * src/lib/karma.ts) and fall back per figure — a missing `funding` block, which
+ * is what production currently serves, only costs the live reads, never the
+ * page. The fourth is editorial.
+ */
+export const buildHeadlineStats = (
+  counts: LiveCounts,
+  metrics: CommunityMetrics = FALLBACK_METRICS,
+): Stat[] => [
   {
-    value: asMillions(totalCommitted()),
+    value: asMillions(committedToDate(metrics)),
     label: "Committed to date",
     linkText: "Funded Projects",
     href: PROGRAM_PROJECTS_URL,
   },
   {
-    value: String(counts.projects),
+    // A zero count would mean the grants read came back empty rather than that
+    // nothing is funded, so it drops to the committed figure too.
+    value: String(
+      metrics.distinctProjects ??
+        (counts.projects > 0 ? counts.projects : FALLBACK_COUNTS.projects),
+    ),
     label: "Total Projects",
     linkText: "Funding Reports",
     href: PROGRAM_REPORTS_URL,
   },
   {
+    // Editorial, not an API figure: the three programmes the site is organised
+    // around. It changes when the programme structure changes, not on a build.
     value: "3",
     label: "Funding Initiatives",
     linkText: "Kernel · Revenue Dev · R&D",
     href: "#objectives",
   },
   {
-    value: `${portfolioCompletion()}%`,
+    value: `${checkpointsCleared(metrics)}%`,
     label: "Checkpoints cleared across active projects",
     linkText: "Bi-weekly progress report",
     href: programReportUrl("biweeklyProgress"),
@@ -199,6 +255,90 @@ export const OBJECTIVES: Objective[] = [
     amount: "$1.4M",
   },
 ];
+
+/**
+ * Whether `funding.byTrack` may drive the objective card footers.
+ *
+ * False, because the mapping upstream looks wrong rather than the page:
+ * - byTrack's allocations sum to $9,966,741 against a `totals.allocated` of
+ *   $8,642,697 — over by $1,324,044. Live footers would therefore add up to
+ *   more than the "Committed to date" tile sitting on the same page, which any
+ *   reader can check.
+ * - Revenue Development returns exactly $880,974 / 3 projects / 100% — the old
+ *   "Pods Round 1" figure, i.e. the "ProPGF Batch 2 - Pods Track" programme
+ *   alone. The track appears to miss every later Pods commitment.
+ * - R&D returns $7,273,500 / 34 projects, which reads as a catch-all absorbing
+ *   Batches 1–3, against a programme this page describes as small staged bets.
+ * - `funding.programs[]` carries no track field, so none of that mapping can be
+ *   checked from the payload; it has to be fixed at the source.
+ *
+ * `tracksReconcile()` in src/lib/karma.ts is the machine-checkable half of this,
+ * and a test pins it.
+ *
+ * The programme team was shown all of the above and chose to publish the API's
+ * figures regardless, so this is on: the footers are the endpoint's numbers,
+ * overshoot and all. Set it back to false to fall through to the static
+ * figures — the fallback path below is still real code and still tested.
+ */
+const TRACK_FIGURES_ARE_AUTHORITATIVE: boolean = true;
+
+/**
+ * Count and noun stay apart so the card can weight them differently, and so the
+ * pluralisation rule lives here rather than in a template.
+ *
+ * Matched on the objective's `program`, since `trackId` has no map here.
+ */
+export const objectiveInitiatives = (
+  objective: Objective,
+  metrics: CommunityMetrics,
+): { count: number; noun: string } => {
+  const live = trackFor(metrics, objective.program)?.projects ?? null;
+  const count =
+    TRACK_FIGURES_ARE_AUTHORITATIVE && live !== null
+      ? live
+      : objective.initiatives;
+  return { count, noun: count === 1 ? "initiative" : "initiatives" };
+};
+
+/**
+ * Millions once there are millions, thousands below that: a track holding
+ * $880,974 reads as "$881k", not "$0.88M", which puts a leading zero on the
+ * card and makes a real award look like a rounding error next to its
+ * neighbours.
+ */
+const trackAmount = (amount: number): string =>
+  amount >= 1_000_000 ? asMillions(amount) : `$${Math.round(amount / 1_000)}k`;
+
+export const objectiveAmount = (
+  objective: Objective,
+  metrics: CommunityMetrics,
+): string => {
+  const live = trackFor(metrics, objective.program)?.allocated ?? null;
+  return TRACK_FIGURES_ARE_AUTHORITATIVE && live !== null
+    ? trackAmount(live)
+    : objective.amount;
+};
+
+export type ObjectiveCard = {
+  objective: Objective;
+  /** Ready to render: `{ count: 13, noun: "initiatives" }`, "$1.81M". */
+  initiatives: { count: number; noun: string };
+  amount: string;
+};
+
+/**
+ * Everything else on these cards — title, description, model, measured, pods,
+ * qualifier — is editorial copy and stays static; only the two footer figures
+ * have an API counterpart at all.
+ */
+export const buildObjectiveCards = (
+  metrics: CommunityMetrics = FALLBACK_METRICS,
+): ObjectiveCard[] =>
+  OBJECTIVES.map((objective) => ({
+    objective,
+    initiatives: objectiveInitiatives(objective, metrics),
+    amount: objectiveAmount(objective, metrics),
+  }));
 
 export type ReportCadence = {
   cadence: string;

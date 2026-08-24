@@ -1,0 +1,548 @@
+---
+import type {
+  FunctionEntry,
+  KernelData,
+  ProjectEntry,
+} from "../../data/kernel-api";
+import { commitmentCounts, uniqueCommitments } from "../../data/kernel-api";
+import SectionHeader from "../SectionHeader.astro";
+import InventoryCard from "./InventoryCard.astro";
+import {
+  type CardRow,
+  type Flag,
+  type Kicker,
+  type MetaItem,
+  PENDING_NOTE,
+  TIER_ORDER,
+  plural,
+  teamDisplayName,
+  tierColor,
+  tierLabel,
+  usd,
+} from "./inventory";
+
+type Props = { data: KernelData };
+const { data } = Astro.props;
+
+const { functions, projects, program } = data;
+
+/**
+ * The function↔tier lookup. A commitment names only its `kernelId`, so this is
+ * how a team's rows get their tier badges.
+ */
+const tierOfKernel = new Map(functions.map((fn) => [fn.kernelId, fn.tier]));
+const categoryOfKernel = new Map(
+  functions.map((fn) => [fn.kernelId, fn.category]),
+);
+
+const slug = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+// ---------------------------------------------------------------- stat tiles
+
+/*
+ * Deduped by indicator, not concatenated: three indicators are reported against
+ * two projects each, so the raw rows total 37 where the registry holds 34. The
+ * metrics section counts the same way from the same helper, which is what keeps
+ * the two sections from quoting different totals.
+ */
+const allCounts = commitmentCounts(projects.flatMap((p) => p.commitments));
+const fundedTeams = projects.filter((p) => p.committedUsd > 0).length;
+const measuredFunctions = functions.filter((fn) => fn.measured).length;
+
+const tiles = [
+  {
+    value: usd(program.committedUsd) ?? "no award this batch",
+    label: "Committed across the slate",
+    sub: `${fundedTeams} funded of ${plural(projects.length, "reporting team")}`,
+  },
+  {
+    value: String(measuredFunctions),
+    label: "Kernel functions covered",
+    sub: `of ${plural(functions.length, "function")} listed in the inventory`,
+  },
+  {
+    value: String(allCounts.total),
+    label: "Commitments reported",
+    sub:
+      allCounts.growth > 0
+        ? `${allCounts.health} health · ${allCounts.growth} growth`
+        : `${allCounts.health} health`,
+  },
+];
+
+/*
+ * The legend is the key to the uptime strip, so it reads the same fill tokens
+ * the bars do. Anything else and the swatch names a colour the strip never
+ * paints.
+ */
+const LEGEND = [
+  { text: "SLA met", color: "var(--color-strip-met)" },
+  { text: "not met", color: "var(--color-strip-missed)" },
+  { text: "indeterminate", color: "var(--color-strip-indeterminate)" },
+  { text: "no reading", color: "var(--color-strip-none)" },
+];
+
+// ------------------------------------------------------------- by function
+
+const functionCard = (fn: FunctionEntry): CardRow => {
+  /*
+   * The rendered list is the count. The API's own `commitments` figure
+   * disagrees with what joins here in both directions (7 declared against 10
+   * joinable for chain-sync-state, 2 against 1 for mainnet-explorer), so every
+   * number beside a card is derived from the rows inside it.
+   */
+  const commitments = uniqueCommitments(fn.commitments);
+  const counts = commitmentCounts(commitments);
+  const committed = usd(fn.committedUsd);
+
+  const flags: Flag[] = [];
+  if (fn.isInScope === false) {
+    flags.push({ text: "out of scope this term", tone: "muted" });
+  }
+  if (fn.maintainers === 0) {
+    flags.push({ text: "no maintainer reporting", tone: "bad" });
+  } else if (fn.maintainers === 1) {
+    flags.push({ text: "single maintainer", tone: "warn" });
+  }
+  if (counts.health === 0) {
+    flags.push({ text: "no health metric", tone: "bad" });
+  } else {
+    flags.push({ text: plural(counts.health, "health metric"), tone: "muted" });
+  }
+  if (counts.growth > 0) {
+    flags.push({
+      text: plural(counts.growth, "growth counter"),
+      tone: "muted",
+    });
+  }
+
+  /* Exact per-award names: a function's reporting teams come from the OSO slugs
+     on its own commitments, never from the ambiguous `team` slug. */
+  const reporting = [
+    ...new Set(commitments.map((c) => c.osoProjectSlug).filter(Boolean)),
+  ].map((osoSlug) => teamDisplayName(osoSlug, null));
+
+  const kicker: Kicker[] = [
+    { text: tierLabel(fn.tier), color: tierColor(fn.tier) },
+    { text: fn.subCategory, color: "var(--color-muted)" },
+  ];
+
+  const meta: MetaItem[] = [
+    {
+      label: "Teams reporting",
+      value: reporting.length > 0 ? reporting.join(", ") : "none yet",
+    },
+    { label: "Domain", value: fn.category },
+    {
+      label: "Health commitments",
+      value: counts.health > 0 ? String(counts.health) : "none",
+    },
+    {
+      label: "Growth counters",
+      value: counts.growth > 0 ? String(counts.growth) : "none",
+    },
+    /* Only where it changes the reading — an in-scope function needs no row
+       telling the reader that it is in scope. */
+    ...(fn.isInScope === false
+      ? [{ label: "Kernel scope", value: "catalogued, not funded this term" }]
+      : []),
+    {
+      label: "Committed through Dec",
+      value: committed
+        ? `${committed} across ${plural(fn.grantRefs.length, "grant")}`
+        : "no active grant",
+    },
+  ];
+
+  return {
+    id: `fn-${slug(fn.kernelId)}`,
+    kicker,
+    title: fn.kernelFunction,
+    flags,
+    metPct: fn.sla.metPct,
+    commitments,
+    prose: fn.kernelValue,
+    meta,
+    emptyNote:
+      "No team has committed a health metric for this function yet. Until one does, its condition is not visible to this page.",
+  };
+};
+
+/** Tier order comes from the overview so the page cannot disagree with it. */
+const tierBlocks = [...data.tiers]
+  .sort((a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier))
+  .map((tier) => {
+    const rows = functions.filter((fn) => fn.tier === tier.tier);
+    const categories = [...new Set(rows.map((fn) => fn.category))].map(
+      (category) => ({
+        category,
+        rows: rows.filter((fn) => fn.category === category),
+      }),
+    );
+    /*
+     * Catalogued and funded are different things: `important` holds two
+     * functions the map lists and Kernel does not fund this term. Read off each
+     * function's own `isInScope` rather than the tier, so a mixed tier says so.
+     */
+    const outOfScope = rows.filter((fn) => fn.isInScope === false).length;
+    return { tier, rows, categories, outOfScope };
+  });
+
+// -------------------------------------------------------------- by project
+
+const largestAward = Math.max(1, ...projects.map((p) => p.committedUsd));
+
+/**
+ * ChainSafe holds two awards and both arrive as `team: "chainsafe"`, so the
+ * award's OSO slug is what tells the two rows apart and what carries a real
+ * display name.
+ */
+const teamName = (project: ProjectEntry) =>
+  teamDisplayName(project.osoProjectSlug, project.team);
+
+const projectCard = (project: ProjectEntry): CardRow => {
+  const commitments = uniqueCommitments(project.commitments);
+  const counts = commitmentCounts(commitments);
+  const committed = usd(project.committedUsd);
+
+  const kernelsByTier = new Map<string, Set<string>>();
+  const kernelIds = new Set<string>();
+  const domains = new Set<string>();
+  for (const commitment of commitments) {
+    kernelIds.add(commitment.kernelId);
+    const tier = tierOfKernel.get(commitment.kernelId);
+    if (tier) {
+      const seen = kernelsByTier.get(tier) ?? new Set<string>();
+      seen.add(commitment.kernelId);
+      kernelsByTier.set(tier, seen);
+    }
+    const category = categoryOfKernel.get(commitment.kernelId);
+    if (category) domains.add(category);
+  }
+
+  const counted = TIER_ORDER.filter((tier) => kernelsByTier.has(tier)).map(
+    (tier) => ({
+      text: `${kernelsByTier.get(tier)!.size} ${tierLabel(tier).toUpperCase()}`,
+      color: tierColor(tier),
+    }),
+  );
+  /* A team whose commitments name no catalogued function still declares tiers. */
+  const kicker: Kicker[] =
+    counted.length > 0
+      ? counted
+      : project.tiers.map((tier) => ({
+          text: tierLabel(tier).toUpperCase(),
+          color: tierColor(tier),
+        }));
+
+  const flags: Flag[] = [
+    {
+      text: committed ?? "no award this batch",
+      tone: committed ? "ink" : "muted",
+    },
+  ];
+  if (counts.health === 0) {
+    flags.push({ text: "no health metric", tone: "bad" });
+  } else {
+    flags.push({ text: plural(counts.health, "health metric"), tone: "muted" });
+  }
+  if (counts.growth > 0) {
+    flags.push({
+      text: plural(counts.growth, "growth counter"),
+      tone: "muted",
+    });
+  }
+
+  const meta: MetaItem[] = [
+    {
+      /* The functions its rendered commitments actually name, not the API's
+         declared `kernels` — the two do not always agree. */
+      label: "Kernel functions",
+      value: plural(kernelIds.size, "function"),
+    },
+    {
+      label: "Domains",
+      value: domains.size > 0 ? [...domains].join(", ") : "none catalogued",
+    },
+    {
+      label: "Health commitments",
+      value: counts.health > 0 ? String(counts.health) : "none",
+    },
+    {
+      label: "Growth counters",
+      value: counts.growth > 0 ? String(counts.growth) : "none",
+    },
+    {
+      label: "Committed through Dec",
+      value: committed
+        ? `${committed} across ${plural(project.grantRefs.length, "grant")}`
+        : "no award this batch",
+    },
+  ];
+
+  return {
+    id: `team-${slug(project.projectUID.slice(2, 10))}-${slug(teamName(project))}`,
+    kicker,
+    title: teamName(project),
+    flags,
+    /* No bar at all rather than a stub one: an unfunded team has no share. */
+    share:
+      project.committedUsd > 0 ? project.committedUsd / largestAward : null,
+    metPct: project.sla.metPct,
+    commitments,
+    meta,
+    emptyNote:
+      "This team reports no commitment in the current window. Nothing here is judged until one lands.",
+  };
+};
+
+const byAwardDesc = (a: ProjectEntry, b: ProjectEntry) =>
+  b.committedUsd - a.committedUsd || teamName(a).localeCompare(teamName(b));
+
+const projectGroups = [
+  {
+    key: "funded",
+    title: "Funded this batch",
+    subtitle: "Teams holding an award in the current batch.",
+    rows: projects.filter((p) => p.committedUsd > 0).sort(byAwardDesc),
+  },
+  {
+    key: "unfunded",
+    title: "No award this batch",
+    subtitle: "Teams reporting without an award in the current batch.",
+    rows: projects.filter((p) => p.committedUsd <= 0).sort(byAwardDesc),
+  },
+].filter((group) => group.rows.length > 0);
+---
+
+<div>
+  {
+    /* The intro carries markup, which the `intro` prop cannot, so it is slotted. */
+  }
+  <SectionHeader eyebrow="Inventory" title="The inventory">
+    <p class="mt-4 max-w-2xl text-base leading-relaxed sm:text-lg">
+      The same commitments, read two ways. <strong
+        class="font-semibold text-ink">By project</strong
+      > asks what each funded team is on the hook for; <strong
+        class="font-semibold text-ink">by function</strong
+      > asks what the network needs and whether anyone is holding it up. The percentage
+      is the share of reading periods in the last 90 days that sat within threshold,
+      counted at each metric's own cadence. Open any row for the commitments behind
+      it in full — the uptime record, each interruption, the value against its threshold,
+      and the public endpoint being read.
+    </p>
+  </SectionHeader>
+
+  <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+    {
+      LEGEND.map((item) => (
+        <li class="mono-meta flex items-center gap-2">
+          <span
+            class="inline-block h-2.5 w-2.5 rounded-[2px]"
+            style={`background:${item.color}`}
+            aria-hidden="true"
+          />
+          {item.text}
+        </li>
+      ))
+    }
+  </ul>
+
+  <fieldset class="mt-8 border-0 p-0">
+    <legend class="sr-only">Read the inventory by</legend>
+
+    {
+      /* CSS-only tabs: the radios drive both the labels and the panels through
+        sibling selectors, so the section works with JavaScript disabled. */
+    }
+    <input
+      class="sr-only"
+      type="radio"
+      name="inventory-view"
+      id="inv-tab-project"
+      checked
+    />
+    <input
+      class="sr-only"
+      type="radio"
+      name="inventory-view"
+      id="inv-tab-function"
+    />
+
+    <div class="inv-tabs flex flex-wrap gap-6 border-b border-line">
+      <label
+        class="inv-tab flex cursor-pointer items-center gap-2 pb-2 font-mono text-xs tracking-[0.12em] text-muted uppercase"
+        data-tab="project"
+        for="inv-tab-project"
+      >
+        By project
+        <span
+          class="rounded-full border border-line px-2 py-0.5 font-mono text-[0.6875rem] tracking-normal text-muted"
+          >{projects.length}</span
+        >
+      </label>
+      <label
+        class="inv-tab flex cursor-pointer items-center gap-2 pb-2 font-mono text-xs tracking-[0.12em] text-muted uppercase"
+        data-tab="function"
+        for="inv-tab-function"
+      >
+        By function
+        <span
+          class="rounded-full border border-line px-2 py-0.5 font-mono text-[0.6875rem] tracking-normal text-muted"
+          >{functions.length}</span
+        >
+      </label>
+    </div>
+
+    <div class="inv-panel" data-panel="project">
+      <div class="mt-8 grid gap-4 sm:grid-cols-3">
+        {
+          tiles.map((tile) => (
+            <div class="rounded-lg border border-line bg-surface p-4">
+              <p class="font-mono text-2xl font-medium text-ink">
+                {tile.value}
+              </p>
+              <p class="mt-1 text-[0.8125rem] text-ink">{tile.label}</p>
+              <p class="mono-meta mt-2">{tile.sub}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-10 space-y-12">
+        {
+          projectGroups.map((group) => (
+            <section aria-labelledby={`inv-group-${group.key}`}>
+              <div class="flex items-baseline justify-between gap-4 border-b border-line pb-2">
+                <h3
+                  id={`inv-group-${group.key}`}
+                  class="font-mono text-xs font-medium tracking-[0.14em] text-ink uppercase"
+                >
+                  {group.title}
+                </h3>
+                <p class="mono-meta shrink-0">
+                  {plural(group.rows.length, "team")}
+                </p>
+              </div>
+              <p class="mono-meta mt-2 uppercase">{group.subtitle}</p>
+              <ul class="mt-4 space-y-3">
+                {group.rows.map((project) => (
+                  <li>
+                    <InventoryCard {...projectCard(project)} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="inv-panel" data-panel="function">
+      <div class="mt-8 space-y-12">
+        {
+          tierBlocks.map(({ tier, rows, categories, outOfScope }) => (
+            <section aria-labelledby={`inv-tier-${tier.tier}`}>
+              <div
+                class="flex items-baseline justify-between gap-4 border-b pb-2"
+                style={`border-color:${tierColor(tier.tier)}`}
+              >
+                <h3
+                  id={`inv-tier-${tier.tier}`}
+                  class="font-mono text-xs font-medium tracking-[0.14em] uppercase"
+                  style={`color:${tierColor(tier.tier)}`}
+                >
+                  {tierLabel(tier.tier)}
+                </h3>
+                <p class="mono-meta shrink-0">
+                  {tier.catalogued === 0
+                    ? "inventory pending"
+                    : outOfScope === rows.length && rows.length > 0
+                      ? `${plural(rows.length, "function")} · out of scope`
+                      : plural(tier.catalogued, "function")}
+                </p>
+              </div>
+
+              {outOfScope > 0 && rows.length > 0 && (
+                <p class="mt-4 rounded-md border border-line bg-surface px-4 py-3 font-mono text-xs leading-relaxed text-muted">
+                  {outOfScope === rows.length
+                    ? "Catalogued so the map is complete, but out of scope for Kernel this term — the programme does not fund these functions in the current batch."
+                    : `${plural(outOfScope, "function")} here ${outOfScope === 1 ? "is" : "are"} catalogued but out of scope for Kernel this term — the map lists ${outOfScope === 1 ? "it" : "them"}; the programme does not fund ${outOfScope === 1 ? "it" : "them"} in the current batch.`}
+                </p>
+              )}
+
+              {tier.catalogued === 0 || rows.length === 0 ? (
+                <p class="mt-4 rounded-md border border-line bg-surface px-4 py-3 font-mono text-xs leading-relaxed text-muted">
+                  {PENDING_NOTE[tier.tier] ??
+                    "Functions in this tier have not been inventoried yet."}
+                </p>
+              ) : (
+                <>
+                  {categories.map((group) => (
+                    <div class="mt-6">
+                      <p class="mono-meta uppercase">{group.category}</p>
+                      <ul class="mt-3 space-y-3">
+                        {group.rows.map((fn) => (
+                          <li>
+                            <InventoryCard {...functionCard(fn)} />
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+
+                  {rows.length < tier.catalogued && (
+                    <p class="mt-4 rounded-md border border-line bg-surface px-4 py-3 font-mono text-xs leading-relaxed text-muted">
+                      Showing {rows.length} of{" "}
+                      {plural(tier.catalogued, "function")} in this tier. The
+                      remainder are in the full inventory.
+                    </p>
+                  )}
+                </>
+              )}
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </fieldset>
+</div>
+
+<style>
+  /*
+   * Sibling selectors off the radios, not `:has()` or a script: the checked
+   * input precedes both the tab strip and the panels, so one rule set drives
+   * the underline and the visibility with no JS at all.
+   */
+  .inv-panel {
+    display: none;
+  }
+
+  #inv-tab-project:checked ~ [data-panel="project"],
+  #inv-tab-function:checked ~ [data-panel="function"] {
+    display: block;
+  }
+
+  .inv-tab {
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  #inv-tab-project:checked ~ .inv-tabs [data-tab="project"],
+  #inv-tab-function:checked ~ .inv-tabs [data-tab="function"] {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-accent);
+  }
+
+  /* The inputs are visually hidden, so the focus ring has to move to the label. */
+  #inv-tab-project:focus-visible ~ .inv-tabs [data-tab="project"],
+  #inv-tab-function:focus-visible ~ .inv-tabs [data-tab="function"] {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+</style>

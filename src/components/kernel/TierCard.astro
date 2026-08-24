@@ -6,7 +6,9 @@ type Props = { tier: Tier };
 const { tier } = Astro.props;
 
 const count =
-  tier.functions === null ? "inventory pending" : `${tier.functions} functions`;
+  tier.functions === null
+    ? "inventory pending"
+    : `${tier.functions} ${tier.functions === 1 ? "function" : "functions"}`;
 ---
 
 <article class="overflow-hidden rounded-lg border border-line bg-surface">

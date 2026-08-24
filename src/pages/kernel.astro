@@ -5,17 +5,62 @@ import SectionHeader from "../components/SectionHeader.astro";
 import DarkCallout from "../components/DarkCallout.astro";
 import CriteriaList from "../components/CriteriaList.astro";
 import PageHero from "../components/PageHero.astro";
+import Button from "../components/Button.astro";
+import ArrowLink from "../components/ArrowLink.astro";
 import TierOverview from "../components/kernel/TierOverview.astro";
 import TierCard from "../components/kernel/TierCard.astro";
 import Timeline from "../components/kernel/Timeline.astro";
 import Glossary from "../components/kernel/Glossary.astro";
+import InventoryPanel from "../components/kernel/InventoryPanel.astro";
+import MetricGrid from "../components/kernel/MetricGrid.astro";
 import { TIERS, NEXT_ROUND } from "../data/kernel";
+import { loadKernelData } from "../data/kernel-api";
+import { PROGRAM_PROJECTS_URL } from "../data/site";
 
+/*
+ * Rendered on demand rather than at build so the inventory can refresh without
+ * a deploy; Vercel ISR then caches the result, so the 17 upstream requests
+ * below are paid per regeneration, not per visitor.
+ */
+export const prerender = false;
+
+/*
+ * `kernelData` is null when the Kernel API could not be read for this render.
+ * The page then keeps only what is true without it — the tier definitions, the
+ * program's terms, the glossary — and drops every figure, section and nav entry
+ * that would otherwise state something it cannot evidence. A half-populated
+ * inventory would be worse than none: it would read as "these are the
+ * commitments" while quietly omitting most of them.
+ *
+ * Now that the read happens per render, that degraded page is cacheable: an API
+ * outage during a regeneration can hold the inventory-less version in front of
+ * visitors for a full expiration window.
+ */
+const kernelData = await loadKernelData();
 const nav = [
   { label: "Objective", href: "#objective" },
   { label: "Categories", href: "#categories" },
+  ...(kernelData
+    ? [
+        { label: "Inventory", href: "#inventory" },
+        { label: "Metrics", href: "#metrics" },
+      ]
+    : []),
   { label: "Terms", href: "#terms" },
 ];
+
+/*
+ * The tier cards carry a function count, so it is injected from the API like
+ * every other figure on the page rather than kept alongside the copy. Without
+ * live data each card reads "inventory pending", which is the truth: we do not
+ * know how many there are right now.
+ */
+const tierCards = TIERS.map((tier) => ({
+  ...tier,
+  functions:
+    kernelData?.tiers.find((row) => row.tier === tier.apiId)?.catalogued ||
+    null,
+}));
 
 const KERNEL_FUNDS = [
   "Maintenance of functions the network cannot operate without",
@@ -45,7 +90,7 @@ const KERNEL_DOES_NOT_FUND = [
     intro="Kernel funds the functions Filecoin depends on to keep producing blocks, proving storage, and staying observable. It is treated as a near-fixed cost rather than a growth bet: the goal is not more features, it is that nothing essential quietly stops being maintained."
   >
     <div class="mt-12">
-      <TierOverview />
+      <TierOverview data={kernelData} />
     </div>
   </PageHero>
 
@@ -79,6 +124,23 @@ const KERNEL_DOES_NOT_FUND = [
           and operational continuity: is the function still healthy, still
           maintained, still measurable.
         </p>
+        {
+          kernelData && (
+            <>
+              <p>
+                Every commitment on this page names a threshold, a reading
+                cadence and a public endpoint anyone can call — so the audit is
+                a lookup, not a conversation.
+              </p>
+              {/* The button is wrapped so the column's space-y sets its
+                  spacing, rather than a margin utility racing space-y for the
+                  same property. */}
+              <div>
+                <Button href="#inventory">See the inventory</Button>
+              </div>
+            </>
+          )
+        }
       </div>
 
       <div class="space-y-6 rounded-lg border border-line bg-surface p-6">
@@ -117,17 +179,43 @@ const KERNEL_DOES_NOT_FUND = [
       intro="A function's tier is decided by substitutability, not by how much anyone likes it. That single judgement then drives how much scrutiny it gets, whether redundancy is required, and how negotiable the budget is."
     />
     <div class="mt-10 grid gap-5 lg:grid-cols-2">
-      {TIERS.map((tier) => <TierCard tier={tier} />)}
+      {tierCards.map((tier) => <TierCard tier={tier} />)}
     </div>
   </Section>
 
+  <!-- Inventory -->
   {
-    /*
-    The inventory and metrics sections are built and ready (Inventory.astro,
-    MetricGrid.astro, and the data in src/data/kernel.ts) but are held back
-    until the Kernel metrics are live. Re-add both sections, their nav entries
-    and the "See the function inventory" button to switch them back on.
-  */
+    kernelData && (
+      <Section id="inventory" tint>
+        <InventoryPanel data={kernelData} />
+      </Section>
+    )
+  }
+
+  <!-- Metrics -->
+  {
+    kernelData && (
+      <Section id="metrics">
+        <SectionHeader
+          eyebrow="Kernel metrics"
+          title="How the program is doing"
+          intro="Aggregate health matters less than coverage. A function with no maintainer and no metric is invisible to this page, which is exactly what makes it dangerous."
+        />
+        <div class="mt-10">
+          <MetricGrid data={kernelData} />
+        </div>
+        <div class="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <p class="text-sm text-muted">
+            Every reading on this page is derived from the commitments in the
+            Kernel registry.
+          </p>
+          <ArrowLink
+            href={PROGRAM_PROJECTS_URL}
+            label="Metrics for individual projects and repos live in the explorer"
+          />
+        </div>
+      </Section>
+    )
   }
 
   <!-- Terms -->

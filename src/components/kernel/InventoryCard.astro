@@ -1,0 +1,215 @@
+---
+import CommitmentList from "./CommitmentList.astro";
+import UptimeStrip from "./UptimeStrip.astro";
+import { barCaption, worstOf } from "./uptime";
+import { slaPctLabel, slaStatus, type CardRow, type Flag } from "./inventory";
+
+type Props = CardRow;
+
+const {
+  id,
+  kicker,
+  title,
+  flags,
+  share = null,
+  metPct,
+  commitments,
+  prose = null,
+  meta,
+  emptyNote,
+} = Astro.props;
+
+const status = slaStatus(metPct);
+const hasStrip = commitments.length > 0;
+
+const FLAG_CLASS: Record<Flag["tone"], string> = {
+  ink: "text-ink",
+  muted: "text-muted",
+  /*
+   * Gold, not the site's orange `warn`: in the Kernel design a caution flag is
+   * the Essential tier's own hue (`.warn{color:var(--k-t2)}`), which is what
+   * ties "single maintainer" to the tier scale rather than reading as a
+   * separate alert colour.
+   */
+  warn: "text-tier-essential",
+  bad: "text-bad",
+};
+
+const CHIP_CLASS: Record<string, string> = {
+  meeting: "border-ok/40 text-ok",
+  missing: "border-bad/40 text-bad",
+  unmeasured: "border-line text-muted",
+};
+
+const CHIP_LABEL: Record<string, string> = {
+  meeting: "meeting",
+  missing: "not meeting",
+  unmeasured: "not measured",
+};
+
+const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
+---
+
+<details class="inv-card rounded-lg border border-line bg-surface" id={id}>
+  <summary
+    class="flex cursor-pointer flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
+  >
+    <div class="min-w-0 flex-1">
+      {
+        kicker.length > 0 && (
+          <p class="font-mono text-[0.6875rem] tracking-[0.12em] break-words uppercase">
+            {kicker.map((part, i) => (
+              <>
+                {i > 0 && (
+                  <span class="text-muted" aria-hidden="true">
+                    {" · "}
+                  </span>
+                )}
+                <span style={part.color ? `color:${part.color}` : undefined}>
+                  {part.text}
+                </span>
+              </>
+            ))}
+          </p>
+        )
+      }
+
+      <h4 class="mt-1.5 text-[0.95rem] leading-snug font-semibold break-words">
+        {title}
+      </h4>
+
+      {
+        flags.length > 0 && (
+          <p class="mt-1.5 font-mono text-xs">
+            {flags.map((flag, i) => (
+              <>
+                {i > 0 && (
+                  <span class="text-muted" aria-hidden="true">
+                    {" · "}
+                  </span>
+                )}
+                <span class={FLAG_CLASS[flag.tone]}>{flag.text}</span>
+              </>
+            ))}
+          </p>
+        )
+      }
+
+      {
+        sharePct !== null && (
+          <div
+            class="mt-3 h-1 max-w-56 overflow-hidden rounded-full bg-line-soft"
+            aria-hidden="true"
+          >
+            <div
+              class="h-full rounded-full bg-accent"
+              style={`width:${sharePct}%`}
+            />
+          </div>
+        )
+      }
+    </div>
+
+    <div
+      class="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-5"
+    >
+      {
+        hasStrip && (
+          <div class="max-w-full min-w-0 overflow-x-auto">
+            <UptimeStrip
+              periods={worstOf(commitments)}
+              caption={barCaption(commitments)}
+              compact
+            />
+          </div>
+        )
+      }
+
+      {
+        /* `sm:contents` promotes both to the row above once there is width for
+          it; below that they pair off as their own row so the chevron sits
+          opposite the reading instead of orphaned under it. */
+      }
+      <div class="flex items-center justify-between gap-3 sm:contents">
+        <div class="sm:w-28 sm:text-right">
+          <p
+            class={`font-mono text-lg ${metPct === null ? "text-muted" : "font-medium text-ink"}`}
+          >
+            {slaPctLabel(metPct)}
+          </p>
+          <p class="mono-meta uppercase">
+            {metPct === null ? "No data" : "SLA met · 90d"}
+          </p>
+          <p class="mt-1.5">
+            <span
+              class={`inline-block rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem] ${CHIP_CLASS[status]}`}
+            >
+              {status === "meeting" && <span aria-hidden="true">✓ </span>}
+              {CHIP_LABEL[status]}
+            </span>
+          </p>
+        </div>
+
+        <span class="inv-chev mono-meta shrink-0">▾</span>
+      </div>
+    </div>
+  </summary>
+
+  <div class="border-t border-line-soft px-4 pt-4 pb-5">
+    {prose && <p class="max-w-3xl text-[0.9375rem] leading-relaxed">{prose}</p>}
+
+    <dl
+      class={`grid grid-cols-2 gap-x-6 gap-y-3 border-b border-line-soft pb-4 sm:grid-cols-3 lg:grid-cols-5 ${prose ? "mt-4" : ""}`}
+    >
+      {
+        meta.map((item) => (
+          <div class="min-w-0">
+            <dt class="mono-meta uppercase">{item.label}</dt>
+            <dd class="mt-1 text-[0.8125rem] break-words text-ink">
+              {item.value}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    {
+      commitments.length > 0 ? (
+        <div class="mt-5">
+          <CommitmentList commitments={commitments} />
+        </div>
+      ) : (
+        <p class="mt-4 rounded-md bg-tint px-4 py-3 font-mono text-xs leading-relaxed text-muted">
+          {emptyNote}
+        </p>
+      )
+    }
+  </div>
+</details>
+
+<style>
+  /*
+   * The summary is the whole collapsed row, so it has to be a flex container —
+   * which means removing the default marker in both engines and drawing the
+   * chevron ourselves.
+   */
+  .inv-card > summary {
+    list-style: none;
+  }
+
+  .inv-card > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .inv-chev {
+    transition: transform 150ms ease;
+  }
+
+  .inv-card[open] .inv-chev {
+    transform: rotate(180deg);
+  }
+
+  .inv-card[open] {
+    border-color: var(--color-muted);
+  }
+</style>

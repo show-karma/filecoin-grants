@@ -1,9 +1,10 @@
 # filpgf.io
 
 Filecoin Public Goods Funding — the public site at [www.filpgf.io](https://www.filpgf.io).
-Built with [Astro](https://astro.build) and Tailwind CSS v4, deployed to Netlify as
-a fully static site. The only client-side JavaScript is the header: menu
-behaviour and the light/dark theme toggle.
+Built with [Astro](https://astro.build) and Tailwind CSS v4, deployed to Vercel.
+Every page is prerendered except `/` and `/kernel`, which read the GAP API and
+are served on demand behind ISR. The only client-side JavaScript is the header:
+menu behaviour and the light/dark theme toggle.
 
 ## Commands
 
@@ -113,6 +114,13 @@ Tokens are defined in `src/styles/global.css` under `@theme`.
 
 ## Deploys
 
-Netlify builds `pnpm run build` and publishes `dist/`. `netlify.toml` also
-carries the CSP, cache headers, and 301s from the retired Hugo URLs
-(`/propgf/*`, `/batches/*`).
+Vercel builds `pnpm run build`. The `@astrojs/vercel` adapter emits the static
+routes as files and `/` and `/kernel` as ISR functions revalidating every hour.
+
+Set `KERNEL_API_ORIGIN` and `KARMA_API_ORIGIN` on the Vercel project if either
+API should be read from somewhere other than its committed default — both are
+now read at request time, not only during the build.
+
+The CSP, cache headers, and the 301s from the retired Hugo URLs (`/propgf/*`,
+`/batches/*`) still need porting to Vercel; the `netlify.toml` that declared
+them was dead config and has been removed.

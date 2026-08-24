@@ -1,6 +1,53 @@
 ---
-import { TIERS, tierStats } from "../../data/kernel";
+import type { KernelData } from "../../data/kernel-api";
+import { TIERS } from "../../data/kernel";
 import { tierColor } from "./tier";
+
+type Props = {
+  /** Null when the Kernel API was unreachable at build time. */
+  data?: KernelData | null;
+};
+
+const { data = null } = Astro.props;
+
+/**
+ * One row of the table. Only the tier's name, rule and posture are editorial —
+ * they are definitions, true whether or not anything is running. Every figure
+ * comes from the API or is not shown: with no live row the numeric cells go to
+ * their unknown state rather than to a remembered one, because a table that
+ * quotes last year's percentages during an outage is worse than a blank one.
+ *
+ * `functions` is null for a tier nothing has been catalogued in yet — the row
+ * then says Pending rather than a confident zero, because "no functions" and
+ * "nobody has written the functions down" are different claims.
+ * `slaMet` is null while no reading in the window is judgeable (no thresholds
+ * exist yet), which renders as an em dash. It must never round down to 0%.
+ */
+const rows = TIERS.map((tier) => {
+  const live = data?.tiers.find((row) => row.tier === tier.apiId);
+
+  return {
+    tier,
+    functions: live ? live.catalogued || null : null,
+    /*
+     * The inventory below lists every catalogued function in the tier, in
+     * scope or not, so "all listed" is the honest sub-label — except where
+     * some of them sit outside Kernel's scope, which the count alone would
+     * quietly read as "funded here".
+     */
+    listedLabel:
+      live && live.inScope < live.catalogued
+        ? live.inScope === 0
+          ? "None in scope"
+          : `${live.inScope} in scope`
+        : "All listed",
+    slaMet:
+      live && live.sla.metPct !== null
+        ? `${live.sla.metPct.toFixed(1)}%`
+        : null,
+    measured: live?.measured ?? 0,
+  };
+});
 ---
 
 <!--
@@ -25,73 +72,66 @@ import { tierColor } from "./tier";
     </thead>
     <tbody>
       {
-        TIERS.map((tier) => {
-          const stats = tierStats(tier.id);
-          return (
-            <tr class="border-b border-line align-top">
-              <td class="py-5 pr-6">
-                <div class="flex gap-4">
-                  {/*
+        rows.map((row) => (
+          <tr class="border-b border-line align-top">
+            <td class="py-5 pr-6">
+              <div class="flex gap-4">
+                {/*
                   A fixed-height pill, not a full-height rule: in the design it
                   runs from the top of the tier name to the end of the first
                   description line and stays that length whatever the row
                   height.
                 */}
-                  <span
-                    class="mt-1 h-11 w-[6px] shrink-0 rounded-full"
-                    style={`background:${tierColor(tier.id)}`}
-                    aria-hidden="true"
-                  />
-                  <div class="max-w-[16rem]">
-                    <p class="font-semibold text-ink">{tier.name}</p>
-                    <p class="mt-1 text-sm leading-snug text-body">
-                      {tier.rule}
-                    </p>
-                  </div>
+                <span
+                  class="mt-1 h-11 w-[6px] shrink-0 rounded-full"
+                  style={`background:${tierColor(row.tier.id)}`}
+                  aria-hidden="true"
+                />
+                <div class="max-w-[16rem]">
+                  <p class="font-semibold text-ink">{row.tier.name}</p>
+                  <p class="mt-1 text-sm leading-snug text-body">
+                    {row.tier.rule}
+                  </p>
                 </div>
-              </td>
-              <td class="py-5 pr-6">
-                {tier.functions === null ? (
-                  <>
-                    <p class="font-mono text-sm text-muted">Pending</p>
-                    <p class="mono-meta mt-1 uppercase">Not yet inventoried</p>
-                  </>
-                ) : (
-                  <>
-                    <p class="font-mono text-lg font-medium text-ink">
-                      {tier.functions}
-                    </p>
-                    <p class="mono-meta mt-1 uppercase">
-                      {stats.listed === tier.functions
-                        ? "All listed"
-                        : `${stats.listed} listed`}
-                    </p>
-                  </>
-                )}
-              </td>
-              <td class="py-5 pr-6">
-                {stats.slaMet === null ? (
-                  <>
-                    <p class="font-mono text-lg text-muted" aria-hidden="true">
-                      —
-                    </p>
-                    <p class="mono-meta mt-1 uppercase">No data</p>
-                  </>
-                ) : (
-                  <>
-                    <p class="font-mono text-lg font-medium text-ink">
-                      {stats.slaMet}
-                    </p>
-                    <p class="mono-meta mt-1 uppercase">
-                      {stats.measured} measured
-                    </p>
-                  </>
-                )}
-              </td>
-              <td class="py-5 text-sm text-body">{tier.postureShort}</td>
-            </tr>
-          );
-        })
+              </div>
+            </td>
+            <td class="py-5 pr-6">
+              {row.functions === null ? (
+                <>
+                  <p class="font-mono text-sm text-muted">Pending</p>
+                  <p class="mono-meta mt-1 uppercase">Not inventoried</p>
+                </>
+              ) : (
+                <>
+                  <p class="font-mono text-lg font-medium text-ink">
+                    {row.functions}
+                  </p>
+                  <p class="mono-meta mt-1 uppercase">{row.listedLabel}</p>
+                </>
+              )}
+            </td>
+            <td class="py-5 pr-6">
+              {row.slaMet === null ? (
+                <>
+                  <p class="font-mono text-lg text-muted" aria-hidden="true">
+                    —
+                  </p>
+                  <p class="mono-meta mt-1 uppercase">No data</p>
+                </>
+              ) : (
+                <>
+                  <p class="font-mono text-lg font-medium text-ink">
+                    {row.slaMet}
+                  </p>
+                  <p class="mono-meta mt-1 uppercase">
+                    {row.measured} measured
+                  </p>
+                </>
+              )}
+            </td>
+            <td class="py-5 text-sm text-body">{row.tier.postureShort}</td>
+          </tr>
+        ))
       }
     </tbody>
   </table>

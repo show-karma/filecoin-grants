@@ -11,19 +11,34 @@ import Button from "../components/Button.astro";
 import PostMeta from "../components/PostMeta.astro";
 import {
   buildHeadlineStats,
-  OBJECTIVES,
+  buildObjectiveCards,
   REPORT_CADENCES,
 } from "../data/landing";
-import { fetchLiveCounts } from "../lib/karma";
+import { fetchCommunityMetrics, fetchLiveCounts } from "../lib/karma";
 import { SITE, EXTERNAL, ASK_KARMA } from "../data/site";
+
+/*
+ * On demand rather than prerendered so the headline stats track the API without
+ * a deploy; ISR keeps that to one pair of requests per expiration window.
+ */
+export const prerender = false;
 
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
 const [featured, ...rest] = posts;
 
-// Read once per build; falls back to committed values if the API is down.
-const headlineStats = buildHeadlineStats(await fetchLiveCounts());
+// Read once per render; each stat falls back to its committed value on its own,
+// so a slow or unreachable API costs freshness rather than the page. Since the
+// render is now cached, a fallback render can stay live for an expiration
+// window — where a build-time failure could only ever leave the last good HTML
+// in place.
+const [liveCounts, communityMetrics] = await Promise.all([
+  fetchLiveCounts(),
+  fetchCommunityMetrics(),
+]);
+const headlineStats = buildHeadlineStats(liveCounts, communityMetrics);
+const objectiveCards = buildObjectiveCards(communityMetrics);
 ---
 
 <BaseLayout title={SITE.title} cta={ASK_KARMA}>
@@ -52,7 +67,7 @@ const headlineStats = buildHeadlineStats(await fetchLiveCounts());
       intro="Three programs fund this work — Kernel for what the network can't run without, Revenue Development for growth, R&D for early work that graduates into the other two. Each objective maps to one, and each program sets its own terms, timeline, and measure of success."
     />
     <div class="mt-10 space-y-5">
-      {OBJECTIVES.map((objective) => <ObjectiveCard objective={objective} />)}
+      {objectiveCards.map((card) => <ObjectiveCard {...card} />)}
     </div>
   </Section>
 
