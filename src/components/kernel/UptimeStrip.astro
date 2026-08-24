@@ -1,0 +1,136 @@
+---
+import type { Period, PeriodState } from "./uptime";
+import { formatDay } from "./uptime";
+
+type Props = {
+  periods: Period[];
+  caption?: string;
+  startLabel?: string;
+  endLabel?: string;
+  compact?: boolean;
+};
+
+const { periods, caption, startLabel, endLabel, compact = false } = Astro.props;
+
+/*
+ * Absent is its own state, not zero and not a failure: it gets the neutral rule
+ * colour so a gap in reporting never reads as a missed SLA.
+ */
+const STATE_COLOR: Record<PeriodState, string> = {
+  met: "var(--color-strip-met)",
+  missed: "var(--color-strip-missed)",
+  indeterminate: "var(--color-strip-indeterminate)",
+  none: "var(--color-strip-none)",
+};
+
+const STATE_WORD: Record<PeriodState, string> = {
+  met: "met",
+  missed: "not met",
+  indeterminate: "indeterminate",
+  none: "no reading",
+};
+
+/*
+ * Phrased to follow a count, so the summary pluralises without a special case:
+ * "2 with no reading", never "2 no reading".
+ */
+const STATE_PHRASE: Record<PeriodState, string> = {
+  met: "met",
+  missed: "not met",
+  indeterminate: "indeterminate",
+  none: "with no reading",
+};
+
+const counts: Record<PeriodState, number> = {
+  met: 0,
+  missed: 0,
+  indeterminate: 0,
+  none: 0,
+};
+for (const period of periods) counts[period.state] += 1;
+
+const start = startLabel ?? (periods.length ? formatDay(periods[0]!.date) : null);
+const end =
+  endLabel ?? (periods.length ? formatDay(periods[periods.length - 1]!.date) : null);
+
+/*
+ * The end dates are for the expanded record, where the strip is the evidence
+ * and the reader is placing an interruption in time. A collapsed row is read at
+ * a glance — there the caption alone says what a bar means, and the dates only
+ * crowd it. They stay in the accessible summary either way.
+ */
+const showDates = !compact;
+
+const summary = (["missed", "met", "indeterminate", "none"] as PeriodState[])
+  .filter((state) => counts[state] > 0)
+  .map((state) => `${counts[state]} ${STATE_PHRASE[state]}`)
+  .join(", ");
+
+const ariaLabel = periods.length
+  ? `Uptime record${start && end ? `, ${start} to ${end}` : ""}: ${periods.length} reading ${periods.length === 1 ? "period" : "periods"} — ${summary}.`
+  : `Uptime record: ${caption ?? "no reading periods in the window"}.`;
+---
+
+{
+  periods.length === 0 ? (
+    /* The caller's caption carries the reason — "no readings in the window",
+       or "growth counters only · no health record", which is a different
+       claim and must not be flattened into the first. */
+    <p class="mono-meta">{caption ?? "no readings in the window"}</p>
+  ) : (
+    <figure class="min-w-0">
+      {/* Its own scroller, so a long strip never widens the page. */}
+      <div class="overflow-x-auto">
+        <div
+          role="img"
+          aria-label={ariaLabel}
+          class:list={[
+            "flex w-full gap-px",
+            compact ? "h-2.5" : "h-4",
+          ]}
+        >
+          {periods.map((period) => (
+            /* Anything inside a role="img" is hidden from assistive tech, so
+               per-bar detail rides on title (pointer) and the numbers table
+               (everyone else) rather than on sr-only text nothing would read.
+               A bar grows to fill a wide card but never past a bar's worth,
+               and never shrinks below legibility — past that the row overflows
+               into its own scroller instead. */
+            <span
+              class="min-w-[3px] max-w-[8px] flex-1 rounded-[1px]"
+              title={`${formatDay(period.date)}: ${STATE_WORD[period.state]}`}
+              style={`background:${STATE_COLOR[period.state]}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {((showDates && start) || caption) && (
+        /* The caption drops to its own centred line below the two end dates
+           on narrow cards, where three columns would squeeze it to a word. */
+        <figcaption class="mono-meta mt-1.5 flex flex-wrap items-baseline justify-between gap-x-3">
+          {showDates && (
+            <>
+              <span class="order-1" aria-hidden="true">
+                {start}
+              </span>
+              <span class="order-2 sm:order-3" aria-hidden="true">
+                {end}
+              </span>
+            </>
+          )}
+          {caption && (
+            <span
+              class:list={[
+                "order-3 sm:order-2",
+                showDates ? "w-full text-center sm:w-auto" : "w-full text-center",
+              ]}
+            >
+              {caption}
+            </span>
+          )}
+        </figcaption>
+      )}
+    </figure>
+  )
+}

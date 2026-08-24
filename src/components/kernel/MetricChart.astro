@@ -1,0 +1,282 @@
+---
+import type { Commitment } from "../../data/kernel-api";
+import {
+  cadenceDays,
+  dayIndex,
+  formatDay,
+  formatValue,
+  readingsInWindow,
+  windowOf,
+} from "./uptime";
+
+type Props = { commitment: Commitment };
+const { commitment } = Astro.props;
+
+/*
+ * A hand-rolled SVG rather than a chart library: the site ships zero client JS,
+ * so the chart has to be markup the build emits and the browser draws as-is.
+ */
+
+// Newest-first from the shared helper; the chart reads left-to-right in time.
+const readings = readingsInWindow(commitment).slice().reverse();
+const values = readings.map((r) => r.value);
+
+const VIEW_W = 640;
+const VIEW_H = 160;
+const PAD_TOP = 14;
+const PAD_BOTTOM = 10;
+// Room at the right edge for the latest-value annotation.
+const PAD_RIGHT = 74;
+const PAD_LEFT = 2;
+
+const plotW = VIEW_W - PAD_LEFT - PAD_RIGHT;
+const plotH = VIEW_H - PAD_TOP - PAD_BOTTOM;
+
+const isStatus = commitment.direction === "status";
+const threshold =
+  commitment.thresholdValue !== null && commitment.thresholdOp !== null
+    ? { op: commitment.thresholdOp, value: commitment.thresholdValue }
+    : null;
+
+/*
+ * Two thirds of all readings are exactly 0, and a flat all-zero series is the
+ * common shape — so the domain is padded rather than divided by, and the flat
+ * line lands mid-plot as a visible baseline instead of a zero-height range.
+ */
+const rawMin = values.length ? Math.min(...values) : 0;
+const rawMax = values.length ? Math.max(...values) : 0;
+const domainCandidates = [rawMin, rawMax];
+if (threshold) domainCandidates.push(threshold.value);
+let lo = Math.min(...domainCandidates);
+let hi = Math.max(...domainCandidates);
+const spread = hi - lo;
+const magnitude = Math.max(Math.abs(hi), Math.abs(lo));
+if (spread <= magnitude * 0.02) {
+  // Flat, or as good as: readings that differ in the fourth decimal are a flat
+  // line, and auto-scaling them to full height would draw drama that is not
+  // in the data. An all-zero series lands here too, centred rather than
+  // divided by.
+  const mid = (hi + lo) / 2;
+  const pad = magnitude > 0 ? magnitude * 0.25 : 1;
+  lo = mid - pad;
+  hi = mid + pad;
+} else {
+  lo -= spread * 0.08;
+  hi += spread * 0.08;
+}
+
+/*
+ * The x axis is TIME, not reading order, and its bounds are the strip's own
+ * window — the same derivation, so the chart and the strip inches above it can
+ * never claim two different ranges for one commitment. Plotting by ordinal drew
+ * a ten-week silence exactly like a one-day interval, which is the opposite of
+ * what this page is for.
+ */
+// Named `range` rather than `window`: shadowing the global reads as a browser API.
+const range = windowOf(commitment);
+const startDay = range ? dayIndex(range.start) : 0;
+const endDay = range ? dayIndex(range.end) : 0;
+const spanDays = endDay - startDay;
+
+const x = (iso: string) =>
+  spanDays <= 0
+    ? PAD_LEFT + plotW
+    : PAD_LEFT + ((dayIndex(iso) - startDay) / spanDays) * plotW;
+const y = (value: number) => PAD_TOP + plotH - ((value - lo) / (hi - lo)) * plotH;
+
+type Point = { x: number; y: number; value: number; date: string };
+const points: Point[] = readings.map((r) => ({
+  x: x(r.date),
+  y: y(r.value),
+  value: r.value,
+  date: r.date,
+}));
+
+/*
+ * The line breaks across a gap longer than two reading periods rather than
+ * spanning it. Drawing through the gap would assert continuity we have no
+ * reading for — the same lie the evenly-spaced axis used to tell, just drawn
+ * more honestly wide. One missed period still connects, so ordinary jitter in
+ * a nightly sync does not shred the line into confetti.
+ */
+const gapLimit = Math.max(2 * cadenceDays(commitment.cadence), 2);
+const segments: Point[][] = [];
+for (const point of points) {
+  const current = segments[segments.length - 1];
+  const previous = current?.[current.length - 1];
+  if (!current || (previous && dayIndex(point.date) - dayIndex(previous.date) > gapLimit)) {
+    segments.push([point]);
+  } else {
+    current.push(point);
+  }
+}
+
+const lineOf = (segment: Point[]) =>
+  segment
+    .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+    .join(" ");
+const areaOf = (segment: Point[]) =>
+  `${lineOf(segment)} L${segment[segment.length - 1]!.x.toFixed(1)} ${PAD_TOP + plotH} L${segment[0]!.x.toFixed(1)} ${PAD_TOP + plotH} Z`;
+
+const lastPoint = points[points.length - 1];
+
+/*
+ * Status metrics ("flag", "DNS RCODE", "severity level") have no meaningful
+ * distance between values, so they get one lane per distinct value and never a
+ * connecting line — an interpolated slope between two RCODEs would be a lie.
+ */
+const statusLevels = isStatus
+  ? Array.from(new Set(values)).sort((a, b) => a - b)
+  : [];
+const statusY = (value: number) => {
+  if (statusLevels.length <= 1) return PAD_TOP + plotH - 6;
+  const rank = statusLevels.indexOf(value);
+  return PAD_TOP + plotH - 6 - (rank / (statusLevels.length - 1)) * (plotH - 12);
+};
+
+const latest = commitment.latest;
+const latestLabel = latest ? formatValue(latest.value) : null;
+const unit = commitment.unitOfMeasure ?? "";
+
+// The window's ends, matching the strip's labels exactly.
+const startLabel = range ? formatDay(range.start) : null;
+const endLabel = range ? formatDay(range.end) : null;
+
+const describeLatest = latest
+  ? `latest ${formatValue(latest.value)}${unit ? ` ${unit}` : ""} on ${formatDay(latest.date)}`
+  : "no latest reading";
+const ariaLabel = readings.length
+  ? [
+      `${commitment.metricName} — ${readings.length} ${readings.length === 1 ? "reading" : "readings"}`,
+      startLabel && endLabel ? `from ${startLabel} to ${endLabel}` : null,
+      `values ${formatValue(rawMin)} to ${formatValue(rawMax)}${unit ? ` ${unit}` : ""}`,
+      describeLatest,
+      threshold ? `threshold ${threshold.op} ${formatValue(threshold.value)}` : "no threshold set",
+      "The reading-by-reading numbers follow in the table below.",
+    ]
+      .filter(Boolean)
+      .join(", ")
+  : `${commitment.metricName} — no readings in the window`;
+---
+
+{
+  readings.length === 0 ? (
+    <p class="mono-meta rounded-md border border-dashed border-line px-3 py-4 text-center">
+      no readings in the window
+    </p>
+  ) : (
+    <figure class="mt-3">
+      <svg
+        role="img"
+        aria-label={ariaLabel}
+        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+        preserveAspectRatio="xMidYMid meet"
+        class="block h-auto w-full text-accent"
+      >
+        {/* Baseline, so an all-zero flat series still reads as sitting on a floor. */}
+        <line
+          x1={PAD_LEFT}
+          y1={PAD_TOP + plotH}
+          x2={VIEW_W - PAD_RIGHT}
+          y2={PAD_TOP + plotH}
+          class="stroke-line"
+          stroke-width="1"
+        />
+
+        {threshold && (
+          <>
+            <line
+              x1={PAD_LEFT}
+              y1={y(threshold.value)}
+              x2={VIEW_W - PAD_RIGHT}
+              y2={y(threshold.value)}
+              class="stroke-bad"
+              stroke-width="1.5"
+              stroke-dasharray="5 4"
+            />
+            <text
+              x={VIEW_W - PAD_RIGHT + 6}
+              y={y(threshold.value) + 4}
+              class="fill-bad font-mono"
+              font-size="14"
+            >
+              {threshold.op} {formatValue(threshold.value)}
+            </text>
+          </>
+        )}
+
+        {isStatus ? (
+          points.map((p) => (
+            <rect
+              x={p.x - 2.5}
+              y={statusY(p.value) - 2.5}
+              width="5"
+              height="5"
+              rx="1"
+              fill="currentColor"
+              opacity={statusLevels.length > 1 && p.value === statusLevels[0] ? 0.55 : 1}
+            >
+              <title>
+                {formatDay(p.date)}: {formatValue(p.value)}
+              </title>
+            </rect>
+          ))
+        ) : (
+          <>
+            {segments.map((segment) =>
+              segment.length > 1 ? (
+                <path d={areaOf(segment)} fill="currentColor" opacity="0.1" />
+              ) : null,
+            )}
+            {segments.map((segment) =>
+              segment.length > 1 ? (
+                <path
+                  d={lineOf(segment)}
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                />
+              ) : (
+                /* A reading stranded between two gaps still has to be visible. */
+                <circle cx={segment[0]!.x} cy={segment[0]!.y} r="3.5" fill="currentColor" />
+              ),
+            )}
+            {/* Skipped when the final segment is itself a lone point, which
+                the branch above has already drawn. */}
+            {lastPoint && (segments[segments.length - 1]?.length ?? 0) > 1 && (
+              <circle cx={lastPoint.x} cy={lastPoint.y} r="3.5" fill="currentColor" />
+            )}
+          </>
+        )}
+
+        {latestLabel && (
+          <text
+            x={VIEW_W - PAD_RIGHT + 6}
+            y={
+              isStatus
+                ? statusY(lastPoint!.value) + 4
+                : Math.min(
+                    Math.max(lastPoint!.y + 4, PAD_TOP + 8),
+                    PAD_TOP + plotH,
+                  )
+            }
+            class="fill-ink font-mono"
+            font-size="14"
+            font-weight="600"
+          >
+            {latestLabel}
+          </text>
+        )}
+
+      </svg>
+      {/* Axis labels live outside the SVG: inside it they would scale with the
+          viewBox and shrink to a few pixels on a phone. */}
+      <figcaption class="mono-meta flex items-baseline justify-between gap-2">
+        <span>{startLabel}</span>
+        <span>{endLabel}</span>
+      </figcaption>
+    </figure>
+  )
+}

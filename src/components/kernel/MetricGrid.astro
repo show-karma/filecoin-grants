@@ -1,26 +1,141 @@
 ---
-import { KERNEL_METRICS } from "../../data/kernel";
+import type { KernelData } from "../../data/kernel-api";
+import { formatUsd } from "../../data/kernel-api";
+import type { KernelMetric } from "../../data/kernel";
+
+type Props = {
+  data: KernelData;
+};
+
+const { data } = Astro.props;
+const { program, windowDays } = data;
+
+const count = (n: number, one: string, many = `${one}s`) =>
+  `${n} ${n === 1 ? one : many}`;
+
+/** Trims the trailing `.0` the API's one-decimal percentages often carry. */
+const pct = (value: number) => `${Number(value.toFixed(1))}%`;
+
+/*
+ * Commitments are counted once each, keyed by indicator: a commitment reported
+ * against several functions appears in more than one project's list, and
+ * summing those lists would inflate the total.
+ */
+const commitments = new Map(
+  data.projects
+    .flatMap((project) => project.commitments)
+    .map((commitment) => [commitment.indicatorId, commitment]),
+);
+const health = [...commitments.values()].filter(
+  (commitment) => commitment.commitmentType === "health",
+).length;
+const growth = commitments.size - health;
+
+const fundedTeams = data.projects.filter(
+  (project) => project.committedUsd > 0,
+).length;
+
+/*
+ * A function nobody reports on is not measurable in principle, not merely
+ * unmeasured this window — the tier tables cannot see it at all, which is the
+ * risk the tile is there to name.
+ */
+const unreported = data.functions.filter(
+  (entry) => entry.isInScope && entry.maintainers === 0,
+).length;
+
+/*
+ * The shared formatter, not a local one: it is the single rounding rule on the
+ * page, and it returns null rather than `$0` for an amount nobody has awarded —
+ * a tile that says `$0` reads as a decision, when the truth is an absence.
+ */
+const committed = formatUsd(program.committedUsd);
+
+const metrics: KernelMetric[] = [
+  {
+    value: committed ?? "—",
+    label: "Committed across funded teams",
+    note: committed
+      ? `${fundedTeams} funded of ${count(program.projectsReporting, "reporting team")} · batch ends Dec`
+      : `No award recorded this batch · ${count(program.projectsReporting, "reporting team")}`,
+    noteTone: committed ? "muted" : "warn",
+  },
+  {
+    // Null until thresholds land on the commitments: with nothing judgeable,
+    // the honest figure is "unknown", never 0%.
+    value:
+      program.healthMet.metPct === null ? "—" : pct(program.healthMet.metPct),
+    label: "SLA met across all health commitments",
+    note: `Rolling ${count(windowDays, "day")} · ${count(health, "health commitment")}, ${count(growth, "growth counter")}`,
+  },
+  {
+    value:
+      program.measurementCoveragePct === null
+        ? "—"
+        : pct(program.measurementCoveragePct),
+    label: "Measurement coverage",
+    /*
+     * Two numbers, two agreements: the noun follows the total it counts, the
+     * verb follows the subject ("1 of 1 in-scope function reports", "1 of 29
+     * in-scope functions report").
+     */
+    note: `${program.unmeasuredInScope} of ${count(program.functionsInScope, "in-scope function")} ${
+      program.unmeasuredInScope === 1 ? "reports" : "report"
+    } no health metric`,
+    noteTone: "warn",
+  },
+  /*
+   * These two carry the same number today and will diverge later, so they are
+   * worded as two rungs of one ladder — down to one team, then down to none —
+   * rather than as two unrelated risks that happen to coincide.
+   */
+  {
+    value: `${program.singleMaintainerCritical}`,
+    label: `Top-tier ${
+      program.singleMaintainerCritical === 1 ? "function is" : "functions are"
+    } down to a single maintaining team`,
+    note: "Posture calls for 2+ implementations",
+    noteTone: "warn",
+  },
+  {
+    value: `${unreported}`,
+    label: `${unreported === 1 ? "Function has" : "Functions have"} no maintaining team at all`,
+    note: "Invisible to this page until one signs up",
+    noteTone: "warn",
+  },
+  {
+    value: `${program.projectsReporting}`,
+    label:
+      program.projectsReporting === 1 ? "Team reporting" : "Teams reporting",
+    note: `Across ${count(program.functionsInScope, "declared function")}`,
+  },
+];
 ---
 
 {
   /*
-  Five metrics in a 2-up grid leave one empty cell. It is filled with the
-  <dl>'s ::after rather than a placeholder element, because a <dl> may contain
-  only <dt>/<dd> groups — a filler <div> there would be invalid HTML.
+  Six tiles fill both grids exactly — 2×3 and 3×2 — so the filler the five-tile
+  version needed is gone. The <dl> constraint that forced it still holds: only
+  <dt>/<dd> groups may sit here, never a placeholder element.
   Within each group the <dt> leads in the DOM and `order` lifts the figure
   above it visually.
 */
 }
 <dl
-  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 sm:after:block sm:after:bg-tint sm:after:content-['']"
+  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-3"
 >
   {
-    KERNEL_METRICS.map((metric) => (
+    metrics.map((metric) => (
       <div class="flex flex-col bg-surface p-5">
         <dt class="order-2 mt-1.5 text-sm leading-snug text-body">
           {metric.label}
         </dt>
-        <dd class="order-1 font-mono text-2xl font-medium tracking-tight text-ink">
+        <dd
+          class:list={[
+            "order-1 font-mono text-2xl font-medium tracking-tight",
+            metric.value === "—" ? "text-muted" : "text-ink",
+          ]}
+        >
           {metric.value}
         </dd>
         <dd
