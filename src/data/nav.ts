@@ -13,7 +13,7 @@ export type NavGroup = { label: string; items: NavLink[] };
 
 export type NavMenu = {
   label: string;
-  /** Links shown above any groups. */
+  /** Links shown below any groups, so a menu reads groups-first. */
   items?: NavLink[];
   groups?: NavGroup[];
 };
@@ -22,20 +22,40 @@ export type NavEntry = NavLink | NavMenu;
 
 export const isMenu = (entry: NavEntry): entry is NavMenu => !("href" in entry);
 
-const PROGRAMS = {
-  batch1: "1013",
-  batch2: "992",
-  batch3: "1479",
-  pods: "1039",
+/*
+ * Community tracks, from GET /v2/tracks?communityUID=… — the ids are opaque
+ * records rather than slugs, so they are pinned here with the names they
+ * carry. The explorer filters on them (`trackIds` takes a comma-separated
+ * list), which is what makes a menu entry show the projects in that track
+ * rather than the batch they happened to be funded in.
+ *
+ * Funding moved from per-batch listings to these three standing tracks; the
+ * batch ids are gone from the menu with them.
+ */
+const TRACKS = {
+  kernel: "6a8c89712fbfc662a244471e",
+  rnd: "6a8c89712fbfc662a2444720",
+  revenueDevelopment: "6a8c89712fbfc662a244471f",
 } as const;
 
-const projects = (id: string) => `${EXTERNAL.explorer}?programId=${id}`;
-const applications = (id: string) =>
-  `${EXTERNAL.app}/browse-applications?programId=${id}`;
+const track = (id: string) => `${EXTERNAL.explorer}?trackIds=${id}`;
 
 export const MAIN_NAV: NavEntry[] = [
   {
     label: "Funding",
+    groups: [
+      {
+        label: "Funding Programs",
+        items: [
+          { label: "Kernel", href: track(TRACKS.kernel) },
+          { label: "R&D", href: track(TRACKS.rnd) },
+          {
+            label: "Revenue Development",
+            href: track(TRACKS.revenueDevelopment),
+          },
+        ],
+      },
+    ],
     items: [
       // The ProPGF overview (/propgf/) is deliberately not listed while no round
       // is open; the page stays reachable by URL. Restore the "Overview" item
@@ -45,26 +65,6 @@ export const MAIN_NAV: NavEntry[] = [
         href: EXTERNAL.financials,
       },
       { label: "RetroPGF - Paused", href: EXTERNAL.retropgf },
-    ],
-    groups: [
-      {
-        label: "Grants",
-        items: [
-          { label: "Batch 1", href: projects(PROGRAMS.batch1) },
-          { label: "Batch 2", href: projects(PROGRAMS.batch2) },
-          { label: "Batch 3", href: projects(PROGRAMS.batch3) },
-          { label: "Pods Track", href: projects(PROGRAMS.pods) },
-        ],
-      },
-      {
-        label: "Applications",
-        items: [
-          { label: "Batch 1", href: applications(PROGRAMS.batch1) },
-          { label: "Batch 2", href: applications(PROGRAMS.batch2) },
-          { label: "Batch 3", href: applications(PROGRAMS.batch3) },
-          { label: "Pods Track", href: applications(PROGRAMS.pods) },
-        ],
-      },
     ],
   },
   {
@@ -85,7 +85,6 @@ export const MAIN_NAV: NavEntry[] = [
       { label: "All reports", href: EXTERNAL.reports },
     ],
   },
-  { label: "Blog", href: "/blog/" },
   {
     label: "About",
     items: [
@@ -108,6 +107,7 @@ export const MAIN_NAV: NavEntry[] = [
       { label: "Skills", href: EXTERNAL.skills },
     ],
   },
+  { label: "Blog", href: "/blog/" },
 ];
 
 export const FOOTER_NAV: NavLink[] = [

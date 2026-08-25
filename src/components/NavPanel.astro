@@ -25,14 +25,6 @@ const itemClass =
   class="absolute left-0 top-full z-50 mt-1 w-max min-w-[180px] rounded-md border border-[var(--nav-field-border)] bg-[var(--nav-surface)] p-1 shadow-md"
 >
   {
-    menu.items?.map((item) => (
-      <a href={item.href} class={itemClass} {...linkAttrs(item.href)}>
-        {item.label}
-      </a>
-    ))
-  }
-
-  {
     menu.groups?.map((group) => (
       <div class="group/sub relative">
         <button
@@ -64,6 +56,14 @@ const itemClass =
           ))}
         </div>
       </div>
+    ))
+  }
+
+  {
+    menu.items?.map((item) => (
+      <a href={item.href} class={itemClass} {...linkAttrs(item.href)}>
+        {item.label}
+      </a>
     ))
   }
 </div>
