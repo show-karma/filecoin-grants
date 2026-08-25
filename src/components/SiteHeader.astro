@@ -186,15 +186,6 @@ const mobileGroupItem =
               <span class="block px-3 text-xs font-semibold uppercase tracking-wider text-[var(--nav-subtle)]">
                 {entry.label}
               </span>
-              {entry.items?.map((item) => (
-                <a
-                  href={item.href}
-                  class={mobileSubItem}
-                  {...linkAttrs(item.href)}
-                >
-                  {item.label}
-                </a>
-              ))}
               {entry.groups?.map((group) => (
                 <div class="space-y-0.5">
                   <span class="block px-3 pl-6 text-xs font-medium text-[var(--nav-subtle)]">
@@ -210,6 +201,15 @@ const mobileGroupItem =
                     </a>
                   ))}
                 </div>
+              ))}
+              {entry.items?.map((item) => (
+                <a
+                  href={item.href}
+                  class={mobileSubItem}
+                  {...linkAttrs(item.href)}
+                >
+                  {item.label}
+                </a>
               ))}
             </div>
           ) : (
