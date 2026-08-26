@@ -1,1 +1,115 @@
-{"windowDays":90,"scored":false,"program":{"committedUsd":2132267,"disbursedUsd":0,"fundedGrants":14,"functionsInScope":29,"functionsMeasured":16,"measurementCoveragePct":55.2,"unmeasuredInScope":13,"healthMet":{"scored":0,"passed":0,"metPct":null},"singleMaintainerCritical":13,"projectsReporting":14},"tiers":[{"tier":"irreplaceable","description":"Only provider. Network halts without it. No substitute exists.","fundingPosture":"Must fund — non-negotiable","catalogued":5,"inScope":5,"measured":1,"commitments":1,"projects":1,"readings":9,"lastReadingAt":"2026-08-21T00:00:00.000Z","sla":{"scored":0,"passed":0,"metPct":null}},{"tier":"essential","description":"Network-critical, but alternatives exist. We need at least one.","fundingPosture":"Fund for redundancy — 2+ implementations","catalogued":24,"inScope":24,"measured":15,"commitments":32,"projects":13,"readings":317,"lastReadingAt":"2026-08-21T00:00:00.000Z","sla":{"scored":0,"passed":0,"metPct":null}},{"tier":"important","description":"Load-bearing. Multiple dependents. Silent failure cascades.","fundingPosture":"Fund maintenance, not features","catalogued":2,"inScope":0,"measured":1,"commitments":2,"projects":1,"readings":16,"lastReadingAt":"2026-08-21T00:00:00.000Z","sla":{"scored":0,"passed":0,"metPct":null}},{"tier":"nice-to-have","description":"Enriches the ecosystem. Network survives without it.","fundingPosture":"Discretionary","catalogued":0,"inScope":0,"measured":0,"commitments":0,"projects":0,"readings":0,"lastReadingAt":null,"sla":{"scored":0,"passed":0,"metPct":null}}]}
+{
+  "windowDays": 90,
+  "scored": false,
+  "program": {
+    "committedUsd": 2132267,
+    "disbursedUsd": 0,
+    "fundedGrants": 14,
+    "functionsInScope": 29,
+    "functionsMeasured": 16,
+    "measurementCoveragePct": 55.2,
+    "unmeasuredInScope": 13,
+    "healthMet": {
+      "scored": 0,
+      "passed": 0,
+      "metPct": null
+    },
+    "singleMaintainerCritical": 13,
+    "projectsReporting": 14,
+    "coverage": {
+      "received": 342,
+      "expected": 342,
+      "pct": 100.0
+    }
+  },
+  "tiers": [
+    {
+      "tier": "irreplaceable",
+      "description": "Only provider. Network halts without it. No substitute exists.",
+      "fundingPosture": "Must fund \u2014 non-negotiable",
+      "catalogued": 5,
+      "inScope": 5,
+      "measured": 1,
+      "commitments": 1,
+      "projects": 1,
+      "readings": 9,
+      "lastReadingAt": "2026-08-21T00:00:00.000Z",
+      "sla": {
+        "scored": 0,
+        "passed": 0,
+        "metPct": null
+      },
+      "coverage": {
+        "received": 9,
+        "expected": 9,
+        "pct": 100.0
+      }
+    },
+    {
+      "tier": "essential",
+      "description": "Network-critical, but alternatives exist. We need at least one.",
+      "fundingPosture": "Fund for redundancy \u2014 2+ implementations",
+      "catalogued": 24,
+      "inScope": 24,
+      "measured": 15,
+      "commitments": 32,
+      "projects": 13,
+      "readings": 317,
+      "lastReadingAt": "2026-08-21T00:00:00.000Z",
+      "sla": {
+        "scored": 0,
+        "passed": 0,
+        "metPct": null
+      },
+      "coverage": {
+        "received": 317,
+        "expected": 317,
+        "pct": 100.0
+      }
+    },
+    {
+      "tier": "important",
+      "description": "Load-bearing. Multiple dependents. Silent failure cascades.",
+      "fundingPosture": "Fund maintenance, not features",
+      "catalogued": 2,
+      "inScope": 0,
+      "measured": 1,
+      "commitments": 2,
+      "projects": 1,
+      "readings": 16,
+      "lastReadingAt": "2026-08-21T00:00:00.000Z",
+      "sla": {
+        "scored": 0,
+        "passed": 0,
+        "metPct": null
+      },
+      "coverage": {
+        "received": 16,
+        "expected": 16,
+        "pct": 100.0
+      }
+    },
+    {
+      "tier": "nice-to-have",
+      "description": "Enriches the ecosystem. Network survives without it.",
+      "fundingPosture": "Discretionary",
+      "catalogued": 0,
+      "inScope": 0,
+      "measured": 0,
+      "commitments": 0,
+      "projects": 0,
+      "readings": 0,
+      "lastReadingAt": null,
+      "sla": {
+        "scored": 0,
+        "passed": 0,
+        "metPct": null
+      },
+      "coverage": {
+        "received": 0,
+        "expected": 0,
+        "pct": null
+      }
+    }
+  ]
+}

@@ -2,7 +2,12 @@
 import CommitmentList from "./CommitmentList.astro";
 import UptimeStrip from "./UptimeStrip.astro";
 import { barCaption, worstOf } from "./uptime";
-import { slaPctLabel, slaStatus, type CardRow, type Flag } from "./inventory";
+import {
+  collectionStatus,
+  coveragePctLabel,
+  type CardRow,
+  type Flag,
+} from "./inventory";
 
 type Props = CardRow;
 
@@ -12,14 +17,14 @@ const {
   title,
   flags,
   share = null,
-  metPct,
+  coverage,
   commitments,
   prose = null,
   meta,
   emptyNote,
 } = Astro.props;
 
-const status = slaStatus(metPct);
+const status = collectionStatus(coverage);
 const hasStrip = commitments.length > 0;
 
 const FLAG_CLASS: Record<Flag["tone"], string> = {
@@ -36,15 +41,15 @@ const FLAG_CLASS: Record<Flag["tone"], string> = {
 };
 
 const CHIP_CLASS: Record<string, string> = {
-  meeting: "border-ok/40 text-ok",
-  missing: "border-bad/40 text-bad",
-  unmeasured: "border-line text-muted",
+  collecting: "border-ok/40 text-ok",
+  gaps: "border-bad/40 text-bad",
+  silent: "border-line text-muted",
 };
 
 const CHIP_LABEL: Record<string, string> = {
-  meeting: "meeting",
-  missing: "not meeting",
-  unmeasured: "not measured",
+  collecting: "collecting",
+  gaps: "gaps in collection",
+  silent: "not collecting",
 };
 
 const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
@@ -133,18 +138,18 @@ const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
       <div class="flex items-center justify-between gap-3 sm:contents">
         <div class="sm:w-28 sm:text-right">
           <p
-            class={`font-mono text-lg ${metPct === null ? "text-muted" : "font-medium text-ink"}`}
+            class={`font-mono text-lg ${status === "silent" ? "text-muted" : "font-medium text-ink"}`}
           >
-            {slaPctLabel(metPct)}
+            {coveragePctLabel(coverage)}
           </p>
           <p class="mono-meta uppercase">
-            {metPct === null ? "No data" : "SLA met · 90d"}
+            {status === "silent" ? "Nothing collected" : "Coverage · 90d"}
           </p>
           <p class="mt-1.5">
             <span
               class={`inline-block rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem] ${CHIP_CLASS[status]}`}
             >
-              {status === "meeting" && <span aria-hidden="true">✓ </span>}
+              {status === "collecting" && <span aria-hidden="true">✓ </span>}
               {CHIP_LABEL[status]}
             </span>
           </p>

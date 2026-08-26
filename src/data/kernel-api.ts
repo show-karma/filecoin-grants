@@ -39,6 +39,18 @@ export type KernelSla = {
   metPct: number | null;
 };
 
+/**
+ * Collection completeness: cadence periods that carried a reading against the
+ * periods elapsed since collection started. Optional on the wire so a backend
+ * that predates it degrades to "no data" rather than failing the build.
+ */
+export type KernelCoverage = {
+  received: number;
+  expected: number;
+  /** received / expected, percent. Null when nothing is being collected. */
+  pct: number | null;
+};
+
 export type KernelTierOverview = {
   tier: string;
   description: string;
@@ -51,6 +63,7 @@ export type KernelTierOverview = {
   readings: number;
   lastReadingAt: string | null;
   sla: KernelSla;
+  coverage?: KernelCoverage;
 };
 
 export type KernelProgramStats = {
@@ -63,6 +76,7 @@ export type KernelProgramStats = {
   measurementCoveragePct: number | null;
   unmeasuredInScope: number;
   healthMet: KernelSla;
+  coverage?: KernelCoverage;
   singleMaintainerCritical: number;
   projectsReporting: number;
 };
@@ -90,6 +104,8 @@ export type KernelFunctionApi = {
   readings: number;
   lastReadingAt: string | null;
   sla: KernelSla;
+  coverage?: KernelCoverage;
+  collectingSince?: string | null;
 };
 
 export type KernelProjectApi = {
@@ -102,9 +118,32 @@ export type KernelProjectApi = {
   readings: number;
   lastReadingAt: string | null;
   sla: KernelSla;
+  coverage?: KernelCoverage;
+  collectingSince?: string | null;
   committedUsd: number;
   disbursedUsd: number;
   grantRefs: string[];
+};
+
+/**
+ * The per-commitment collection record, served rather than derived: coverage,
+ * when the automated run started, where the rows came from and which days the
+ * collection itself was down. Keyed by indicatorId + projectUID.
+ */
+export type KernelCommitmentApi = {
+  indicatorId: string;
+  projectUID: string;
+  kernelId: string;
+  coverage: KernelCoverage;
+  collectingSince: string | null;
+  collection: {
+    rows: number;
+    unattended: number;
+    review: number;
+    observed: number;
+    noValueDates: string[];
+    outageDates: string[];
+  };
 };
 
 export type IndicatorDatapoint = {
@@ -168,6 +207,8 @@ export type CoverageUnit = "days" | "weeks" | "months" | "readings";
 export type Reading = {
   date: string;
   value: number;
+  /** Which run produced it — a manual review is not the automated collection. */
+  method?: string | null;
   /**
    * The bar that was in force when this reading was taken. Carried per reading
    * rather than per commitment because signing a bar in August must not
@@ -175,6 +216,36 @@ export type Reading = {
    */
   thresholdOp?: string | null;
   thresholdValue?: number | null;
+};
+
+/**
+ * What the public table holds for this commitment, as reported by the API. The
+ * page never counts these itself: `outageDates` needs the whole feed to settle,
+ * and re-deriving the rest here would put the same rule in two languages.
+ */
+export type CommitmentCollection = {
+  rows: number;
+  unattended: number;
+  review: number;
+  /** Rows that carried a defensible value; the rest are attempts that got none. */
+  observed: number;
+  /** First day of the automated run. Coverage cannot start before it. */
+  startedOn: string | null;
+  /** Days a probe ran and produced nothing — drawn, never counted as a value. */
+  noValueDates: string[];
+  /** The subset the whole feed was blank on — counted on neither side. */
+  outageDates: string[];
+};
+
+/** Nothing served for a commitment: shown as unknown, never as zero coverage. */
+export const UNKNOWN_COLLECTION: CommitmentCollection = {
+  rows: 0,
+  unattended: 0,
+  review: 0,
+  observed: 0,
+  startedOn: null,
+  noValueDates: [],
+  outageDates: [],
 };
 
 export type Commitment = {
@@ -198,6 +269,9 @@ export type Commitment = {
   series: Reading[];
   sla: KernelSla;
   coverage: { read: number; expected: number; unit: CoverageUnit };
+  collection: CommitmentCollection;
+  /** Percent change across the window, first reading to last. */
+  changePct: number | null;
   interruptions: { startDate: string; length: number }[];
   latest: Reading | null;
   /** Added to the spec shape: the join key for function-level rollups. */
@@ -457,21 +531,28 @@ export function expectedPeriods(
 }
 
 /**
- * Coverage counts cadence periods that hold at least one reading, against the
- * periods the window expects — both sides of the fraction in the same unit, so
- * "8 of 3 months read" can no longer happen. A period read twice is read once.
+ * The unit the API's coverage fraction is counted in. Presentation only — the
+ * fraction itself is served; this just names it for the card.
  */
-export function computeCoverage(
-  series: Reading[],
-  cadence: string | null | undefined,
-  windowDays: number,
-): { read: number; expected: number; unit: CoverageUnit } {
-  const { expected, unit } = expectedPeriods(cadence, windowDays);
-  const periods = groupByPeriod(series, cadence).length;
-  // A boundary period can still straddle the window edge; the promise is the
-  // ceiling, so cap rather than print more periods read than exist.
-  const read = expected === null ? periods : Math.min(periods, expected);
-  return { read, expected: expected ?? read, unit };
+export function coverageUnit(cadence: string | null | undefined): CoverageUnit {
+  switch ((cadence ?? "").trim().toLowerCase()) {
+    case "daily":
+      return "days";
+    case "weekly":
+      return "weeks";
+    case "monthly":
+      return "months";
+    default:
+      return "readings";
+  }
+}
+
+/** First reading to last, as a percent. Null when there is nothing to compare. */
+export function computeChange(series: Reading[]): number | null {
+  const first = series[0];
+  const last = series[series.length - 1];
+  if (!first || !last || first === last || first.value === 0) return null;
+  return Math.round(((last.value - first.value) / Math.abs(first.value)) * 1000) / 10;
 }
 
 /**
@@ -600,6 +681,7 @@ export function normalizeSeries(datapoints: IndicatorDatapoint[]): Reading[] {
     byDate.set(date, {
       date,
       value,
+      method: parseBreakdown(dp.breakdown)?.method ?? null,
       thresholdOp: dp.thresholdOp ?? null,
       thresholdValue: dp.thresholdValue == null ? null : Number(dp.thresholdValue),
     });
@@ -641,7 +723,12 @@ function readThreshold(datapoints: IndicatorDatapoint[]): {
 export function buildCommitment(
   projectUID: string,
   indicator: ProjectIndicator,
-  options: { windowDays?: number; referenceDate?: string | null } = {},
+  options: {
+    windowDays?: number;
+    referenceDate?: string | null;
+    /** The API's record for this commitment. Absent means "not served yet". */
+    record?: KernelCommitmentApi | null;
+  } = {},
 ): Commitment | null {
   const windowDays = options.windowDays ?? WINDOW_DAYS;
   const datapoints = indicator.datapoints ?? [];
@@ -665,6 +752,10 @@ export function buildCommitment(
   const commitmentType = breakdown.commitmentType === "growth" ? "growth" : "health";
   const { op, value } = readThreshold(datapoints);
   const cadence = breakdown.cadence ?? "";
+  const record = options.record ?? null;
+  const collection: CommitmentCollection = record
+    ? { ...record.collection, startedOn: record.collectingSince?.slice(0, 10) ?? null }
+    : UNKNOWN_COLLECTION;
 
   return {
     functionId: breakdown.functionId ?? indicator.name,
@@ -693,7 +784,15 @@ export function buildCommitment(
       commitmentType === "growth"
         ? { scored: 0, passed: 0, metPct: null }
         : computeSla(series, null, null, cadence),
-    coverage: computeCoverage(series, cadence, windowDays),
+    // Served, never recomputed — the same rule in two languages drifts in
+    // silence, and outage days can only be settled across the whole feed.
+    coverage: {
+      read: record?.coverage.received ?? 0,
+      expected: record?.coverage.expected ?? 0,
+      unit: coverageUnit(cadence),
+    },
+    collection,
+    changePct: computeChange(series),
     interruptions:
       commitmentType === "growth" ? [] : findInterruptions(series, null, null, cadence),
     latest: series.length > 0 ? (series[series.length - 1] ?? null) : null,
@@ -733,6 +832,10 @@ export function commitmentCounts(commitments: Commitment[]): {
   const growth = unique.filter((commitment) => commitment.commitmentType === "growth").length;
   return { total: unique.length, health: unique.length - growth, growth };
 }
+
+/** The identity of a commitment across the API's separate payloads. */
+export const commitmentKey = (indicatorId: string, projectUID: string): string =>
+  `${indicatorId}::${projectUID}`;
 
 export function assembleKernelData(
   overview: KernelOverviewResponse,
@@ -856,14 +959,25 @@ export async function loadKernelData(): Promise<KernelData | null> {
   const origin = apiOrigin();
   const query = `?windowDays=${WINDOW_DAYS}`;
   try {
-    const [overview, functionsBody, projectsBody] = await Promise.all([
+    const [overview, functionsBody, projectsBody, commitmentsBody] = await Promise.all([
       getJson<KernelOverviewResponse>(`${origin}/v2/kernel/overview${query}`),
       getJson<{ functions: KernelFunctionApi[] }>(`${origin}/v2/kernel/functions${query}`),
       getJson<{ projects: KernelProjectApi[] }>(`${origin}/v2/kernel/projects${query}`),
+      getJson<{ commitments: KernelCommitmentApi[] }>(
+        `${origin}/v2/kernel/commitments`,
+      ),
     ]);
 
     const functions = functionsBody.functions ?? [];
     const projects = projectsBody.projects ?? [];
+    // A commitment is one indicator on one project; the same indicator can be
+    // reported by two projects, so neither half of the key is enough alone.
+    const records = new Map(
+      (commitmentsBody.commitments ?? []).map((record) => [
+        commitmentKey(record.indicatorId, record.projectUID),
+        record,
+      ]),
+    );
     if (!overview?.program || functions.length === 0) {
       throw new Error("overview or functions came back empty");
     }
@@ -893,6 +1007,9 @@ export async function loadKernelData(): Promise<KernelData | null> {
               buildCommitment(payload.projectUID, indicator, {
                 windowDays: WINDOW_DAYS,
                 referenceDate,
+                record: records.get(
+                  commitmentKey(indicator.id, payload.projectUID),
+                ),
               }),
             )
             .filter((commitment): commitment is Commitment => commitment !== null),
