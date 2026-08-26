@@ -7,7 +7,7 @@ import {
   formatDay,
   formatValue,
   pluralize,
-  readingsInWindow,
+  collectionLog,
   toPeriods,
   windowOf,
 } from "./uptime";
@@ -23,7 +23,7 @@ const periods = toPeriods(commitment);
  * bar's start date, the chart the window's end.
  */
 const range = windowOf(commitment);
-const readings = readingsInWindow(commitment);
+const readings = collectionLog(commitment);
 
 /*
  * Four states, not two. A growth counter is tracked for direction and never
@@ -124,6 +124,18 @@ const stripCaption = [
 ].join(" · ");
 
 const unit = commitment.unitOfMeasure ?? "";
+
+/*
+ * "not counted" is the honest word for an outage day: the whole feed was empty,
+ * so the silence says nothing about this commitment and the coverage figure
+ * leaves it out. A day only this commitment came back blank on is different —
+ * the probe ran, it simply had no defensible number to give.
+ */
+const COLLECTION_LABEL: Record<string, string> = {
+  read: "read",
+  outage: "collection outage · not counted",
+  "no value": "ran · no value",
+};
 ---
 
 <article class="rounded-lg border border-line bg-surface p-4 sm:p-5">
@@ -348,7 +360,7 @@ const unit = commitment.unitOfMeasure ?? "";
                   {unit ? ` (${unit})` : ""}
                 </th>
                 <th scope="col" class="border-b border-line py-1.5 font-normal">
-                  SLA
+                  collection
                 </th>
               </tr>
             </thead>
@@ -359,23 +371,21 @@ const unit = commitment.unitOfMeasure ?? "";
                     {reading.date.slice(0, 10)}
                   </td>
                   <td class="border-b border-line-soft py-1 pr-4 text-ink">
-                    {formatValue(reading.value)}
+                    {reading.value === null ? (
+                      <span class="text-muted" aria-hidden="true">
+                        —
+                      </span>
+                    ) : (
+                      formatValue(reading.value)
+                    )}
                   </td>
                   <td
                     class:list={[
                       "border-b border-line-soft py-1",
-                      reading.state === "met"
-                        ? "text-ok"
-                        : reading.state === "missed"
-                          ? "text-bad"
-                          : "text-muted",
+                      reading.collection === "read" ? "text-body" : "text-muted",
                     ]}
                   >
-                    {reading.state === "met"
-                      ? "met"
-                      : reading.state === "missed"
-                        ? "missed"
-                        : "—"}
+                    {COLLECTION_LABEL[reading.collection]}
                   </td>
                 </tr>
               ))}

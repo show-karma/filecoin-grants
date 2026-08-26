@@ -211,6 +211,11 @@ export type CommitmentCollection = {
   startedOn: string | null;
   /** Days a probe ran and produced nothing — drawn, never counted as a value. */
   noValueDates: string[];
+  /**
+   * The subset of `noValueDates` on which the whole feed came back empty. Only
+   * knowable across commitments, so it is stamped during assembly.
+   */
+  outageDates: string[];
 };
 
 export type Commitment = {
@@ -583,7 +588,26 @@ export function summarizeCollection(
     observed,
     startedOn,
     noValueDates: [...new Set(noValueDates)].sort(),
+    outageDates: [],
   };
+}
+
+/**
+ * Days the collection itself was down: every commitment in the feed reported,
+ * and every one of them came back empty. A commitment blank on such a day was
+ * not failing to report, so the table has to say which of the two it was.
+ *
+ * Derived rather than declared — the data share carries no outage flag, and a
+ * day where only some commitments are blank is not one.
+ */
+export function feedOutageDates(commitments: Commitment[]): string[] {
+  const withValue = new Set<string>();
+  const blank = new Set<string>();
+  for (const commitment of commitments) {
+    for (const reading of commitment.series) withValue.add(reading.date);
+    for (const day of commitment.collection.noValueDates) blank.add(day);
+  }
+  return [...blank].filter((day) => !withValue.has(day)).sort();
 }
 
 /** First reading to last, as a percent. Null when there is nothing to compare. */
@@ -868,6 +892,14 @@ export function assembleKernelData(
   commitmentsByProject: Map<string, Commitment[]>,
 ): KernelData {
   const projectsByUid = new Map(projects.map((project) => [project.projectUID, project]));
+
+  const allCommitments = [...commitmentsByProject.values()].flat();
+  const outages = new Set(feedOutageDates(allCommitments));
+  for (const commitment of allCommitments) {
+    commitment.collection.outageDates = commitment.collection.noValueDates.filter(
+      (day) => outages.has(day),
+    );
+  }
 
   const projectEntries: ProjectEntry[] = projects.map((project) => ({
     ...project,

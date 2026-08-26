@@ -289,18 +289,67 @@ function buildGrid(
 }
 
 /**
- * One bar per reading, oldest first — the uptime record of a single commitment.
+ * One commitment's own bars, oldest last.
  *
- * Not the cadence axis the rolled-up strips use: that would fold a monthly
- * commitment's daily rows into three bars, and the reader would lose both the
- * rhythm of the feed and the days a probe ran and came back with nothing. Those
- * attempts are drawn indeterminate rather than dropped, because a feed that ran
- * and got no defensible value is not a feed that was silent.
+ * The bars are the cadence partition — the same one the coverage fraction
+ * counts — so "10 of 13 weeks read" and the strip beside it are the same claim
+ * rather than two that happen to agree. The exception is a partition that
+ * collapses to a single period: one bar is not a strip, and a monthly
+ * commitment reporting nightly says far more through its readings than through
+ * the one month they all land in.
  *
- * This is also the only entry point that will draw a growth counter, because on
- * its own block the amber "tracked, never judged" record is the point.
+ * Either way this is the only entry point that will draw a growth counter,
+ * because on its own block the amber "tracked, never judged" record is the
+ * point.
  */
 export function toPeriods(commitment: Commitment): Period[] {
+  const byCadence = cadenceBars(commitment);
+  return compress(byCadence.length >= 2 ? byCadence : readingBars(commitment));
+}
+
+type Bar = { date: string; state: PeriodState };
+
+/** Bars over the cadence periods the commitment has been collecting for. */
+function cadenceBars(commitment: Commitment): Bar[] {
+  const cadence = normalizeCadence(commitment.cadence);
+  if (!CADENCES.includes(cadence as (typeof CADENCES)[number])) return [];
+
+  // Anchored on the run, not on the first reading: a period before collection
+  // started is not one the commitment failed to fill, and drawing it would put
+  // more bars on the strip than the coverage fraction beside it counts.
+  const startedOn = commitment.collection.startedOn;
+  const from = startedOn === null ? null : periodIndex(startedOn, cadence);
+  const grouped = groupByPeriod(commitment.series, commitment.cadence).filter(
+    (period) => period.index !== null && (from === null || period.index >= from),
+  );
+  const last = grouped[grouped.length - 1];
+  if (!last || last.index === null) return [];
+  const firstIndex = from ?? grouped[0]!.index!;
+
+  // Absent periods inside the run are drawn, not skipped — a silent period is
+  // exactly what the coverage fraction is counting against the commitment.
+  const states = new Map<number, PeriodState>();
+  for (const period of grouped) {
+    if (period.index === null) continue;
+    states.set(period.index, periodState(commitment, period));
+  }
+
+  const bars: Bar[] = [];
+  for (let index = firstIndex; index <= last.index; index += 1) {
+    bars.push({
+      date: dateOfPeriod(index, cadence),
+      state: states.get(index) ?? "none",
+    });
+  }
+  return bars;
+}
+
+/**
+ * One bar per row in the public table. Keeps the days a probe ran and produced
+ * nothing: a feed that ran and got no defensible value is not a feed that was
+ * silent, and only this axis is fine enough to show the difference.
+ */
+function readingBars(commitment: Commitment): Bar[] {
   const bars = new Map<string, PeriodState>();
   for (const period of groupByPeriod(commitment.series, commitment.cadence)) {
     const state = periodState(commitment, period);
@@ -311,12 +360,9 @@ export function toPeriods(commitment: Commitment): Period[] {
   for (const day of commitment.collection.noValueDates) {
     if (!bars.has(day)) bars.set(day, "indeterminate");
   }
-
-  const ordered = [...bars.entries()]
+  return [...bars.entries()]
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([date, state]) => ({ date, state }));
-
-  return compress(ordered);
 }
 
 /** Fold bars into MAX_BARS buckets, worst state winning. */
@@ -355,13 +401,18 @@ function describeBars(grid: Grid): string {
  * excluding them.
  */
 export function barCaptionFor(commitment: Commitment): string {
-  const bars = toPeriods(commitment);
-  if (bars.length === 0) return "no readings in the window";
-  const readings = commitment.series.length + commitment.collection.noValueDates.length;
-  const perBar = Math.max(1, Math.ceil(readings / MAX_BARS));
+  const byCadence = cadenceBars(commitment);
+  const source = byCadence.length >= 2 ? byCadence : readingBars(commitment);
+  if (source.length === 0) return "no readings in the window";
+
+  const noun =
+    byCadence.length >= 2
+      ? (UNIT_NOUN[expectedPeriods(commitment.cadence, WINDOW_DAYS).unit] ?? "period")
+      : "reading";
+  const perBar = Math.max(1, Math.ceil(source.length / MAX_BARS));
   return perBar === 1
-    ? "one bar = one reading"
-    : `one bar = ${perBar} readings`;
+    ? `one bar = one ${noun}`
+    : `one bar = ${perBar} ${noun}s`;
 }
 
 /**
@@ -400,6 +451,39 @@ export function windowOf(
  * the per-reading verdict; a bar is a period, a row is a reading, and each is
  * judged against the bar that reading carried.
  */
+export type CollectionRow = {
+  date: string;
+  /** Null on a day the probe ran and produced nothing. */
+  value: number | null;
+  state: PeriodState;
+  collection: "read" | "outage" | "no value";
+};
+
+/**
+ * Every row the public table holds, newest first. Unlike `readingsInWindow`
+ * this keeps the days that produced no value: a blank row is the only place a
+ * reader can tell a collection outage from a value that was genuinely absent,
+ * and dropping them would make an interrupted feed look like an unbroken one.
+ */
+export function collectionLog(commitment: Commitment): CollectionRow[] {
+  const outages = new Set(commitment.collection.outageDates);
+  const rows: CollectionRow[] = commitment.series.map((reading) => ({
+    date: reading.date,
+    value: reading.value,
+    state: readingState(commitment, reading),
+    collection: "read",
+  }));
+  for (const day of commitment.collection.noValueDates) {
+    rows.push({
+      date: day,
+      value: null,
+      state: "indeterminate",
+      collection: outages.has(day) ? "outage" : "no value",
+    });
+  }
+  return rows.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+}
+
 export function readingsInWindow(
   commitment: Commitment,
 ): { date: string; value: number; state: PeriodState }[] {
