@@ -4,7 +4,7 @@ import {
   assembleKernelData,
   buildCommitment,
   commitmentCounts,
-  computeCoverage,
+  coverageUnit,
   computeSla,
   expectedPeriods,
   findInterruptions,
@@ -25,6 +25,7 @@ import {
   type KernelProjectApi,
   type ProjectIndicator,
   type Reading,
+  UNKNOWN_COLLECTION,
 } from "../kernel-api";
 
 import functionsSample from "./fixtures/functions.json";
@@ -93,7 +94,7 @@ describe("computeSla", () => {
   });
 });
 
-describe("expectedPeriods / computeCoverage", () => {
+describe("expectedPeriods / coverageUnit", () => {
   it("derives the denominator from the cadence", () => {
     expect(expectedPeriods("daily", 90)).toEqual({ expected: 90, unit: "days" });
     expect(expectedPeriods("weekly", 90)).toEqual({ expected: 13, unit: "weeks" });
@@ -101,31 +102,16 @@ describe("expectedPeriods / computeCoverage", () => {
     expect(expectedPeriods("Daily", 90)).toEqual({ expected: 90, unit: "days" });
   });
 
+  it("names the unit the served fraction is counted in", () => {
+    expect(coverageUnit("daily")).toBe("days");
+    expect(coverageUnit("weekly")).toBe("weeks");
+    expect(coverageUnit("Monthly")).toBe("months");
+  });
+
   it("falls back to a reading count for an unknown cadence", () => {
     expect(expectedPeriods("quarterly", 90)).toEqual({ expected: null, unit: "readings" });
-    expect(expectedPeriods(null, 90)).toEqual({ expected: null, unit: "readings" });
-
-    const coverage = computeCoverage(
-      readings(["2026-08-01", 0], ["2026-08-15", 1]),
-      "quarterly",
-      90,
-    );
-    expect(coverage).toEqual({ read: 2, expected: 2, unit: "readings" });
-  });
-
-  it("counts readings present against the periods the cadence promised", () => {
-    expect(computeCoverage(readings(["2026-08-01", 0]), "daily", 90)).toEqual({
-      read: 1,
-      expected: 90,
-      unit: "days",
-    });
-    expect(
-      computeCoverage(readings(["2026-06-30", 0], ["2026-07-31", 0], ["2026-08-31", 0]), "monthly", 90),
-    ).toEqual({ read: 3, expected: 3, unit: "months" });
-  });
-
-  it("counts a zero reading as a reading", () => {
-    expect(computeCoverage(readings(["2026-08-01", 0], ["2026-08-02", 0]), "daily", 90).read).toBe(2);
+    expect(coverageUnit("quarterly")).toBe("readings");
+    expect(coverageUnit(null)).toBe("readings");
   });
 });
 
@@ -499,8 +485,6 @@ describe("buildCommitment against the captured payload", () => {
     expect(commitment?.team).toBe("randamu");
     expect(commitment?.cadence).toBe("monthly");
     expect(commitment?.coverage.unit).toBe("months");
-    // One month, not three: the denominator starts when the nightly run did.
-    expect(commitment?.coverage.expected).toBe(1);
     // No threshold is signed upstream yet, so nothing is judgeable.
     expect(commitment?.sla).toEqual({ scored: 0, passed: 0, metPct: null });
     expect(commitment?.interruptions).toEqual([]);
@@ -592,9 +576,10 @@ describe("coverage against the captured slate", () => {
     expect(commitmentCounts(commitments)).toEqual({ total: 34, health: 29, growth: 5 });
   });
 
-  it("shows a stalled sync as missing days rather than hiding it", () => {
-    // Nothing has reported since the 21st; anchoring on the build date means
-    // those three days are absent from coverage instead of being anchored away.
+  it("windows the series on the build date, not on the freshest reading", () => {
+    // Nothing has reported since the 21st. Anchoring on the data would slide
+    // the window back with it and hide a stalled sync; the served coverage
+    // counts those trailing days as missing precisely because we do not.
     const payload = payloads.find((candidate) =>
       candidate.indicators.some((indicator) => indicator.name === "drand-relay-statuspage"),
     )!;
@@ -608,71 +593,51 @@ describe("coverage against the captured slate", () => {
     })!;
 
     expect(anchoredOnBuild.latest?.date).toBe("2026-08-21");
-    expect(anchoredOnBuild.coverage.read).toBe(anchoredOnData.coverage.read - 3);
+    expect(anchoredOnBuild.series.length).toBe(anchoredOnData.series.length - 3);
   });
 
-  it("counts months, not nightly readings, for a monthly commitment", () => {
-    // Eight readings, all inside August — one month, read once.
-    const release = byFunctionId("drand-release-cadence");
-    expect(release?.cadence).toBe("monthly");
-    expect(release?.series.length).toBe(8);
-    expect(release?.coverage).toEqual({ read: 1, expected: 1, unit: "months" });
+  it("surfaces the served record verbatim instead of recomputing it", () => {
+    const payload = payloads.find((candidate) =>
+      candidate.indicators.some((indicator) => indicator.name === "forest-release-cadence"),
+    )!;
+    const indicator = payload.indicators.find(
+      (candidate) => candidate.name === "forest-release-cadence",
+    )!;
 
-    const curio = byFunctionId("curio-sealing-release-cadence");
-    expect(curio?.coverage).toEqual({ read: 1, expected: 1, unit: "months" });
+    const commitment = buildCommitment(payload.projectUID, indicator, {
+      referenceDate,
+      record: {
+        indicatorId: indicator.id,
+        projectUID: payload.projectUID,
+        kernelId: "forest-full-node",
+        coverage: { received: 1, expected: 1, pct: 100 },
+        collectingSince: "2026-08-14T00:00:00.000Z",
+        collection: {
+          rows: 13,
+          unattended: 12,
+          review: 1,
+          observed: 11,
+          noValueDates: ["2026-08-22", "2026-08-23"],
+          outageDates: ["2026-08-22", "2026-08-23"],
+        },
+      },
+    })!;
+
+    // The unit is the only part the page still supplies — it names the served
+    // fraction, it does not decide it.
+    expect(commitment.coverage).toEqual({ read: 1, expected: 1, unit: "months" });
+    expect(commitment.collection.startedOn).toBe("2026-08-14");
+    expect(commitment.collection.observed).toBe(11);
+    expect(commitment.collection.outageDates).toEqual(["2026-08-22", "2026-08-23"]);
   });
 
-  it("does not let a review reading stretch the denominator", () => {
-    // Nine rows, but the oldest was taken while someone was looking: counting
-    // from it would bill this commitment for the months before anyone was
-    // collecting, and print "2 of 3 months" for an unbroken record.
-    const forest = byFunctionId("forest-release-cadence");
-    expect(forest?.collection.rows).toBe(9);
-    expect(forest?.collection.review).toBe(1);
-    expect(forest?.collection.startedOn).toBe("2026-08-14");
-    expect(forest?.coverage).toEqual({ read: 1, expected: 1, unit: "months" });
-  });
-
-  it("counts ISO weeks for a weekly commitment", () => {
-    const docs = byFunctionId("network-documentation-commit-recency");
-    expect(docs?.cadence).toBe("weekly");
-    // Sixteen readings, but they land in only ten of the thirteen weeks the
-    // window expects — before the fix this printed "16 of 13 weeks read".
-    expect(docs?.series.length).toBe(16);
-    expect(docs?.coverage).toEqual({ read: 10, expected: 13, unit: "weeks" });
-  });
-
-  it("never reads more periods than the window expects", () => {
+  it("reports unknown coverage when the API served no record", () => {
+    // Never a confident zero: "nothing collected" and "we were not told" are
+    // different claims, and only the first belongs on the page.
     for (const commitment of commitments) {
-      expect(
-        commitment.coverage.read,
-        `${commitment.functionId} (${commitment.cadence || "no cadence"})`,
-      ).toBeLessThanOrEqual(commitment.coverage.expected);
-      expect(commitment.coverage.read).toBeGreaterThanOrEqual(0);
+      expect(commitment.coverage.expected).toBe(0);
+      expect(commitment.collection).toEqual(UNKNOWN_COLLECTION);
     }
-  });
-
-  it("tops daily coverage out at the window length, never past it", () => {
-    const daily = commitments.filter((commitment) => commitment.cadence === "daily");
-    expect(daily.length).toBeGreaterThan(0);
-    for (const commitment of daily) {
-      expect(commitment.coverage.expected).toBeLessThanOrEqual(90);
-      expect(commitment.coverage.expected).toBeGreaterThan(0);
-      expect(commitment.series.length).toBeLessThanOrEqual(90);
-    }
-
-    // A source collected for over a year is capped by the window; one that
-    // started this month is bounded by its own run instead.
-    expect(byFunctionId("drand-relay-statuspage")?.coverage).toEqual({
-      read: 63,
-      expected: 90,
-      unit: "days",
-    });
-    expect(byFunctionId("bootstrap-dns-mainnet")?.coverage).toEqual({
-      read: 8,
-      expected: 11,
-      unit: "days",
-    });
   });
 
   it("agrees with the API's own commitment count once deduped", () => {

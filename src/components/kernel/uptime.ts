@@ -2,6 +2,7 @@ import type { Commitment, Reading, ReadingPeriod } from "../../data/kernel-api";
 import {
   WINDOW_DAYS,
   buildDate,
+  coverageUnit,
   expectedPeriods,
   groupByPeriod,
   judge,
@@ -282,7 +283,7 @@ function buildGrid(
   }
 
   const unit = gridCadence
-    ? (UNIT_NOUN[expectedPeriods(gridCadence, WINDOW_DAYS).unit] ?? "period")
+    ? (UNIT_NOUN[coverageUnit(gridCadence)] ?? "period")
     : "reading";
 
   return { periods, periodsPerBar, unit, sourceCount: active.length, growthOnly };
@@ -407,7 +408,7 @@ export function barCaptionFor(commitment: Commitment): string {
 
   const noun =
     byCadence.length >= 2
-      ? (UNIT_NOUN[expectedPeriods(commitment.cadence, WINDOW_DAYS).unit] ?? "period")
+      ? (UNIT_NOUN[coverageUnit(commitment.cadence)] ?? "period")
       : "reading";
   const perBar = Math.max(1, Math.ceil(source.length / MAX_BARS));
   return perBar === 1
