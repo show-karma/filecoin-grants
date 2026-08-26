@@ -2,8 +2,21 @@ import { EXTERNAL, reportUrl } from "./site";
 
 /**
  * Site navigation, restored from the Hugo site's menu so the header keeps the
- * destinations people already rely on. This is groundwork — the structure is
- * expected to change once the new IA settles.
+ * destinations people already rely on.
+ *
+ * KEEP IN SYNC WITH THE APP. app.filpgf.io draws its own header from
+ * gap-app-v2 `src/infrastructure/config/tenant-navigation-config.ts` — the
+ * `filecoin` tenant's `navigation.items`. The two headers are built to read as
+ * one product, so a change to any label, ordering, grouping or destination
+ * here needs the same change there, in the same batch of work. They are
+ * separate repositories and nothing enforces the match but the reviewer; a nav
+ * change that lands in only one of them rearranges the header under anyone
+ * moving between the two sites.
+ *
+ * One difference is structural rather than editorial: the app appends its
+ * social menu ("Connect") after every tenant item, hardcoded in
+ * `whitelabel-navbar.tsx`, so nothing can sit after Connect there the way Blog
+ * does here without changing a component shared by every whitelabel tenant.
  */
 
 export type NavLink = { label: string; href: string };
