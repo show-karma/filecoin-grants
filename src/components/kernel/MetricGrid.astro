@@ -61,12 +61,26 @@ const metrics: KernelMetric[] = [
     noteTone: committed ? "muted" : "warn",
   },
   {
-    // Null until thresholds land on the commitments: with nothing judgeable,
-    // the honest figure is "unknown", never 0%.
+    /*
+     * While no threshold is in force there is nothing to take a percentage of,
+     * and an em dash under "SLA met" spends the most valuable slot on the page
+     * saying nothing. The count of judged readings is a real number with the
+     * same subject — it is 0, and the note says why — so the tile only becomes
+     * a percentage once something has actually been judged.
+     */
     value:
-      program.healthMet.metPct === null ? "—" : pct(program.healthMet.metPct),
-    label: "SLA met across all health commitments",
-    note: `Rolling ${count(windowDays, "day")} · ${count(health, "health commitment")}, ${count(growth, "growth counter")}`,
+      program.healthMet.metPct === null
+        ? `${program.healthMet.scored}`
+        : pct(program.healthMet.metPct),
+    label:
+      program.healthMet.metPct === null
+        ? "Readings judged against a threshold"
+        : "SLA met across all health commitments",
+    note:
+      program.healthMet.metPct === null
+        ? "Every threshold is withdrawn pending an executed agreement"
+        : `Rolling ${count(windowDays, "day")} · ${count(health, "health commitment")}, ${count(growth, "growth counter")}`,
+    noteTone: program.healthMet.metPct === null ? "warn" : "muted",
   },
   {
     value:

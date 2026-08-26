@@ -29,6 +29,13 @@ const rows = TIERS.map((tier) => {
 
   return {
     tier,
+    /*
+     * The tier's own heading in the inventory below. Present whether or not the
+     * tier has anything catalogued — `nice-to-have` renders an "inventory
+     * pending" section, and a row that says Pending should still take a reader
+     * to the place that says why.
+     */
+    href: live ? `#inv-tier-${live.tier}` : null,
     functions: live ? live.catalogued || null : null,
     /*
      * The inventory below lists every catalogued function in the tier, in
@@ -47,13 +54,15 @@ const rows = TIERS.map((tier) => {
         ? `${live.coverage.pct.toFixed(1)}%`
         : null,
     /*
-     * The sub-label under the percentage. Periods read out of periods promised
-     * says more than a bare count of functions: it is the fraction the figure
-     * above is computed from.
+     * The sub-label under the percentage, and deliberately not the fraction the
+     * percentage is computed from. Periods-read-of-periods-promised is a claim
+     * about the collector and stays high by construction: a tier reporting on
+     * one function out of five still reads 100%. What a reader needs beside
+     * that number is how much of the tier it speaks for, so the sub-label
+     * counts functions with a reporter, and the two together say "complete,
+     * over very little".
      */
-    coverageDetail: live?.coverage
-      ? `${live.coverage.received} of ${live.coverage.expected} read`
-      : null,
+    coverageDetail: live ? `${live.measured} of ${live.catalogued} reporting` : null,
   };
 });
 ---
@@ -81,7 +90,19 @@ const rows = TIERS.map((tier) => {
     <tbody>
       {
         rows.map((row) => (
-          <tr class="border-b border-line align-top">
+          /*
+             `data-href` and not a wrapping anchor: a row is four cells and
+             `<a>` cannot wrap `<tr>`. The link on the tier name is the real,
+             keyboard-reachable control and works with no JS; the row-level
+             handler below is a convenience over the top of it.
+          */
+          <tr
+            class:list={[
+              "border-b border-line align-top",
+              row.href && "tier-row cursor-pointer",
+            ]}
+            data-href={row.href ?? undefined}
+          >
             <td class="py-5 pr-6">
               <div class="flex gap-4">
                 {/*
@@ -96,7 +117,15 @@ const rows = TIERS.map((tier) => {
                   aria-hidden="true"
                 />
                 <div class="max-w-[16rem]">
-                  <p class="font-semibold text-ink">{row.tier.name}</p>
+                  <p class="font-semibold text-ink">
+                    {row.href ? (
+                      <a class="tier-link" href={row.href}>
+                        {row.tier.name}
+                      </a>
+                    ) : (
+                      row.tier.name
+                    )}
+                  </p>
                   <p class="mt-1 text-sm leading-snug text-body">
                     {row.tier.rule}
                   </p>
@@ -142,3 +171,58 @@ const rows = TIERS.map((tier) => {
     </tbody>
   </table>
 </div>
+
+<style>
+  /*
+   * The row reads as one target: the underline belongs to the name, but it has
+   * to answer to a hover anywhere in the row, because that is where the pointer
+   * will be.
+   */
+  .tier-link {
+    color: inherit;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 120ms ease;
+  }
+
+  .tier-row:hover {
+    background: var(--color-line-soft);
+  }
+
+  .tier-row:hover .tier-link,
+  .tier-link:focus-visible {
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+  }
+</style>
+
+<script>
+  /*
+   * Progressive enhancement over the link in each row's first cell: the whole
+   * row becomes clickable, and the jump is handed to the inventory rather than
+   * left to the browser. The inventory's tier headings live inside the "by
+   * function" panel, which is hidden while the "by project" tab is selected —
+   * a bare hash change would land on a `display:none` element and the page
+   * would not move. `openInventoryTier` selects the panel first, then scrolls.
+   *
+   * A click that lands on a link, a button, or a text selection is left alone.
+   */
+  document.querySelectorAll<HTMLElement>(".tier-row[data-href]").forEach((row) => {
+    row.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("a, button")) return;
+      if (window.getSelection()?.toString()) return;
+      const href = row.dataset.href;
+      if (href) window.openInventoryTier?.(href.slice(1));
+    });
+  });
+
+  document.querySelectorAll<HTMLAnchorElement>("a.tier-link").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const id = link.getAttribute("href")?.slice(1);
+      if (!id || !window.openInventoryTier) return;
+      event.preventDefault();
+      window.openInventoryTier(id);
+    });
+  });
+</script>

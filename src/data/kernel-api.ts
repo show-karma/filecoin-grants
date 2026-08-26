@@ -753,8 +753,19 @@ export function buildCommitment(
   const { op, value } = readThreshold(datapoints);
   const cadence = breakdown.cadence ?? "";
   const record = options.record ?? null;
+  /*
+   * The record's day lists arrive as full timestamps, and everything that reads
+   * them — the strip, the collection log — keys on `YYYY-MM-DD`. Normalising
+   * here rather than at each use is what stops a comparison against a plain day
+   * from silently never matching.
+   */
   const collection: CommitmentCollection = record
-    ? { ...record.collection, startedOn: record.collectingSince?.slice(0, 10) ?? null }
+    ? {
+        ...record.collection,
+        startedOn: record.collectingSince?.slice(0, 10) ?? null,
+        noValueDates: record.collection.noValueDates.map(toDay),
+        outageDates: record.collection.outageDates.map(toDay),
+      }
     : UNKNOWN_COLLECTION;
 
   return {

@@ -120,8 +120,28 @@ const extraInterruptions = Math.max(0, commitment.interruptions.length - 3);
 
 const stripCaption = [
   barCaptionFor(commitment),
-  isGrowth ? "never pass/fail" : `coverage judged ${commitment.cadence}`,
+  isGrowth ? "never pass/fail" : "not judged — no bar in force",
 ].join(" · ");
+
+/*
+ * The one line that keeps the strip and the percentage from contradicting each
+ * other. The bars span the whole window; the fraction counts from the day
+ * unattended collection started, and drops the days our own collector returned
+ * nothing for anyone. Unsaid next to them, a reader counts the gaps, reads
+ * 100%, and concludes the number is lying.
+ */
+const startedOn = commitment.collection.startedOn;
+const outageDays = commitment.collection.outageDates.length;
+const coverageNote = [
+  startedOn
+    ? `Counted from ${formatDay(startedOn)}, when collection started — earlier days are drawn, not counted.`
+    : null,
+  outageDays > 0
+    ? `${outageDays} ${pluralize(outageDays, "day")} lost to our own platform, excluded from the denominator.`
+    : null,
+]
+  .filter(Boolean)
+  .join(" ");
 
 const unit = commitment.unitOfMeasure ?? "";
 
@@ -317,6 +337,11 @@ const COLLECTION_LABEL: Record<string, string> = {
           startLabel={range ? formatDay(range.start) : undefined}
           endLabel={range ? formatDay(range.end) : undefined}
         />
+        {coverageNote && (
+          <p class="mt-2 rounded-md bg-line-soft/60 px-3 py-2 font-mono text-xs text-muted">
+            {coverageNote}
+          </p>
+        )}
       </div>
     )
   }

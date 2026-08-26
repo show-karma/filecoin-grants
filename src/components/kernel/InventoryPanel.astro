@@ -80,10 +80,10 @@ const tiles = [
  * paints.
  */
 const LEGEND = [
-  { text: "SLA met", color: "var(--color-strip-met)" },
-  { text: "not met", color: "var(--color-strip-missed)" },
-  { text: "indeterminate", color: "var(--color-strip-indeterminate)" },
-  { text: "no reading", color: "var(--color-strip-none)" },
+  { text: "reading collected", color: "var(--color-strip-read)" },
+  { text: "no defensible number", color: "var(--color-strip-novalue)" },
+  { text: "our platform was down", color: "var(--color-strip-outage)" },
+  { text: "no reading taken", color: "var(--color-strip-none)" },
 ];
 
 // ------------------------------------------------------------- by function
@@ -332,10 +332,13 @@ const projectGroups = [
       > asks what each funded team is on the hook for; <strong
         class="font-semibold text-ink">by function</strong
       > asks what the network needs and whether anyone is holding it up. The percentage
-      is the share of reading periods in the last 90 days that sat within threshold,
-      counted at each metric's own cadence. Open any row for the commitments behind
-      it in full — the uptime record, each interruption, the value against its threshold,
-      and the public endpoint being read.
+      is reading coverage — the share of the periods a metric's own cadence expects
+      that carry a value, counted from the day unattended collection started rather
+      than from 90 days ago, with days lost to an outage of our own platform excluded
+      outright. It says nothing about whether a value was good: no threshold is in
+      force, so no reading on this page has been judged. Open any row for the
+      commitments behind it in full — the collection record, every gap, each value
+      against its threshold, and the public endpoint being read.
     </p>
   </SectionHeader>
 
@@ -529,6 +532,21 @@ const projectGroups = [
     display: block;
   }
 
+  /*
+   * A deep link from the tier table lands on a heading inside the by-function
+   * panel, which the by-project tab hides. Without this the hash would resolve
+   * to a `display:none` element and the page would sit still. `:target` beats
+   * the radio here, so the link works before the enhancement script runs and
+   * still works if it never does.
+   */
+  fieldset:has([data-panel="function"] :target) [data-panel="project"] {
+    display: none;
+  }
+
+  fieldset:has([data-panel="function"] :target) [data-panel="function"] {
+    display: block;
+  }
+
   .inv-tab {
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
@@ -540,6 +558,25 @@ const projectGroups = [
     border-bottom-color: var(--color-accent);
   }
 
+  /* The underline has to follow the panel the `:target` rule above swapped in. */
+  fieldset:has([data-panel="function"] :target) .inv-tabs [data-tab="project"] {
+    color: var(--color-muted);
+    border-bottom-color: transparent;
+  }
+
+  fieldset:has([data-panel="function"] :target) .inv-tabs [data-tab="function"] {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-accent);
+  }
+
+  /*
+   * The sticky header would otherwise sit on top of the heading a deep link
+   * just scrolled to.
+   */
+  [data-panel="function"] section[aria-labelledby] {
+    scroll-margin-top: 6rem;
+  }
+
   /* The inputs are visually hidden, so the focus ring has to move to the label. */
   #inv-tab-project:focus-visible ~ .inv-tabs [data-tab="project"],
   #inv-tab-function:focus-visible ~ .inv-tabs [data-tab="function"] {
@@ -548,3 +585,50 @@ const projectGroups = [
     border-radius: 2px;
   }
 </style>
+
+<script>
+  /*
+   * The one way into a tier from elsewhere on the page — the tier table above
+   * calls it. Kept here rather than there because everything it has to know
+   * about (which panel holds the headings, which radio selects it) is this
+   * component's business.
+   */
+  declare global {
+    interface Window {
+      openInventoryTier?: (id: string) => void;
+    }
+  }
+
+  window.openInventoryTier = (id: string) => {
+    const heading = document.getElementById(id);
+    const section = heading?.closest("section");
+    if (!section) return;
+
+    // Select the panel before measuring: a hidden section has no position, so
+    // scrolling to it first would land on 0.
+    const tab = document.getElementById("inv-tab-function");
+    if (tab instanceof HTMLInputElement) tab.checked = true;
+
+    /*
+     * The hash is set without a navigation so the `:target` rule stays in
+     * agreement with the radio, and so the tier is shareable — but pushing it
+     * would scroll first and undo the smooth scroll below.
+     */
+    history.replaceState(null, "", `#${id}`);
+    section.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+      block: "start",
+    });
+  };
+
+  /* A deep link arriving from outside the page gets the same treatment. */
+  const openFromHash = () => {
+    const id = location.hash.slice(1);
+    if (id.startsWith("inv-tier-")) window.openInventoryTier?.(id);
+  };
+
+  openFromHash();
+  window.addEventListener("hashchange", openFromHash);
+</script>
