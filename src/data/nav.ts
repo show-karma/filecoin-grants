@@ -22,41 +22,28 @@ export type NavEntry = NavLink | NavMenu;
 
 export const isMenu = (entry: NavEntry): entry is NavMenu => !("href" in entry);
 
-/*
- * Community tracks, from GET /v2/tracks?communityUID=… — the ids are opaque
- * records rather than slugs, so they are pinned here with the names they
- * carry. The explorer filters on them (`trackIds` takes a comma-separated
- * list), which is what makes a menu entry show the projects in that track
- * rather than the batch they happened to be funded in.
- *
- * Funding moved from per-batch listings to these three standing tracks; the
- * batch ids are gone from the menu with them.
- */
-const TRACKS = {
-  kernel: "6a8c89712fbfc662a244471e",
-  rnd: "6a8c89712fbfc662a2444720",
-  revenueDevelopment: "6a8c89712fbfc662a244471f",
-} as const;
-
-const track = (id: string) => `${EXTERNAL.explorer}?trackIds=${id}`;
-
 export const MAIN_NAV: NavEntry[] = [
   {
     label: "Funding",
+    /*
+     * A funding programme is read as its own story first: each entry opens the
+     * programme's cover page here on the site, not a pre-filtered listing in
+     * the app. The listing is still one click away, under "Projects Explorer"
+     * below, so browsing every funded project stays a deliberate choice rather
+     * than the only way in (DEV-647).
+     */
     groups: [
       {
         label: "Funding Programs",
         items: [
-          { label: "Kernel", href: track(TRACKS.kernel) },
-          { label: "R&D", href: track(TRACKS.rnd) },
-          {
-            label: "Revenue Development",
-            href: track(TRACKS.revenueDevelopment),
-          },
+          { label: "Kernel", href: "/kernel/" },
+          { label: "R&D", href: "/rnd/" },
+          { label: "Revenue Development", href: "/revenue-development/" },
         ],
       },
     ],
     items: [
+      { label: "Projects Explorer", href: EXTERNAL.explorer },
       // The ProPGF overview (/propgf/) is deliberately not listed while no round
       // is open; the page stays reachable by URL. Restore the "Overview" item
       // here and in the app's whitelabel navbar together when a new RFP opens.
