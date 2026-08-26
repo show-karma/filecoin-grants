@@ -964,7 +964,7 @@ export async function loadKernelData(): Promise<KernelData | null> {
       getJson<{ functions: KernelFunctionApi[] }>(`${origin}/v2/kernel/functions${query}`),
       getJson<{ projects: KernelProjectApi[] }>(`${origin}/v2/kernel/projects${query}`),
       getJson<{ commitments: KernelCommitmentApi[] }>(
-        `${origin}/v2/kernel/commitments${query}`,
+        `${origin}/v2/kernel/commitments`,
       ),
     ]);
 
