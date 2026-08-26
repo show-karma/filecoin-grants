@@ -1,5 +1,5 @@
 ---
-import type { Commitment } from "../../data/kernel-api";
+import { WINDOW_DAYS, type Commitment } from "../../data/kernel-api";
 import MetricChart from "./MetricChart.astro";
 import UptimeStrip from "./UptimeStrip.astro";
 import {
@@ -26,18 +26,21 @@ const range = windowOf(commitment);
 const readings = readingsInWindow(commitment);
 
 /*
- * Three states, not two. A growth counter is tracked for direction and never
- * judged; a health commitment with no scored reading is unmeasured, which is
- * not the same as failing — today that is every commitment, because no
- * threshold has been signed off upstream.
+ * Four states, not two. A growth counter is tracked for direction and never
+ * judged; a health commitment with readings but no signed threshold has been
+ * read and left unscored, which is neither failing nor unmeasured — today that
+ * is every health commitment. Only a commitment with no rows at all is silent.
  */
-const status: "growth" | "meeting" | "failing" | "unmeasured" = isGrowth
-  ? "growth"
-  : commitment.sla.metPct === null || commitment.sla.scored === 0
-    ? "unmeasured"
-    : commitment.sla.passed === commitment.sla.scored
-      ? "meeting"
-      : "failing";
+const status: "growth" | "meeting" | "failing" | "unmeasured" | "silent" =
+  commitment.collection.rows === 0
+    ? "silent"
+    : isGrowth
+      ? "growth"
+      : commitment.sla.metPct === null || commitment.sla.scored === 0
+        ? "unmeasured"
+        : commitment.sla.passed === commitment.sla.scored
+          ? "meeting"
+          : "failing";
 
 const CHIP: Record<typeof status, { label: string; class: string }> = {
   growth: {
@@ -46,15 +49,29 @@ const CHIP: Record<typeof status, { label: string; class: string }> = {
   },
   meeting: { label: "✓ meeting", class: "border-ok/40 text-ok" },
   failing: { label: "not meeting", class: "border-bad/40 text-bad" },
-  unmeasured: { label: "not measured", class: "border-line text-muted" },
+  unmeasured: { label: "read · unscored", class: "border-line text-muted" },
+  silent: { label: "not measured", class: "border-line text-muted" },
 };
 const chip = CHIP[status];
 
 const metaParts = [
-  commitment.team,
   commitment.metricName,
   commitment.cadence,
-  commitment.method,
+  commitment.grantRef ? `grant ${commitment.grantRef}` : null,
+].filter((part): part is string => Boolean(part));
+
+/*
+ * Where the rows came from. A reading taken while someone was looking is not
+ * evidence the feed runs unattended, so the two are counted apart rather than
+ * pooled into one "13 readings".
+ */
+const { rows, unattended, review, observed } = commitment.collection;
+const collectionParts = [
+  unattended > 0
+    ? `${unattended} unattended ${commitment.method || "automated"} ${pluralize(unattended, "run")}`
+    : null,
+  review > 0 ? `${review} taken during a review` : null,
+  `${rows} ${pluralize(rows, "row")} in the public table`,
 ].filter((part): part is string => Boolean(part));
 
 /*
@@ -72,7 +89,15 @@ const slaMet =
     ? null
     : `${Math.round(commitment.sla.metPct * 10) / 10}%`;
 
-const coverage = `${commitment.coverage.read} of ${commitment.coverage.expected} ${commitment.coverage.unit} read`;
+const coveragePct =
+  commitment.coverage.expected > 0
+    ? `${(Math.round((commitment.coverage.read / commitment.coverage.expected) * 1000) / 10).toFixed(1)}%`
+    : null;
+const readingsText = `${commitment.coverage.read} of ${commitment.coverage.expected} ${commitment.coverage.unit}`;
+const changeText =
+  commitment.changePct === null
+    ? null
+    : `${commitment.changePct > 0 ? "+" : ""}${commitment.changePct}%`;
 
 const thresholdSuffix =
   commitment.thresholdOp && commitment.thresholdValue !== null
@@ -81,6 +106,7 @@ const thresholdSuffix =
 const latestText = commitment.latest
   ? `${formatValue(commitment.latest.value)}${thresholdSuffix}`
   : "—";
+const latestDay = commitment.latest ? formatDay(commitment.latest.date) : null;
 
 const interruptionWord = commitment.coverage.unit === "readings" ? "reading" : commitment.coverage.unit.replace(/s$/, "");
 const interruptionText = commitment.interruptions
@@ -94,7 +120,7 @@ const extraInterruptions = Math.max(0, commitment.interruptions.length - 3);
 
 const stripCaption = [
   barCaptionFor(commitment),
-  isGrowth ? "never pass/fail" : `SLA judged ${commitment.cadence}`,
+  isGrowth ? "never pass/fail" : `coverage judged ${commitment.cadence}`,
 ].join(" · ");
 
 const unit = commitment.unitOfMeasure ?? "";
@@ -105,13 +131,20 @@ const unit = commitment.unitOfMeasure ?? "";
     <h5 class="font-mono text-[0.8125rem] font-bold break-all text-ink">
       {commitment.functionId}
     </h5>
-    <span
-      class:list={[
-        "inline-block shrink-0 rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem]",
-        chip.class,
-      ]}
-    >
-      {chip.label}
+    <span class="flex shrink-0 items-center gap-2">
+      <span
+        class:list={[
+          "inline-block rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem]",
+          chip.class,
+        ]}
+      >
+        {chip.label}
+      </span>
+      {
+        observed > 0 && (
+          <span class="mono-meta">observed · {observed} pts</span>
+        )
+      }
     </span>
   </header>
 
@@ -178,7 +211,7 @@ const unit = commitment.unitOfMeasure ?? "";
             <dd class="font-mono text-xs text-body">
               {isGrowth
                 ? "none — a growth counter is read for direction, never pass/fail"
-                : "no threshold signed off yet, so no reading is scored"}
+                : `no threshold signed off yet, so no reading is scored (SLA met: ${slaMet ?? "—"})`}
             </dd>
           </div>
         )
@@ -211,16 +244,28 @@ const unit = commitment.unitOfMeasure ?? "";
     </dl>
   </details>
 
-  <dl class="mt-4 grid grid-cols-1 gap-3 border-t border-line-soft pt-3 sm:grid-cols-3">
+  <div class="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-line-soft pt-2.5">
+    <span class="mono-meta uppercase">Collection</span>
+    {
+      commitment.cadence && (
+        <span class="rounded bg-line-soft px-1.5 py-0.5 font-mono text-[0.6875rem] text-body">
+          {commitment.cadence}
+        </span>
+      )
+    }
+    <span class="font-mono text-xs text-body">{collectionParts.join(" · ")}</span>
+  </div>
+
+  <dl class="mt-4 grid grid-cols-2 gap-3 border-t border-line-soft pt-3 sm:grid-cols-4">
     <div>
-      <dt class="mono-meta uppercase">{isGrowth ? "Scored" : "SLA met"}</dt>
-      <dd class="font-mono text-base text-ink">
-        {isGrowth ? "—" : (slaMet ?? "—")}
+      <dt class="mono-meta uppercase">Coverage · {WINDOW_DAYS}d</dt>
+      <dd class="font-mono text-2xl font-medium text-ink">
+        {coveragePct ?? "—"}
       </dd>
     </div>
     <div>
-      <dt class="mono-meta uppercase">Coverage</dt>
-      <dd class="font-mono text-base text-ink">{coverage}</dd>
+      <dt class="mono-meta uppercase">Readings</dt>
+      <dd class="font-mono text-base text-ink">{readingsText}</dd>
     </div>
     <div>
       <dt class="mono-meta uppercase">Latest</dt>
@@ -229,6 +274,22 @@ const unit = commitment.unitOfMeasure ?? "";
         {commitment.latest && unit && (
           <span class="mono-meta"> {unit}</span>
         )}
+        {latestDay && <span class="mono-meta"> on {latestDay}</span>}
+      </dd>
+    </div>
+    <div>
+      <dt class="mono-meta uppercase">Change over {WINDOW_DAYS}d</dt>
+      <dd
+        class:list={[
+          "font-mono text-base",
+          changeText === null
+            ? "text-muted"
+            : commitment.changePct! < 0
+              ? "text-bad"
+              : "text-ok",
+        ]}
+      >
+        {changeText ?? "—"}
       </dd>
     </div>
   </dl>

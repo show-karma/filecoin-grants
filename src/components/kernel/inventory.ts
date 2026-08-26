@@ -1,4 +1,4 @@
-import type { Commitment } from "../../data/kernel-api";
+import type { Commitment, KernelCoverage } from "../../data/kernel-api";
 
 /**
  * The API's tier ids, not the local editorial ones in `data/kernel.ts`: the
@@ -122,6 +122,8 @@ export type CardRow = {
   /** Share of the largest award, 0–1. Null where money is not the subject. */
   share?: number | null;
   metPct: number | null;
+  /** Collection completeness — the headline figure on every inventory card. */
+  coverage: KernelCoverage | null;
   commitments: Commitment[];
   prose?: string | null;
   meta: MetaItem[];
@@ -167,3 +169,22 @@ export const slaStatus = (metPct: number | null): SlaStatus =>
 
 export const slaPctLabel = (metPct: number | null) =>
   metPct === null ? "—" : `${metPct.toFixed(1)}%`;
+
+/**
+ * A feed with a hole in it is still collecting, just not completely — so the
+ * chip needs a middle state. Below this share of its promised periods a row
+ * reads as gappy rather than healthy.
+ */
+export const COLLECTING_MIN_PCT = 95;
+
+export type CollectionStatus = "collecting" | "gaps" | "silent";
+
+export const collectionStatus = (
+  coverage: KernelCoverage | null,
+): CollectionStatus => {
+  if (!coverage || coverage.pct === null) return "silent";
+  return coverage.pct >= COLLECTING_MIN_PCT ? "collecting" : "gaps";
+};
+
+export const coveragePctLabel = (coverage: KernelCoverage | null) =>
+  !coverage || coverage.pct === null ? "—" : `${coverage.pct.toFixed(1)}%`;

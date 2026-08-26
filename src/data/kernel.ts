@@ -173,14 +173,14 @@ export const GLOSSARY: GlossaryEntry[] = [
       "A commitment tracked for **direction, never pass/fail**. Growth counters carry no threshold, never colour red, and never contribute to the SLA figure.",
   },
   {
-    term: "SLA met · 90d",
+    term: "Coverage · 90d",
     definition:
-      "The share of reading periods in the last 90 days that sat within threshold, counted at **each metric's own cadence** rather than per day. A rolling window, so it reflects current condition rather than a single check.",
+      "How much of the record was actually read — periods that carried a reading against the periods the cadence promised, counted at **each metric's own cadence** rather than per day. The count starts when automated collection started, not 90 days ago: a source cannot be backfilled to before anyone was watching it, so a young commitment is measured against its own run.",
   },
   {
-    term: "Coverage",
+    term: "SLA met · 90d",
     definition:
-      "How much of the window was actually read — readings present against the periods the cadence expects, as in **90 of 90 days read**. Thin coverage means the SLA figure above it rests on little evidence.",
+      "The share of reading periods that sat within threshold. No threshold is signed off upstream yet, so every commitment reads as **unscored** — read on schedule, but not yet judged against a bar.",
   },
   {
     term: "Domain",

@@ -289,12 +289,49 @@ function buildGrid(
 }
 
 /**
- * The uptime record of one commitment, newest bar last. This is the only entry
- * point that will draw a growth counter, because on its own block the amber
- * "tracked, never judged" record is exactly what the reader is being shown.
+ * One bar per reading, oldest first — the uptime record of a single commitment.
+ *
+ * Not the cadence axis the rolled-up strips use: that would fold a monthly
+ * commitment's daily rows into three bars, and the reader would lose both the
+ * rhythm of the feed and the days a probe ran and came back with nothing. Those
+ * attempts are drawn indeterminate rather than dropped, because a feed that ran
+ * and got no defensible value is not a feed that was silent.
+ *
+ * This is also the only entry point that will draw a growth counter, because on
+ * its own block the amber "tracked, never judged" record is the point.
  */
 export function toPeriods(commitment: Commitment): Period[] {
-  return buildGrid([commitment], { includeGrowth: true }).periods;
+  const bars = new Map<string, PeriodState>();
+  for (const period of groupByPeriod(commitment.series, commitment.cadence)) {
+    const state = periodState(commitment, period);
+    for (const reading of period.readings) {
+      bars.set(reading.date.slice(0, 10), state);
+    }
+  }
+  for (const day of commitment.collection.noValueDates) {
+    if (!bars.has(day)) bars.set(day, "indeterminate");
+  }
+
+  const ordered = [...bars.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([date, state]) => ({ date, state }));
+
+  return compress(ordered);
+}
+
+/** Fold bars into MAX_BARS buckets, worst state winning. */
+function compress(bars: { date: string; state: PeriodState }[]): Period[] {
+  const perBar = Math.max(1, Math.ceil(bars.length / MAX_BARS));
+  if (perBar === 1) return bars;
+  const out: Period[] = [];
+  for (let i = 0; i < bars.length; i += perBar) {
+    let state: PeriodState = "met";
+    for (let k = i; k < Math.min(i + perBar, bars.length); k += 1) {
+      state = worseInBucket(state, bars[k]!.state);
+    }
+    out.push({ date: bars[i]!.date, state });
+  }
+  return out;
 }
 
 /**
@@ -318,9 +355,13 @@ function describeBars(grid: Grid): string {
  * excluding them.
  */
 export function barCaptionFor(commitment: Commitment): string {
-  const grid = buildGrid([commitment], { includeGrowth: true });
-  if (grid.periods.length === 0) return "no readings in the window";
-  return describeBars(grid);
+  const bars = toPeriods(commitment);
+  if (bars.length === 0) return "no readings in the window";
+  const readings = commitment.series.length + commitment.collection.noValueDates.length;
+  const perBar = Math.max(1, Math.ceil(readings / MAX_BARS));
+  return perBar === 1
+    ? "one bar = one reading"
+    : `one bar = ${perBar} readings`;
 }
 
 /**
@@ -338,17 +379,19 @@ export function barCaption(commitments: Commitment[]): string {
 }
 
 /**
- * The window one commitment is drawn against — the data layer's window, not
- * the span of its readings. A commitment that reported nine times in a
- * fortnight and nothing for the ten weeks before still occupies the whole
- * window; that emptiness is the finding, and the coverage line already counts
- * it.
+ * The span the commitment's own bars cover, first reading to last. The bars are
+ * one-per-reading, so labelling their ends with the rolling window would put a
+ * date on the axis that no bar reaches — and the coverage fraction beside it
+ * already carries how much of the promise went unread.
  */
 export function windowOf(
   commitment: Commitment,
 ): { start: string; end: string } | null {
-  if (commitment.series.length === 0) return null;
-  return windowRange();
+  const bars = toPeriods(commitment);
+  const first = bars[0];
+  const last = bars[bars.length - 1];
+  if (!first || !last) return null;
+  return { start: first.date, end: last.date };
 }
 
 /**

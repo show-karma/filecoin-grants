@@ -39,6 +39,18 @@ export type KernelSla = {
   metPct: number | null;
 };
 
+/**
+ * Collection completeness: cadence periods that carried a reading against the
+ * periods elapsed since collection started. Optional on the wire so a backend
+ * that predates it degrades to "no data" rather than failing the build.
+ */
+export type KernelCoverage = {
+  received: number;
+  expected: number;
+  /** received / expected, percent. Null when nothing is being collected. */
+  pct: number | null;
+};
+
 export type KernelTierOverview = {
   tier: string;
   description: string;
@@ -51,6 +63,7 @@ export type KernelTierOverview = {
   readings: number;
   lastReadingAt: string | null;
   sla: KernelSla;
+  coverage?: KernelCoverage;
 };
 
 export type KernelProgramStats = {
@@ -63,6 +76,7 @@ export type KernelProgramStats = {
   measurementCoveragePct: number | null;
   unmeasuredInScope: number;
   healthMet: KernelSla;
+  coverage?: KernelCoverage;
   singleMaintainerCritical: number;
   projectsReporting: number;
 };
@@ -90,6 +104,8 @@ export type KernelFunctionApi = {
   readings: number;
   lastReadingAt: string | null;
   sla: KernelSla;
+  coverage?: KernelCoverage;
+  collectingSince?: string | null;
 };
 
 export type KernelProjectApi = {
@@ -102,6 +118,8 @@ export type KernelProjectApi = {
   readings: number;
   lastReadingAt: string | null;
   sla: KernelSla;
+  coverage?: KernelCoverage;
+  collectingSince?: string | null;
   committedUsd: number;
   disbursedUsd: number;
   grantRefs: string[];
@@ -168,6 +186,8 @@ export type CoverageUnit = "days" | "weeks" | "months" | "readings";
 export type Reading = {
   date: string;
   value: number;
+  /** Which run produced it — a manual review is not the automated collection. */
+  method?: string | null;
   /**
    * The bar that was in force when this reading was taken. Carried per reading
    * rather than per commitment because signing a bar in August must not
@@ -175,6 +195,22 @@ export type Reading = {
    */
   thresholdOp?: string | null;
   thresholdValue?: number | null;
+};
+
+/**
+ * What the public table actually holds for this commitment, so the card can
+ * say where its readings came from instead of implying they were all automated.
+ */
+export type CommitmentCollection = {
+  rows: number;
+  unattended: number;
+  review: number;
+  /** Rows that carried a defensible value; the rest are attempts that got none. */
+  observed: number;
+  /** First day of the automated run. Coverage cannot start before it. */
+  startedOn: string | null;
+  /** Days a probe ran and produced nothing — drawn, never counted as a value. */
+  noValueDates: string[];
 };
 
 export type Commitment = {
@@ -198,6 +234,9 @@ export type Commitment = {
   series: Reading[];
   sla: KernelSla;
   coverage: { read: number; expected: number; unit: CoverageUnit };
+  collection: CommitmentCollection;
+  /** Percent change across the window, first reading to last. */
+  changePct: number | null;
   interruptions: { startDate: string; length: number }[];
   latest: Reading | null;
   /** Added to the spec shape: the join key for function-level rollups. */
@@ -456,22 +495,103 @@ export function expectedPeriods(
   }
 }
 
+/** A reading taken during a manual review is not part of the automated run. */
+export const REVIEW_METHOD = "live-review";
+
+/** Cadence periods spanned by two days, inclusive. Null off the period axis. */
+export function periodSpan(
+  from: string,
+  to: string,
+  cadence: string | null | undefined,
+): number | null {
+  const first = periodIndex(from, cadence);
+  const last = periodIndex(to, cadence);
+  if (first === null || last === null) return null;
+  return Math.max(1, last - first + 1);
+}
+
 /**
  * Coverage counts cadence periods that hold at least one reading, against the
  * periods the window expects — both sides of the fraction in the same unit, so
  * "8 of 3 months read" can no longer happen. A period read twice is read once.
+ *
+ * The denominator starts when the automated collection did, not when the window
+ * did: a source cannot be backfilled before anyone was watching it, so charging
+ * a commitment for the months before its first nightly run would report every
+ * young commitment as mostly-missing. `since` is that first run; readings older
+ * than it were taken during a review and count for neither side.
  */
 export function computeCoverage(
   series: Reading[],
   cadence: string | null | undefined,
   windowDays: number,
+  options: { since?: string | null; referenceDate?: string | null } = {},
 ): { read: number; expected: number; unit: CoverageUnit } {
-  const { expected, unit } = expectedPeriods(cadence, windowDays);
-  const periods = groupByPeriod(series, cadence).length;
+  const { expected: promised, unit } = expectedPeriods(cadence, windowDays);
+  const since = options.since ?? null;
+  const collected = since ? series.filter((r) => r.date >= since) : series;
+  const periods = groupByPeriod(collected, cadence).length;
+
+  if (promised === null) return { read: periods, expected: periods, unit };
+
+  const span =
+    since && options.referenceDate
+      ? periodSpan(since, options.referenceDate, cadence)
+      : null;
   // A boundary period can still straddle the window edge; the promise is the
   // ceiling, so cap rather than print more periods read than exist.
-  const read = expected === null ? periods : Math.min(periods, expected);
-  return { read, expected: expected ?? read, unit };
+  const expected = span === null ? promised : Math.min(span, promised);
+  return { read: Math.min(periods, expected), expected, unit };
+}
+
+/**
+ * The provenance of one commitment's rows. Counted off the raw datapoints
+ * rather than the series, because the series has already dropped the days a
+ * probe ran and produced no defensible value — and those attempts are exactly
+ * what distinguishes "the feed stopped" from "the feed ran and got nothing".
+ */
+export function summarizeCollection(
+  datapoints: IndicatorDatapoint[],
+): CommitmentCollection {
+  let unattended = 0;
+  let review = 0;
+  let observed = 0;
+  let startedOn: string | null = null;
+  const noValueDates: string[] = [];
+
+  for (const dp of datapoints) {
+    const method = parseBreakdown(dp.breakdown)?.method ?? null;
+    const day = toDay(dp.endDate ?? dp.startDate);
+    const raw = typeof dp.value === "string" ? dp.value.trim() : dp.value;
+    const hasValue = raw !== "" && raw != null && Number.isFinite(Number(raw));
+
+    if (hasValue) observed += 1;
+    else noValueDates.push(day);
+
+    if (method === REVIEW_METHOD) {
+      review += 1;
+      continue;
+    }
+    unattended += 1;
+    if (startedOn === null || day < startedOn) startedOn = day;
+  }
+
+  return {
+    rows: unattended + review,
+    unattended,
+    review,
+    observed,
+    startedOn,
+    noValueDates: [...new Set(noValueDates)].sort(),
+  };
+}
+
+/** First reading to last, as a percent. Null when there is nothing to compare. */
+export function computeChange(series: Reading[]): number | null {
+  const first = series[0];
+  const last = series[series.length - 1];
+  if (!first || !last || first === last || first.value === 0) return null;
+  return Math.round(((last.value - first.value) / Math.abs(first.value)) * 1000) / 10;
 }
 
 /**
@@ -600,6 +720,7 @@ export function normalizeSeries(datapoints: IndicatorDatapoint[]): Reading[] {
     byDate.set(date, {
       date,
       value,
+      method: parseBreakdown(dp.breakdown)?.method ?? null,
       thresholdOp: dp.thresholdOp ?? null,
       thresholdValue: dp.thresholdValue == null ? null : Number(dp.thresholdValue),
     });
@@ -665,6 +786,7 @@ export function buildCommitment(
   const commitmentType = breakdown.commitmentType === "growth" ? "growth" : "health";
   const { op, value } = readThreshold(datapoints);
   const cadence = breakdown.cadence ?? "";
+  const collection = summarizeCollection(datapoints);
 
   return {
     functionId: breakdown.functionId ?? indicator.name,
@@ -693,7 +815,12 @@ export function buildCommitment(
       commitmentType === "growth"
         ? { scored: 0, passed: 0, metPct: null }
         : computeSla(series, null, null, cadence),
-    coverage: computeCoverage(series, cadence, windowDays),
+    coverage: computeCoverage(series, cadence, windowDays, {
+      since: collection.startedOn,
+      referenceDate,
+    }),
+    collection,
+    changePct: computeChange(series),
     interruptions:
       commitmentType === "growth" ? [] : findInterruptions(series, null, null, cadence),
     latest: series.length > 0 ? (series[series.length - 1] ?? null) : null,

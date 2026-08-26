@@ -20,8 +20,9 @@ const { data = null } = Astro.props;
  * `functions` is null for a tier nothing has been catalogued in yet — the row
  * then says Pending rather than a confident zero, because "no functions" and
  * "nobody has written the functions down" are different claims.
- * `slaMet` is null while no reading in the window is judgeable (no thresholds
- * exist yet), which renders as an em dash. It must never round down to 0%.
+ * `coverage` is null until the API reports one, which renders as an em dash.
+ * It must never round down to 0%: "nothing collected yet" and "the collection
+ * is failing" are different claims and the table has to keep them apart.
  */
 const rows = TIERS.map((tier) => {
   const live = data?.tiers.find((row) => row.tier === tier.apiId);
@@ -41,11 +42,18 @@ const rows = TIERS.map((tier) => {
           ? "None in scope"
           : `${live.inScope} in scope`
         : "All listed",
-    slaMet:
-      live && live.sla.metPct !== null
-        ? `${live.sla.metPct.toFixed(1)}%`
+    coverage:
+      live?.coverage && live.coverage.pct !== null
+        ? `${live.coverage.pct.toFixed(1)}%`
         : null,
-    measured: live?.measured ?? 0,
+    /*
+     * The sub-label under the percentage. Periods read out of periods promised
+     * says more than a bare count of functions: it is the fraction the figure
+     * above is computed from.
+     */
+    coverageDetail: live?.coverage
+      ? `${live.coverage.received} of ${live.coverage.expected} read`
+      : null,
   };
 });
 ---
@@ -66,7 +74,7 @@ const rows = TIERS.map((tier) => {
       <tr class="border-b border-ink">
         <th scope="col" class="mono-meta pb-2.5 uppercase">Tier</th>
         <th scope="col" class="mono-meta pb-2.5 uppercase">Functions</th>
-        <th scope="col" class="mono-meta pb-2.5 uppercase">SLA met · 90d</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">Coverage · 90d</th>
         <th scope="col" class="mono-meta pb-2.5 uppercase">Funding posture</th>
       </tr>
     </thead>
@@ -111,21 +119,19 @@ const rows = TIERS.map((tier) => {
               )}
             </td>
             <td class="py-5 pr-6">
-              {row.slaMet === null ? (
+              {row.coverage === null ? (
                 <>
                   <p class="font-mono text-lg text-muted" aria-hidden="true">
                     —
                   </p>
-                  <p class="mono-meta mt-1 uppercase">No data</p>
+                  <p class="mono-meta mt-1 uppercase">Nothing collected</p>
                 </>
               ) : (
                 <>
                   <p class="font-mono text-lg font-medium text-ink">
-                    {row.slaMet}
+                    {row.coverage}
                   </p>
-                  <p class="mono-meta mt-1 uppercase">
-                    {row.measured} measured
-                  </p>
+                  <p class="mono-meta mt-1 uppercase">{row.coverageDetail}</p>
                 </>
               )}
             </td>

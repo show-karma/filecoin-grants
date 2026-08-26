@@ -499,7 +499,8 @@ describe("buildCommitment against the captured payload", () => {
     expect(commitment?.team).toBe("randamu");
     expect(commitment?.cadence).toBe("monthly");
     expect(commitment?.coverage.unit).toBe("months");
-    expect(commitment?.coverage.expected).toBe(3);
+    // One month, not three: the denominator starts when the nightly run did.
+    expect(commitment?.coverage.expected).toBe(1);
     // No threshold is signed upstream yet, so nothing is judgeable.
     expect(commitment?.sla).toEqual({ scored: 0, passed: 0, metPct: null });
     expect(commitment?.interruptions).toEqual([]);
@@ -611,18 +612,25 @@ describe("coverage against the captured slate", () => {
   });
 
   it("counts months, not nightly readings, for a monthly commitment", () => {
-    // Eight readings, all inside August — one month of the three the window expects.
+    // Eight readings, all inside August — one month, read once.
     const release = byFunctionId("drand-release-cadence");
     expect(release?.cadence).toBe("monthly");
     expect(release?.series.length).toBe(8);
-    expect(release?.coverage).toEqual({ read: 1, expected: 3, unit: "months" });
-
-    const forest = byFunctionId("forest-release-cadence");
-    expect(forest?.series.length).toBe(9);
-    expect(forest?.coverage).toEqual({ read: 2, expected: 3, unit: "months" });
+    expect(release?.coverage).toEqual({ read: 1, expected: 1, unit: "months" });
 
     const curio = byFunctionId("curio-sealing-release-cadence");
-    expect(curio?.coverage).toEqual({ read: 1, expected: 3, unit: "months" });
+    expect(curio?.coverage).toEqual({ read: 1, expected: 1, unit: "months" });
+  });
+
+  it("does not let a review reading stretch the denominator", () => {
+    // Nine rows, but the oldest was taken while someone was looking: counting
+    // from it would bill this commitment for the months before anyone was
+    // collecting, and print "2 of 3 months" for an unbroken record.
+    const forest = byFunctionId("forest-release-cadence");
+    expect(forest?.collection.rows).toBe(9);
+    expect(forest?.collection.review).toBe(1);
+    expect(forest?.collection.startedOn).toBe("2026-08-14");
+    expect(forest?.coverage).toEqual({ read: 1, expected: 1, unit: "months" });
   });
 
   it("counts ISO weeks for a weekly commitment", () => {
@@ -644,13 +652,27 @@ describe("coverage against the captured slate", () => {
     }
   });
 
-  it("tops daily coverage out at exactly the window length", () => {
+  it("tops daily coverage out at the window length, never past it", () => {
     const daily = commitments.filter((commitment) => commitment.cadence === "daily");
     expect(daily.length).toBeGreaterThan(0);
     for (const commitment of daily) {
-      expect(commitment.coverage.expected).toBe(90);
+      expect(commitment.coverage.expected).toBeLessThanOrEqual(90);
+      expect(commitment.coverage.expected).toBeGreaterThan(0);
       expect(commitment.series.length).toBeLessThanOrEqual(90);
     }
+
+    // A source collected for over a year is capped by the window; one that
+    // started this month is bounded by its own run instead.
+    expect(byFunctionId("drand-relay-statuspage")?.coverage).toEqual({
+      read: 63,
+      expected: 90,
+      unit: "days",
+    });
+    expect(byFunctionId("bootstrap-dns-mainnet")?.coverage).toEqual({
+      read: 8,
+      expected: 11,
+      unit: "days",
+    });
   });
 
   it("agrees with the API's own commitment count once deduped", () => {
