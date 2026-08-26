@@ -14,20 +14,26 @@ const { periods, caption, startLabel, endLabel, compact = false } = Astro.props;
 
 /*
  * Absent is its own state, not zero and not a failure: it gets the neutral rule
- * colour so a gap in reporting never reads as a missed SLA.
+ * colour so a gap in reporting never reads as a missed SLA. `outage` is the
+ * absence we caused, one step darker, because it is excluded from the coverage
+ * denominator and must not be read as a day the team went quiet.
  */
 const STATE_COLOR: Record<PeriodState, string> = {
   met: "var(--color-strip-met)",
   missed: "var(--color-strip-missed)",
-  indeterminate: "var(--color-strip-indeterminate)",
+  read: "var(--color-strip-read)",
+  novalue: "var(--color-strip-novalue)",
+  outage: "var(--color-strip-outage)",
   none: "var(--color-strip-none)",
 };
 
 const STATE_WORD: Record<PeriodState, string> = {
   met: "met",
   missed: "not met",
-  indeterminate: "indeterminate",
-  none: "no reading",
+  read: "reading collected",
+  novalue: "no defensible number",
+  outage: "our platform was down",
+  none: "no reading taken",
 };
 
 /*
@@ -37,14 +43,18 @@ const STATE_WORD: Record<PeriodState, string> = {
 const STATE_PHRASE: Record<PeriodState, string> = {
   met: "met",
   missed: "not met",
-  indeterminate: "indeterminate",
-  none: "with no reading",
+  read: "collected",
+  novalue: "with no defensible number",
+  outage: "lost to our own platform",
+  none: "with no reading taken",
 };
 
 const counts: Record<PeriodState, number> = {
   met: 0,
   missed: 0,
-  indeterminate: 0,
+  read: 0,
+  novalue: 0,
+  outage: 0,
   none: 0,
 };
 for (const period of periods) counts[period.state] += 1;
@@ -61,7 +71,7 @@ const end =
  */
 const showDates = !compact;
 
-const summary = (["missed", "met", "indeterminate", "none"] as PeriodState[])
+const summary = (["missed", "novalue", "met", "read", "outage", "none"] as PeriodState[])
   .filter((state) => counts[state] > 0)
   .map((state) => `${counts[state]} ${STATE_PHRASE[state]}`)
   .join(", ");

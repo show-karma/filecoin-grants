@@ -112,17 +112,31 @@
   --color-warn: #c0561a;
 
   /*
-   * Kernel uptime-strip states, taken verbatim from the Kernel design
-   * (`--k-good` / `--k-bad` / `--k-warn` / `--k-none`).
+   * Kernel uptime-strip states.
    *
    * They exist separately from the status tokens above because these are
    * FILLS — 3px bars, never text — so they are free to match the design
    * exactly, where the text tokens are held to 4.5:1 and cannot be. Do not
    * use them for type.
+   *
+   * The strip answers two questions and the palette keeps them apart. Whether a
+   * reading exists is `read` / `novalue` / `outage` / `none` — a collection
+   * record, and today the only claim the page can make. Whether a reading was
+   * good is `met` / `missed`, which nothing paints until a threshold is signed
+   * off: a pass/fail colour on an unjudged reading asserts a bar that is not in
+   * force. Blue therefore carries "we have a number", where green would read as
+   * a bar that was cleared.
+   *
+   * `outage` and `none` are both absences and both grey, one step apart: a day
+   * our own collector was down is excluded from the coverage denominator, and a
+   * day nobody read is not the same claim. Flattening them is what makes a card
+   * show 100% beside a visible gap.
    */
   --color-strip-met: #1a7f4b;
   --color-strip-missed: #d2593c;
-  --color-strip-indeterminate: #c4890f;
+  --color-strip-read: #1a73e8;
+  --color-strip-novalue: #c4890f;
+  --color-strip-outage: #b3bccb;
   --color-strip-none: #dde3ec;
 }
 
@@ -256,7 +270,9 @@
    */
   --color-strip-met: #46b876;
   --color-strip-missed: #e2685a;
-  --color-strip-indeterminate: #d9a03a;
+  --color-strip-read: #4d95f5;
+  --color-strip-novalue: #d9a03a;
+  --color-strip-outage: #495363;
   --color-strip-none: #333c49;
 }
 

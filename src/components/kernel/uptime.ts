@@ -16,7 +16,7 @@ import {
  */
 export type Period = {
   date: string;
-  state: "met" | "missed" | "indeterminate" | "none";
+  state: "met" | "missed" | "read" | "novalue" | "outage" | "none";
 };
 
 export type PeriodState = Period["state"];
@@ -35,13 +35,22 @@ const MS_PER_DAY = 86_400_000;
 /**
  * Absent ranks lowest so any reading at all beats it: this combines *different
  * commitments* over the same period, and "no reading" is only true when every
- * one of them was silent.
+ * one of them was silent. `outage` sits just above it for the same reason in
+ * reverse — a day our collector was down is a claim about us, and any
+ * commitment that did produce a number that day outranks it.
+ *
+ * `read` outranks `met` because it is the less confident statement: a row
+ * standing for several commitments where one was judged in-threshold and
+ * another was only collected has not been judged, and must not inherit the
+ * judged one's colour.
  */
 const STATE_RANK: Record<PeriodState, number> = {
   none: 0,
-  met: 1,
-  indeterminate: 2,
-  missed: 3,
+  outage: 1,
+  met: 2,
+  read: 3,
+  novalue: 4,
+  missed: 5,
 };
 
 const worseAcrossCommitments = (a: PeriodState, b: PeriodState): PeriodState =>
@@ -56,9 +65,11 @@ const worseAcrossCommitments = (a: PeriodState, b: PeriodState): PeriodState =>
  */
 const BUCKET_RANK: Record<PeriodState, number> = {
   met: 0,
-  none: 1,
-  indeterminate: 2,
-  missed: 3,
+  read: 1,
+  none: 2,
+  outage: 3,
+  novalue: 4,
+  missed: 5,
 };
 
 const worseInBucket = (a: PeriodState, b: PeriodState): PeriodState =>
@@ -122,24 +133,59 @@ function dateOfPeriod(index: number, cadence: string): string {
 /**
  * The verdict of one cadence period, in the strip's vocabulary.
  *
+ * A period that carried a reading is `read` unless a threshold was in force
+ * when the reading was taken, in which case it is judged. `read` is the
+ * ordinary case today and stays the ordinary case for any commitment whose
+ * appendix is unsigned: the number exists, and the page says so and no more.
+ *
  * `judgePeriod` is called with no fallback bar, exactly as `buildCommitment`
  * calls it for `sla` and `interruptions`: each reading is scored against the
  * threshold it carried, so a bar signed in August cannot retroactively grade
- * July. Passing the commitment-level threshold as a fallback here would colour
- * pre-threshold periods that the headline SLA counts as indeterminate.
+ * July. Passing the commitment-level threshold as a fallback here would judge
+ * pre-threshold periods the headline SLA leaves unscored.
  */
 function periodState(commitment: Commitment, period: ReadingPeriod): PeriodState {
-  // A growth counter has no bar and can never report an outage.
-  if (commitment.commitmentType === "growth") return "indeterminate";
+  // A growth counter is tracked for direction and carries no bar, so it is
+  // never judged — but it was still collected, which is what the bar shows.
+  if (commitment.commitmentType === "growth") return "read";
   const met = judgePeriod(period, null, null);
-  return met === null ? "indeterminate" : met ? "met" : "missed";
+  return met === null ? "read" : met ? "met" : "missed";
 }
 
 /** The same judgement one reading at a time, for the numbers table. */
 function readingState(commitment: Commitment, reading: Reading): PeriodState {
-  if (commitment.commitmentType === "growth") return "indeterminate";
+  if (commitment.commitmentType === "growth") return "read";
   const met = judge(reading.value, reading.thresholdOp, reading.thresholdValue);
-  return met === null ? "indeterminate" : met ? "met" : "missed";
+  return met === null ? "read" : met ? "met" : "missed";
+}
+
+/**
+ * Why a day carries no value, from the collection record.
+ *
+ * `outageDates` is the subset of `noValueDates` the whole feed was blank on —
+ * our own collector, not the source. It is excluded from the coverage
+ * denominator upstream, so it is excluded from the strip's vocabulary too:
+ * drawn as its own grey, never as a day the team failed to report.
+ */
+function absentState(commitment: Commitment, day: string): PeriodState {
+  if (commitment.collection.outageDates.includes(day)) return "outage";
+  if (commitment.collection.noValueDates.includes(day)) return "novalue";
+  return "none";
+}
+
+/** The same question for a cadence period: the worst reason any day in it had. */
+function absentStateForPeriod(
+  commitment: Commitment,
+  index: number,
+  cadence: string,
+): PeriodState {
+  const first = dateOfPeriod(index, cadence);
+  const span = cadenceDays(cadence);
+  let state: PeriodState = "none";
+  for (let offset = 0; offset < span; offset += 1) {
+    state = worseInBucket(state, absentState(commitment, isoOfDay(dayIndex(first) + offset)));
+  }
+  return state;
 }
 
 type Grid = {
@@ -186,10 +232,10 @@ function windowRange(): { start: string; end: string } {
  * fraction and the SLA percentage are the same partition of the same window by
  * construction rather than by agreement.
  *
- * `includeGrowth` is false for every rolled-up strip. A growth counter has no
- * threshold, so its every reading is indeterminate — and since indeterminate
- * outranks met, one growth counter in the set would paint amber over periods
- * in which every health commitment was met. A counter that can never report an
+ * `includeGrowth` is false for every rolled-up strip. A growth counter is never
+ * judged, so since `read` outranks `met`, one counter in the set would hold a
+ * whole function's row at "collected, not judged" over periods in which every
+ * health commitment was judged and met. A counter that can never report an
  * outage must never colour a function's status, so the exclusion lives here
  * rather than in each caller.
  */
@@ -225,6 +271,7 @@ function buildGrid(
     const states: PeriodState[] = new Array(count).fill("none");
 
     for (const commitment of active) {
+      const filled = new Set<number>();
       for (const period of groupByPeriod(commitment.series, commitment.cadence)) {
         const state = periodState(commitment, period);
         for (const reading of period.readings) {
@@ -232,9 +279,19 @@ function buildGrid(
           if (index === null) continue;
           const slot = index - startIndex;
           if (slot >= 0 && slot < count) {
+            filled.add(slot);
             states[slot] = worseAcrossCommitments(states[slot]!, state);
           }
         }
+      }
+      // A slot this commitment did not fill still carries a reason, and the
+      // rollup keeps it: a row is only "no reading" when every commitment was
+      // silent for a reason no better than silence.
+      for (let slot = 0; slot < count; slot += 1) {
+        if (filled.has(slot)) continue;
+        const absent = absentStateForPeriod(commitment, startIndex + slot, gridCadence);
+        if (absent === "none") continue;
+        states[slot] = worseAcrossCommitments(states[slot]!, absent);
       }
     }
 
@@ -300,8 +357,7 @@ function buildGrid(
  * the one month they all land in.
  *
  * Either way this is the only entry point that will draw a growth counter,
- * because on its own block the amber "tracked, never judged" record is the
- * point.
+ * because on its own block the "collected, never judged" record is the point.
  */
 export function toPeriods(commitment: Commitment): Period[] {
   const byCadence = cadenceBars(commitment);
@@ -310,36 +366,44 @@ export function toPeriods(commitment: Commitment): Period[] {
 
 type Bar = { date: string; state: PeriodState };
 
-/** Bars over the cadence periods the commitment has been collecting for. */
+/**
+ * Bars over the whole window, at the commitment's own cadence.
+ *
+ * The strip spans `WINDOW_DAYS` ending on the build date — the same window
+ * every other figure on the page is computed over — and not the run of the
+ * collector. Cropping to `collection.startedOn` made a commitment first read
+ * four days ago look identical to one read all quarter, which is the single
+ * most important thing this page has to say about itself right now: almost
+ * nothing here has been watched for long.
+ *
+ * The coverage fraction beside it counts a shorter span on purpose — a source
+ * cannot be backfilled to before anyone was watching it — so the bars before
+ * the run are drawn and not counted, and `CommitmentBlock` says so under them.
+ */
 function cadenceBars(commitment: Commitment): Bar[] {
   const cadence = normalizeCadence(commitment.cadence);
   if (!CADENCES.includes(cadence as (typeof CADENCES)[number])) return [];
 
-  // Anchored on the run, not on the first reading: a period before collection
-  // started is not one the commitment failed to fill, and drawing it would put
-  // more bars on the strip than the coverage fraction beside it counts.
-  const startedOn = commitment.collection.startedOn;
-  const from = startedOn === null ? null : periodIndex(startedOn, cadence);
-  const grouped = groupByPeriod(commitment.series, commitment.cadence).filter(
-    (period) => period.index !== null && (from === null || period.index >= from),
-  );
-  const last = grouped[grouped.length - 1];
-  if (!last || last.index === null) return [];
-  const firstIndex = from ?? grouped[0]!.index!;
+  const { start, end } = windowRange();
+  const startIndex = periodIndex(start, cadence);
+  const endIndex = periodIndex(end, cadence);
+  if (startIndex === null || endIndex === null) return [];
 
-  // Absent periods inside the run are drawn, not skipped — a silent period is
-  // exactly what the coverage fraction is counting against the commitment.
   const states = new Map<number, PeriodState>();
-  for (const period of grouped) {
+  for (const period of groupByPeriod(commitment.series, commitment.cadence)) {
     if (period.index === null) continue;
     states.set(period.index, periodState(commitment, period));
   }
 
+  // An absent period is drawn, never skipped, and says why it is absent: a day
+  // our own collector was blank is excluded from the coverage denominator, and
+  // a day the source produced no defensible number is not the same claim as a
+  // day nobody looked.
   const bars: Bar[] = [];
-  for (let index = firstIndex; index <= last.index; index += 1) {
+  for (let index = startIndex; index <= endIndex; index += 1) {
     bars.push({
       date: dateOfPeriod(index, cadence),
-      state: states.get(index) ?? "none",
+      state: states.get(index) ?? absentStateForPeriod(commitment, index, cadence),
     });
   }
   return bars;
@@ -359,7 +423,7 @@ function readingBars(commitment: Commitment): Bar[] {
     }
   }
   for (const day of commitment.collection.noValueDates) {
-    if (!bars.has(day)) bars.set(day, "indeterminate");
+    if (!bars.has(day)) bars.set(day, absentState(commitment, day));
   }
   return [...bars.entries()]
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
@@ -478,7 +542,7 @@ export function collectionLog(commitment: Commitment): CollectionRow[] {
     rows.push({
       date: day,
       value: null,
-      state: "indeterminate",
+      state: outages.has(day) ? "outage" : "novalue",
       collection: outages.has(day) ? "outage" : "no value",
     });
   }
