@@ -134,9 +134,10 @@
    */
   --color-strip-met: #1a7f4b;
   --color-strip-missed: #d2593c;
-  --color-strip-read: #1a73e8;
+  /* The Kernel design's own `--k-fil` and `--k-skip`, not values picked by eye. */
+  --color-strip-read: #0090ff;
   --color-strip-novalue: #c4890f;
-  --color-strip-outage: #b3bccb;
+  --color-strip-outage: #c3ccda;
   --color-strip-none: #dde3ec;
 }
 
@@ -270,9 +271,9 @@
    */
   --color-strip-met: #46b876;
   --color-strip-missed: #e2685a;
-  --color-strip-read: #4d95f5;
+  --color-strip-read: #3aa8ff;
   --color-strip-novalue: #d9a03a;
-  --color-strip-outage: #495363;
+  --color-strip-outage: #4d5768;
   --color-strip-none: #333c49;
 }
 
