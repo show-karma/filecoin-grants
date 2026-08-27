@@ -5,6 +5,8 @@ import { barCaption, worstOf } from "./uptime";
 import {
   collectionStatus,
   coveragePctLabel,
+  tierColor,
+  tierLabel,
   type CardRow,
   type Flag,
 } from "./inventory";
@@ -17,6 +19,7 @@ const {
   title,
   flags,
   share = null,
+  evidenced = [],
   coverage,
   commitments,
   prose = null,
@@ -177,6 +180,27 @@ const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
         ))
       }
     </dl>
+
+    {
+      evidenced.length > 0 && (
+        <div class="mt-4 border-b border-line-soft pb-4">
+          <p class="mono-meta uppercase">Kernel functions evidenced</p>
+          <ul class="mt-2 flex flex-col gap-1.5">
+            {evidenced.map((fn) => (
+              <li class="flex flex-wrap items-baseline gap-x-2 text-[0.8125rem] text-ink">
+                <span
+                  class="rounded px-1.5 py-0.5 font-mono text-[0.625rem] tracking-[0.1em] uppercase"
+                  style={`color:${tierColor(fn.tier)};background:color-mix(in srgb, ${tierColor(fn.tier)} 12%, transparent)`}
+                >
+                  {tierLabel(fn.tier)}
+                </span>
+                <span class="min-w-0">{fn.name}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
 
     {
       commitments.length > 0 ? (
