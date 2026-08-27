@@ -5,6 +5,7 @@ import UptimeStrip from "./UptimeStrip.astro";
 import {
   barCaptionFor,
   formatDay,
+  formatDayInYear,
   formatValue,
   pluralize,
   collectionLog,
@@ -42,17 +43,29 @@ const status: "growth" | "meeting" | "failing" | "unmeasured" | "silent" =
           ? "meeting"
           : "failing";
 
+/*
+ * The chip says what is happening to the metric, and the cadence it happens on.
+ * "read · unscored" spent the most prominent slot on the card restating the
+ * page-wide fact that nothing is judged — which the notice above the inventory
+ * now carries once — and said nothing about this metric in particular.
+ */
 const CHIP: Record<typeof status, { label: string; class: string }> = {
   growth: {
-    label: "tracked for direction",
+    label: "Tracked for direction",
     class: "border-line text-muted",
   },
-  meeting: { label: "✓ meeting", class: "border-ok/40 text-ok" },
-  failing: { label: "not meeting", class: "border-bad/40 text-bad" },
-  unmeasured: { label: "read · unscored", class: "border-line text-muted" },
-  silent: { label: "not measured", class: "border-line text-muted" },
+  meeting: { label: "✓ Meeting", class: "border-ok/40 text-ok" },
+  failing: { label: "Not meeting", class: "border-bad/40 text-bad" },
+  unmeasured: { label: "↗ Monitored", class: "border-accent/40 text-accent" },
+  silent: { label: "Not collecting", class: "border-line text-muted" },
 };
-const chip = CHIP[status];
+const chip = {
+  ...CHIP[status],
+  label:
+    status === "silent" || !commitment.cadence
+      ? CHIP[status].label
+      : `${CHIP[status].label} · ${commitment.cadence}`,
+};
 
 const metaParts = [
   commitment.metricName,
@@ -125,16 +138,31 @@ const stripCaption = [
 
 /*
  * The one line that keeps the strip and the percentage from contradicting each
- * other. The bars span the whole window; the fraction counts from the day
- * unattended collection started, and drops the days our own collector returned
- * nothing for anyone. Unsaid next to them, a reader counts the gaps, reads
- * 100%, and concludes the number is lying.
+ * other. Unsaid next to them, a reader counts the gaps, reads 100%, and
+ * concludes the number is lying.
+ *
+ * The bars always span the window. The fraction starts where collection did,
+ * which can fall on either side of the window's edge, and the two cases are
+ * opposite claims rather than one claim worded loosely:
+ *
+ *   - started inside the window — the usual case, and a young commitment. The
+ *     bars reach further back than the count does.
+ *   - started before it — a backfilled feed. The count reaches further back
+ *     than the bars do, so `randomness-relays` reports 376 of 400 days against
+ *     a strip of 90. Saying "earlier days are drawn, not counted" here is
+ *     exactly backwards, which is what shipped.
  */
 const startedOn = commitment.collection.startedOn;
 const outageDays = commitment.collection.outageDates.length;
+const startedBeforeWindow = Boolean(
+  startedOn && range && startedOn < range.start,
+);
 const coverageNote = [
-  startedOn
-    ? `Counted from ${formatDay(startedOn)}, when collection started — earlier days are drawn, not counted.`
+  startedOn && !startedBeforeWindow
+    ? `Counted from ${formatDayInYear(startedOn)}, when collection started — earlier days are drawn, not counted.`
+    : null,
+  startedOn && startedBeforeWindow
+    ? `Counted from ${formatDayInYear(startedOn)}, when collection started — the fraction reaches back ${commitment.coverage.expected} ${commitment.coverage.unit}, further than the ${periods.length} the bars draw.`
     : null,
   outageDays > 0
     ? `${outageDays} ${pluralize(outageDays, "day")} lost to our own platform, excluded from the denominator.`
@@ -172,11 +200,6 @@ const COLLECTION_LABEL: Record<string, string> = {
       >
         {chip.label}
       </span>
-      {
-        observed > 0 && (
-          <span class="mono-meta">observed · {observed} pts</span>
-        )
-      }
     </span>
   </header>
 
@@ -210,9 +233,14 @@ const COLLECTION_LABEL: Record<string, string> = {
     )
   }
 
-  <details class="mt-3 border-t border-line-soft pt-2.5">
-    <summary class="mono-meta cursor-pointer list-none marker:content-none">
-      <span aria-hidden="true">▸ </span>how this value is computed
+  {/*
+    Open, not a disclosure. This sat behind "▸ how this value is computed"
+    inside a card the reader had already opened — a second click for the only
+    thing on the card that says what the number actually is.
+  */}
+  <details class="mt-3 border-t border-line-soft pt-2.5" open>
+    <summary class="mono-meta list-none marker:content-none">
+      How this value is computed
     </summary>
     <dl class="mt-2 space-y-1.5">
       <div class="flex flex-wrap gap-x-2">

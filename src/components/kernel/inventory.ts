@@ -119,8 +119,14 @@ export type CardRow = {
   kicker: Kicker[];
   title: string;
   flags: Flag[];
-  /** Share of the largest award, 0–1. Null where money is not the subject. */
+  /** Reading coverage as a fraction, 0–1. Null where nothing is collected. */
   share?: number | null;
+  /**
+   * The functions this row's own commitments name, with the tier each sits in.
+   * A count told a reader a team covers two functions without ever saying
+   * which, which is the only part of that sentence they came for.
+   */
+  evidenced?: { tier: string; name: string }[];
   metPct: number | null;
   /** Collection completeness — the headline figure on every inventory card. */
   coverage: KernelCoverage | null;

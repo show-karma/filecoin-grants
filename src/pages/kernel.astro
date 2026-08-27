@@ -39,6 +39,8 @@ export const prerender = false;
 const kernelData = await loadKernelData();
 const nav = [
   { label: "Objective", href: "#objective" },
+  /* The section has always been here; only the link to it was missing. */
+  { label: "Timeline", href: "#timeline" },
   { label: "Categories", href: "#categories" },
   ...(kernelData
     ? [
@@ -60,7 +62,30 @@ const tierCards = TIERS.map((tier) => ({
   functions:
     kernelData?.tiers.find((row) => row.tier === tier.apiId)?.catalogued ||
     null,
-}));
+}))
+  /*
+   * A tier with nothing catalogued is not explained here, for the same reason
+   * it is not tabled above: `nice-to-have` describes a shape of work the
+   * programme has never funded, and a card defining it sends a reader to an
+   * inventory section that has nothing in it. Keyed on the served count, so
+   * the card returns by itself once a function lands in the tier — and an
+   * unreachable API leaves every count null and every card in place.
+   */
+  .filter(
+    (tier) =>
+      !kernelData ||
+      (kernelData.tiers.find((row) => row.tier === tier.apiId)?.catalogued ??
+        1) > 0,
+  );
+
+/** "Four tiers" was a constant while the page always drew four. */
+const TIER_COUNT_WORD: Record<number, string> = {
+  1: "One tier",
+  2: "Two tiers",
+  3: "Three tiers",
+  4: "Four tiers",
+};
+const tiersTitle = `${TIER_COUNT_WORD[tierCards.length] ?? `${tierCards.length} tiers`}, set by what happens without it`;
 
 const KERNEL_FUNDS = [
   "Maintenance of functions the network cannot operate without",
@@ -175,7 +200,7 @@ const KERNEL_DOES_NOT_FUND = [
   <Section id="categories">
     <SectionHeader
       eyebrow="Categories"
-      title="Four tiers, set by what happens without it"
+      title={tiersTitle}
       intro="A function's tier is decided by substitutability, not by how much anyone likes it. That single judgement then drives how much scrutiny it gets, whether redundancy is required, and how negotiable the budget is."
     />
     <div class="mt-10 grid gap-5 lg:grid-cols-2">

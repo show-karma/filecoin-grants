@@ -569,11 +569,16 @@ describe("coverage against the captured slate", () => {
     expect(freshestReading).toBe("2026-08-21");
   });
 
-  it("quotes one commitment count, deduped by indicator", () => {
-    // 37 rows, but three indicators are reported twice across the slate — the
-    // inventory and the metrics tiles must both say 34.
-    expect(uniqueCommitments(commitments)).toHaveLength(34);
-    expect(commitmentCounts(commitments)).toEqual({ total: 34, health: 29, growth: 5 });
+  it("counts a commitment per reporting project, not per indicator", () => {
+    /*
+     * Three indicators are reported by two projects each, and the second copy
+     * is not a duplicate: Ankr and Chain.Love file their own series against the
+     * same RPC head-lag indicators, of different lengths and disagreeing on at
+     * least one day. Keying the dedupe on the indicator alone dropped whichever
+     * team sorted second and quoted 34 for 37 real commitments.
+     */
+    expect(uniqueCommitments(commitments)).toHaveLength(37);
+    expect(commitmentCounts(commitments)).toEqual({ total: 37, health: 32, growth: 5 });
   });
 
   it("windows the series on the build date, not on the freshest reading", () => {
@@ -657,17 +662,24 @@ describe("coverage against the captured slate", () => {
       ),
     );
 
-    // Three indicators are reported by two projects each, so the raw rows
-    // overcount: chain-sync-state holds 10 rows for 7 commitments. Deduped, the
-    // page's own count matches the rollup the API computed independently.
+/*
+     * The API disagrees with itself here, and the page follows the half of it
+     * that matches the readings. Its FUNCTION rollup counts `chain-sync-state`
+     * by indicator and declares 7; its PROJECT rollups declare 3 for Ankr, 5
+     * for Chain.Love and 2 for Zondax, which is the same 10 rows the page
+     * joins. Ten distinct series exist, so ten is what the page shows, and this
+     * one function is allowed to exceed `declaredCommitments`.
+     */
     const chainSync = data.functions.find((fn) => fn.kernelId === "chain-sync-state");
     expect(chainSync?.commitments).toHaveLength(10);
-    expect(commitmentCounts(chainSync!.commitments).total).toBe(chainSync?.declaredCommitments);
+    expect(commitmentCounts(chainSync!.commitments).total).toBe(10);
+    expect(chainSync?.declaredCommitments).toBe(7);
 
-    // Deduped, the page can never claim more commitments than the API counted.
-    // It can claim fewer: `mainnet-explorer` declares two, and only one of them
-    // is reachable through the projects the slate returns.
+    // Everywhere the API counts the same way the page does, the page can never
+    // claim more than it. It can claim fewer: `mainnet-explorer` declares two,
+    // and only one of them is reachable through the projects the slate returns.
     for (const fn of data.functions) {
+      if (fn.kernelId === "chain-sync-state") continue;
       expect(
         commitmentCounts(fn.commitments).total,
         fn.kernelId,

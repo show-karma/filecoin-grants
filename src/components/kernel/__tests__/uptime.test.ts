@@ -60,8 +60,14 @@ const reading = (
   thresholdValue: threshold?.value ?? null,
 });
 
+/*
+ * The bar *covering* a day, not the bar starting on it: a 90-day window folds
+ * two days to a bar, so only every other day is a bar's own start date. Every
+ * case below spaces its readings four days apart so each lands in a bar of its
+ * own and a fold cannot merge two verdicts under test.
+ */
 const stateOn = (periods: Period[], date: string) =>
-  periods.find((period) => period.date === date)?.state;
+  [...periods].reverse().find((period) => period.date <= date)?.state;
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -83,9 +89,10 @@ describe("toPeriods", () => {
 
     // Two days of readings, ninety days of record: cropping to the run is what
     // made a commitment first read yesterday look like one read all quarter.
-    expect(periods).toHaveLength(WINDOW_DAYS);
+    // The window is drawn whole and folded to the bar budget, two days a bar.
+    expect(periods).toHaveLength(WINDOW_DAYS / 2);
     expect(periods[0]!.date).toBe(day(-(WINDOW_DAYS - 1)));
-    expect(periods[periods.length - 1]!.date).toBe(TODAY);
+    expect(periods[periods.length - 1]!.date).toBe(day(-1));
   });
 
   it("keeps a reading unjudged while no threshold was in force", () => {
@@ -98,13 +105,13 @@ describe("toPeriods", () => {
     const periods = toPeriods(
       commitment({
         series: [
-          reading(day(-1), 5, { op: "<=", value: 10 }),
+          reading(day(-4), 5, { op: "<=", value: 10 }),
           reading(day(0), 50, { op: "<=", value: 10 }),
         ],
       }),
     );
 
-    expect(stateOn(periods, day(-1))).toBe("met");
+    expect(stateOn(periods, day(-4))).toBe("met");
     expect(stateOn(periods, day(0))).toBe("missed");
   });
 
@@ -119,21 +126,21 @@ describe("toPeriods", () => {
   it("tells our own outage apart from a silent source", () => {
     const periods = toPeriods(
       commitment({
-        series: [reading(day(-3), 1)],
+        series: [reading(day(-8), 1)],
         collection: {
-          startedOn: day(-3),
-          noValueDates: [day(-2), day(-1)],
-          outageDates: [day(-1)],
+          startedOn: day(-8),
+          noValueDates: [day(-4), day(0)],
+          outageDates: [day(0)],
         },
       }),
     );
 
-    // -2 is the source: the probe ran and had nothing defensible to give.
-    // -1 is us: the whole feed was blank, and coverage drops it outright.
-    expect(stateOn(periods, day(-3))).toBe("read");
-    expect(stateOn(periods, day(-2))).toBe("novalue");
-    expect(stateOn(periods, day(-1))).toBe("outage");
-    expect(stateOn(periods, day(-10))).toBe("none");
+    // -4 is the source: the probe ran and had nothing defensible to give.
+    // 0 is us: the whole feed was blank, and coverage drops it outright.
+    expect(stateOn(periods, day(-8))).toBe("read");
+    expect(stateOn(periods, day(-4))).toBe("novalue");
+    expect(stateOn(periods, day(0))).toBe("outage");
+    expect(stateOn(periods, day(-20))).toBe("none");
   });
 });
 

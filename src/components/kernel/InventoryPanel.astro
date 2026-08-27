@@ -44,33 +44,31 @@ const slug = (value: string) =>
 // ---------------------------------------------------------------- stat tiles
 
 /*
- * Deduped by indicator, not concatenated: three indicators are reported against
- * two projects each, so the raw rows total 37 where the registry holds 34. The
- * metrics section counts the same way from the same helper, which is what keeps
- * the two sections from quoting different totals.
+ * One helper for every count on the page, so the inventory and the metrics
+ * tiles can never quote different totals for the same thing.
  */
 const allCounts = commitmentCounts(projects.flatMap((p) => p.commitments));
-const fundedTeams = projects.filter((p) => p.committedUsd > 0).length;
 const measuredFunctions = functions.filter((fn) => fn.measured).length;
+const grantRefs = new Set(projects.flatMap((p) => p.grantRefs ?? []));
 
+/*
+ * Two tiles, and no money in either.
+ *
+ * The slate's contract value led this row, which made the first thing read on
+ * an inventory of what is being *watched* a budget. Coverage of the catalogue
+ * is the claim this section can make, so it leads instead; the awards are still
+ * on every row that holds one.
+ */
 const tiles = [
   {
-    value: usd(program.committedUsd) ?? "no award this batch",
-    label: "Committed across the slate",
-    sub: `${fundedTeams} funded of ${plural(projects.length, "reporting team")}`,
-  },
-  {
-    value: String(measuredFunctions),
-    label: "Kernel functions covered",
-    sub: `of ${plural(functions.length, "function")} listed in the inventory`,
+    value: `${measuredFunctions}/${functions.length}`,
+    label: "Kernel functions monitored",
+    sub: `${functions.length - measuredFunctions} report nothing at all`,
   },
   {
     value: String(allCounts.total),
-    label: "Commitments reported",
-    sub:
-      allCounts.growth > 0
-        ? `${allCounts.health} health · ${allCounts.growth} growth`
-        : `${allCounts.health} health`,
+    label: "Metrics collected",
+    sub: `${plural(projects.length, "team")} · ${plural(grantRefs.size, "grant")}`,
   },
 ];
 
@@ -126,9 +124,14 @@ const functionCard = (fn: FunctionEntry): CardRow => {
     ...new Set(commitments.map((c) => c.osoProjectSlug).filter(Boolean)),
   ].map((osoSlug) => teamDisplayName(osoSlug, null));
 
+  /*
+   * The card carries the coarse family, because the heading it sits under
+   * already carries the fine one — repeating `subCategory` in both places said
+   * the same word twice and left the family unstated anywhere.
+   */
   const kicker: Kicker[] = [
     { text: tierLabel(fn.tier), color: tierColor(fn.tier) },
-    { text: fn.subCategory, color: "var(--color-muted)" },
+    { text: fn.category, color: "var(--color-muted)" },
   ];
 
   const meta: MetaItem[] = [
@@ -136,7 +139,12 @@ const functionCard = (fn: FunctionEntry): CardRow => {
       label: "Teams reporting",
       value: reporting.length > 0 ? reporting.join(", ") : "none yet",
     },
-    { label: "Domain", value: fn.category },
+    /*
+     * No "Domain" row. The card sits under its `subCategory` heading and
+     * carries its `category` in the kicker, so the row could only repeat one of
+     * the two — it existed to surface the coarse label back when the kicker
+     * spent its second chip on the fine one.
+     */
     {
       label: "Health commitments",
       value: counts.health > 0 ? String(counts.health) : "none",
@@ -150,8 +158,16 @@ const functionCard = (fn: FunctionEntry): CardRow => {
     ...(fn.isInScope === false
       ? [{ label: "Kernel scope", value: "catalogued, not funded this term" }]
       : []),
+    /*
+     * The API serves one money field, `committedUsd`, and it carries the full
+     * contract value — Forest reads $504k here against $252k committed through
+     * December on the funded list, and every other award is out by its own
+     * ratio. Labelling it "Committed through Dec" made the page state a number
+     * it does not have. Until the indexer serves that second column, the label
+     * says what the figure is.
+     */
     {
-      label: "Committed through Dec",
+      label: "Total contract",
       value: committed
         ? `${committed} across ${plural(fn.grantRefs.length, "grant")}`
         : "no active grant",
@@ -173,17 +189,52 @@ const functionCard = (fn: FunctionEntry): CardRow => {
   };
 };
 
+/**
+ * The one comparator every list on this panel sorts by.
+ *
+ * `sensitivity: "base"` so case never leads — the slate holds `drand` beside
+ * `Blockscout`, and a codepoint sort files the one lowercase name after every
+ * other. `numeric` so a name ending in a number sorts 2 before 10.
+ */
+const byText = (a: string, b: string) =>
+  a.localeCompare(b, "en", { sensitivity: "base", numeric: true });
+
 /** Tier order comes from the overview so the page cannot disagree with it. */
 const tierBlocks = [...data.tiers]
+  /*
+   * A tier the catalogue holds nothing in gets no section. It used to render a
+   * heading and an "inventory pending" note, which is a paragraph explaining an
+   * absence nobody asked about — and the tier table above no longer links here
+   * for it either.
+   */
+  .filter((tier) => tier.catalogued > 0)
   .sort((a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier))
   .map((tier) => {
     const rows = functions.filter((fn) => fn.tier === tier.tier);
-    const categories = [...new Set(rows.map((fn) => fn.category))].map(
-      (category) => ({
+    /*
+     * Grouped on the finer of the API's two labels. `category` is a family of
+     * five — 18 of the 31 functions are "Blockchain Core & Physical Storage" —
+     * so grouping on it gave Irreplaceable a single heading over all five of
+     * its functions and Important a single heading over both of its, which is a
+     * heading that does no work. `subCategory` splits the same tier into
+     * Randomness, VM & Programmability, Networking and Proving, which is what a
+     * reader is scanning for. The coarse label still appears on each card.
+     */
+    /*
+     * Both levels alphabetical. The API returns functions in its own order, so
+     * left alone the headings came out in first-appearance order — no order at
+     * all to a reader, who is scanning for one name and has to read every
+     * heading to know it is not there. Tier order is still the API's, because
+     * that one is a ranking rather than a list.
+     */
+    const categories = [...new Set(rows.map((fn) => fn.subCategory))]
+      .sort(byText)
+      .map((category) => ({
         category,
-        rows: rows.filter((fn) => fn.category === category),
-      }),
-    );
+        rows: rows
+          .filter((fn) => fn.subCategory === category)
+          .sort((a, b) => byText(a.kernelFunction, b.kernelFunction)),
+      }));
     /*
      * Catalogued and funded are different things: `important` holds two
      * functions the map lists and Kernel does not fund this term. Read off each
@@ -195,7 +246,6 @@ const tierBlocks = [...data.tiers]
 
 // -------------------------------------------------------------- by project
 
-const largestAward = Math.max(1, ...projects.map((p) => p.committedUsd));
 
 /**
  * ChainSafe holds two awards and both arrive as `team: "chainsafe"`, so the
@@ -240,31 +290,25 @@ const projectCard = (project: ProjectEntry): CardRow => {
           color: tierColor(tier),
         }));
 
+  /*
+   * What the row is for, not what it cost. The award led this line and set the
+   * bar's width, which ranked teams by budget down a page about whether their
+   * work is being watched — and put a number on a monitoring row that the
+   * monitoring notebook does not carry at all. The money stays in the expanded
+   * body, where it answers a question somebody went looking for.
+   */
   const flags: Flag[] = [
     {
-      text: committed ?? "no award this batch",
-      tone: committed ? "ink" : "muted",
+      text: plural(counts.total, "metric"),
+      tone: counts.total === 0 ? "bad" : "ink",
     },
+    { text: plural(kernelIds.size, "kernel function"), tone: "muted" },
   ];
-  if (counts.health === 0) {
-    flags.push({ text: "no health metric", tone: "bad" });
-  } else {
-    flags.push({ text: plural(counts.health, "health metric"), tone: "muted" });
-  }
-  if (counts.growth > 0) {
-    flags.push({
-      text: plural(counts.growth, "growth counter"),
-      tone: "muted",
-    });
+  if (project.grantRefs.length > 0) {
+    flags.push({ text: project.grantRefs.join(" · "), tone: "muted" });
   }
 
   const meta: MetaItem[] = [
-    {
-      /* The functions its rendered commitments actually name, not the API's
-         declared `kernels` — the two do not always agree. */
-      label: "Kernel functions",
-      value: plural(kernelIds.size, "function"),
-    },
     {
       label: "Domains",
       value: domains.size > 0 ? [...domains].join(", ") : "none catalogued",
@@ -277,22 +321,41 @@ const projectCard = (project: ProjectEntry): CardRow => {
       label: "Growth counters",
       value: counts.growth > 0 ? String(counts.growth) : "none",
     },
+    /* The full contract value, not the amount committed through December —
+       see the note on the function card above. */
     {
-      label: "Committed through Dec",
+      label: "Total contract",
       value: committed
         ? `${committed} across ${plural(project.grantRefs.length, "grant")}`
         : "no award this batch",
     },
   ];
 
+  /* Named from the function catalogue, so the row cannot invent a function the
+     inventory below does not also list. */
+  const evidenced = [...kernelIds]
+    .map((kernelId) => functions.find((fn) => fn.kernelId === kernelId))
+    .filter((fn) => fn !== undefined)
+    .map((fn) => ({ tier: fn.tier, name: fn.kernelFunction }))
+    .sort((a, b) => byText(a.name, b.name));
+
   return {
     id: `team-${slug(project.projectUID.slice(2, 10))}-${slug(teamName(project))}`,
     kicker,
     title: teamName(project),
     flags,
-    /* No bar at all rather than a stub one: an unfunded team has no share. */
+    evidenced,
+    /*
+     * Reading coverage, not award size. The bar used to be `committedUsd /
+     * largestAward`, so Ankr's $28k against Forest's $504k drew a 6% sliver
+     * beside a row reading 100.0% — two numbers about different things, one of
+     * them budget, sitting on top of each other. It now tracks the percentage
+     * printed at the end of its own row.
+     */
     share:
-      project.committedUsd > 0 ? project.committedUsd / largestAward : null,
+      project.coverage && project.coverage.pct !== null
+        ? project.coverage.pct / 100
+        : null,
     metPct: project.sla.metPct,
     coverage: project.coverage ?? null,
     commitments,
@@ -302,21 +365,28 @@ const projectCard = (project: ProjectEntry): CardRow => {
   };
 };
 
-const byAwardDesc = (a: ProjectEntry, b: ProjectEntry) =>
-  b.committedUsd - a.committedUsd || teamName(a).localeCompare(teamName(b));
+/*
+ * By name, not by award. The list is read to find one team — a reader arrives
+ * knowing which — and alphabetical is the only order that can be scanned
+ * without reading every row. Award-descending put the largest grant first,
+ * which ranked teams by budget on a page about whether the work is being
+ * measured, and told a reader looking for `drand` nothing about where to look.
+ */
+const byNameAsc = (a: ProjectEntry, b: ProjectEntry) =>
+  byText(teamName(a), teamName(b));
 
 const projectGroups = [
   {
     key: "funded",
     title: "Funded this batch",
     subtitle: "Teams holding an award in the current batch.",
-    rows: projects.filter((p) => p.committedUsd > 0).sort(byAwardDesc),
+    rows: projects.filter((p) => p.committedUsd > 0).sort(byNameAsc),
   },
   {
     key: "unfunded",
     title: "No award this batch",
     subtitle: "Teams reporting without an award in the current batch.",
-    rows: projects.filter((p) => p.committedUsd <= 0).sort(byAwardDesc),
+    rows: projects.filter((p) => p.committedUsd <= 0).sort(byNameAsc),
   },
 ].filter((group) => group.rows.length > 0);
 ---
@@ -331,14 +401,12 @@ const projectGroups = [
         class="font-semibold text-ink">By project</strong
       > asks what each funded team is on the hook for; <strong
         class="font-semibold text-ink">by function</strong
-      > asks what the network needs and whether anyone is holding it up. The percentage
+      > asks what the network needs and whether anyone is watching it. The percentage
       is reading coverage — the share of the periods a metric's own cadence expects
       that carry a value, counted from the day unattended collection started rather
       than from 90 days ago, with days lost to an outage of our own platform excluded
-      outright. It says nothing about whether a value was good: no threshold is in
-      force, so no reading on this page has been judged. Open any row for the
-      commitments behind it in full — the collection record, every gap, each value
-      against its threshold, and the public endpoint being read.
+      outright. Open any row for the metrics behind it — what is collected, when, and
+      every reading taken.
     </p>
   </SectionHeader>
 
@@ -356,6 +424,24 @@ const projectGroups = [
       ))
     }
   </ul>
+
+  {/*
+    Said once, here, instead of five times in the cards below. Every metric on
+    this page reads `unscored`, and until this line existed a reader had to
+    infer the reason from a badge repeated on every card.
+  */}
+  <p
+    class="mt-6 flex gap-3 rounded-md border border-warn/30 bg-warn/8 px-4 py-3 text-sm leading-relaxed text-body"
+  >
+    <span class="mono-meta shrink-0 pt-0.5 text-warn" aria-hidden="true">&#9432;</span>
+    <span>
+      <strong class="font-semibold text-ink"
+        >SLA thresholds are still being negotiated.</strong
+      > This page reports what is being measured, not whether a target was met. Monitoring
+      follows the signed agreements: a function is measured once an agreement names
+      a metric for it.
+    </span>
+  </p>
 
   <fieldset class="mt-8 border-0 p-0">
     <legend class="sr-only">Read the inventory by</legend>

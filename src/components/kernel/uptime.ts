@@ -22,13 +22,19 @@ export type Period = {
 export type PeriodState = Period["state"];
 
 /**
- * A safety valve, not a design: at 96 the finest real cadence (daily, 90
- * periods) never compresses, so no bar has to stand for more than one reading
- * period. Compression erases absence — see `worseInBucket` — so the right
- * number of bars is "all of them", and the strip scrolls inside its own
- * container when the viewport cannot fit them.
+ * The Kernel design's bar budget, and the reason its strips read the way they
+ * do. At 45, a 90-day daily window folds two days to a bar and the caption says
+ * "1 bar = 2 days"; a 13-week window fits uncompressed at "1 bar = 1 week".
+ *
+ * This used to be 96, chosen so that daily never compressed and no bar stood
+ * for more than one reading period. It was the wrong trade at this width: 90
+ * bars across a card are hairlines, and a fortnight of readings inside a
+ * 90-day window painted a strip that read as empty at a glance when it was not.
+ * Two days to a bar doubles the ink a reading is worth without inventing any —
+ * `worseInBucket` still resolves a fold to the worst thing in it, so a bar can
+ * understate what was read and never overstate it.
  */
-const MAX_BARS = 96;
+const MAX_BARS = 45;
 
 const MS_PER_DAY = 86_400_000;
 
@@ -57,23 +63,22 @@ const worseAcrossCommitments = (a: PeriodState, b: PeriodState): PeriodState =>
   STATE_RANK[b] > STATE_RANK[a] ? b : a;
 
 /**
- * Combining *periods* into one compressed bar is the opposite problem: a bar
- * covering one reading and one silence must not read as fully met, or a series
- * that alternates reading/gap would paint an unbroken green strip over 50%
- * coverage. So here absence outranks met — a bar can understate what was read,
- * never overstate it.
+ * Folding *periods* into one compressed bar uses the same order, which it did
+ * not always do.
+ *
+ * It used to rank absence above `met`, so that a bar covering one reading and
+ * one silence could never read as fully met — a series alternating
+ * reading/gap would otherwise paint an unbroken green strip over 50% coverage.
+ * That reasoning holds for a verdict and breaks for `read`, which claims only
+ * that a number exists: under the old order a two-day bar holding one reading
+ * folded to `none`, and a strip of real readings rendered empty.
+ *
+ * A bar now shows the best evidence of collection it covers, and any worse
+ * verdict inside it still wins. Completeness is not the strip's job — the
+ * coverage fraction printed beside it is served by the API and counts the
+ * periods, not the bars.
  */
-const BUCKET_RANK: Record<PeriodState, number> = {
-  met: 0,
-  read: 1,
-  none: 2,
-  outage: 3,
-  novalue: 4,
-  missed: 5,
-};
-
-const worseInBucket = (a: PeriodState, b: PeriodState): PeriodState =>
-  BUCKET_RANK[b] > BUCKET_RANK[a] ? b : a;
+const worseInBucket = worseAcrossCommitments;
 
 /** Whole UTC days since the epoch. */
 export const dayIndex = (iso: string): number =>
@@ -232,12 +237,13 @@ function windowRange(): { start: string; end: string } {
  * fraction and the SLA percentage are the same partition of the same window by
  * construction rather than by agreement.
  *
- * `includeGrowth` is false for every rolled-up strip. A growth counter is never
- * judged, so since `read` outranks `met`, one counter in the set would hold a
- * whole function's row at "collected, not judged" over periods in which every
- * health commitment was judged and met. A counter that can never report an
- * outage must never colour a function's status, so the exclusion lives here
- * rather than in each caller.
+ * `includeGrowth` is true for every rolled-up strip, which it was not while the
+ * palette was a verdict. A growth counter carries no threshold, so under the
+ * old colours its every reading was amber and one counter in a set would paint
+ * a warning over periods in which every health commitment was met — hence the
+ * exclusion. A counter now reads `read` like anything else that was collected,
+ * it cannot colour a row worse than it is, and dropping it understated what a
+ * team reports: the rollups said "worst of 3" where the notebook said 4.
  */
 function buildGrid(
   commitments: Commitment[],
@@ -332,11 +338,14 @@ function buildGrid(
   const periodsPerBar = Math.max(1, Math.ceil(bars.length / MAX_BARS));
   const periods: Period[] = [];
   for (let i = 0; i < bars.length; i += periodsPerBar) {
-    let state: PeriodState = "met";
-    for (let k = i; k < Math.min(i + periodsPerBar, bars.length); k += 1) {
+    // Seeded from the first bar in the fold, never from a constant: `met` used
+    // to be the lowest rank and is not any more, so seeding with it made an
+    // empty-or-absent bucket claim a verdict nothing in it carried.
+    let state: PeriodState = bars[i]!.state;
+    for (let k = i + 1; k < Math.min(i + periodsPerBar, bars.length); k += 1) {
       state = worseInBucket(state, bars[k]!.state);
     }
-    periods.push({ date: bars[i]!.date, state: periodsPerBar === 1 ? bars[i]!.state : state });
+    periods.push({ date: bars[i]!.date, state });
   }
 
   const unit = gridCadence
@@ -436,8 +445,8 @@ function compress(bars: { date: string; state: PeriodState }[]): Period[] {
   if (perBar === 1) return bars;
   const out: Period[] = [];
   for (let i = 0; i < bars.length; i += perBar) {
-    let state: PeriodState = "met";
-    for (let k = i; k < Math.min(i + perBar, bars.length); k += 1) {
+    let state: PeriodState = bars[i]!.state;
+    for (let k = i + 1; k < Math.min(i + perBar, bars.length); k += 1) {
       state = worseInBucket(state, bars[k]!.state);
     }
     out.push({ date: bars[i]!.date, state });
@@ -451,7 +460,7 @@ function compress(bars: { date: string; state: PeriodState }[]): Period[] {
  * Growth counters are excluded — see `buildGrid`.
  */
 export function worstOf(commitments: Commitment[]): Period[] {
-  return buildGrid(commitments, { includeGrowth: false }).periods;
+  return buildGrid(commitments, { includeGrowth: true }).periods;
 }
 
 function describeBars(grid: Grid): string {
@@ -486,7 +495,7 @@ export function barCaptionFor(commitment: Commitment): string {
  * no health record to draw.
  */
 export function barCaption(commitments: Commitment[]): string {
-  const grid = buildGrid(commitments, { includeGrowth: false });
+  const grid = buildGrid(commitments, { includeGrowth: true });
   if (grid.growthOnly) return "growth counters only · no health record";
   if (grid.periods.length === 0) return "no readings in the window";
 
@@ -576,12 +585,33 @@ const MONTHS = [
   "Dec",
 ];
 
-/** `2026-08-21` → `Aug 21`. Dates on this page are always inside one window. */
+/**
+ * `2026-08-21` → `Aug 21`. For the strip's own axis, where every label is a bar
+ * inside the current window and a year would be noise on all of them.
+ */
 export function formatDay(iso: string): string {
   const day = dayIndex(iso);
   if (Number.isNaN(day)) return iso;
   const date = new Date(day * MS_PER_DAY);
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}`;
+}
+
+/**
+ * `2025-07-20` → `Jul 20 2025`, `2026-07-20` → `Jul 20`.
+ *
+ * For dates that are not guaranteed to sit inside the window — the day
+ * collection started, above all. A backfilled commitment can have been
+ * collecting since 2025, and bare `Jul 20` reads as five weeks ago rather than
+ * thirteen months. The year is added only when it differs from the window's, so
+ * the ordinary case stays as short as it was.
+ */
+export function formatDayInYear(iso: string): string {
+  const day = dayIndex(iso);
+  if (Number.isNaN(day)) return iso;
+  const date = new Date(day * MS_PER_DAY);
+  const year = date.getUTCFullYear();
+  const suffix = year === new Date(`${buildDate()}T00:00:00Z`).getUTCFullYear() ? "" : ` ${year}`;
+  return `${formatDay(iso)}${suffix}`;
 }
 
 /**

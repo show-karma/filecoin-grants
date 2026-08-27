@@ -18,7 +18,13 @@ const groups = [
   {
     key: "health",
     title: "Health commitments",
-    note: `${health.length} ${pluralize(health.length, "metric")} · a threshold, met or missed`,
+    /*
+     * Not "a threshold, met or missed": no threshold is in force, so this
+     * header promised a verdict the cards below it do not carry — every one of
+     * them reads `unscored`. It says what the metric is collected on instead,
+     * which is the claim the page can actually make.
+     */
+    note: `${health.length} ${pluralize(health.length, "metric")} · measured on a cadence, judged by nothing yet`,
     items: health,
   },
   {

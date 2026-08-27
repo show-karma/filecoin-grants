@@ -11,7 +11,8 @@ type Props = {
 const { data = null } = Astro.props;
 
 /**
- * One row of the table. Only the tier's name, rule and posture are editorial —
+ * One row of the table, for every tier the API has catalogued something in.
+ * Only the tier's name, rule and posture are editorial —
  * they are definitions, true whether or not anything is running. Every figure
  * comes from the API or is not shown: with no live row the numeric cells go to
  * their unknown state rather than to a remembered one, because a table that
@@ -30,11 +31,19 @@ const rows = TIERS.map((tier) => {
   return {
     tier,
     /*
-     * The tier's own heading in the inventory below. Present whether or not the
-     * tier has anything catalogued — `nice-to-have` renders an "inventory
-     * pending" section, and a row that says Pending should still take a reader
-     * to the place that says why.
+     * A tier the API has catalogued nothing in is dropped from the table.
+     * `nice-to-have` has held zero functions since the programme started, and
+     * the row it produced was four cells of nothing — Pending, an em dash,
+     * "Nothing collected" — under a heading that promises a count.
+     *
+     * The test is on the served number, not on the absence of one: with the API
+     * unreachable every tier is `null` and the table keeps them all, because
+     * "we could not ask" is not the same claim as "there is nothing there".
+     * It also means the row comes back on its own the day something is
+     * catalogued, rather than waiting on someone to remember this file.
      */
+    empty: live ? live.catalogued === 0 : false,
+    /* The tier's own heading in the inventory below. */
     href: live ? `#inv-tier-${live.tier}` : null,
     functions: live ? live.catalogued || null : null,
     /*
@@ -64,7 +73,7 @@ const rows = TIERS.map((tier) => {
      */
     coverageDetail: live ? `${live.measured} of ${live.catalogued} reporting` : null,
   };
-});
+}).filter((row) => !row.empty);
 ---
 
 <!--
