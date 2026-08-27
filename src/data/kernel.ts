@@ -160,17 +160,27 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     term: "Tier",
     definition:
-      "How replaceable a function is, from **Irreplaceable** to **Nice to have**. Tier sets the funding posture and whether redundancy is required.",
+      "How replaceable a function is, from **Irreplaceable** downwards. Tier sets the funding posture and whether redundancy is required. A tier the catalogue holds nothing in is not shown on this page — the definition stands, there is simply nothing filed under it.",
   },
   {
     term: "Health metric",
     definition:
-      "A commitment with a threshold, a reading cadence and a public endpoint, reported by the maintaining team. Every reading is either met or missed. A function with no health metric cannot be assessed at all and is marked **not measured**.",
+      "A commitment with a reading cadence and a public endpoint, reported by the maintaining team and fetched by a pipeline that team does not control. It is meant to carry a threshold too, and none is in force yet — see **Unscored**. A function with no health metric cannot be assessed at all and is marked **not measured**.",
   },
   {
     term: "Growth counter",
     definition:
-      "A commitment tracked for **direction, never pass/fail**. Growth counters carry no threshold, never colour red, and never contribute to the SLA figure.",
+      "A commitment tracked for **direction, never pass/fail**. Growth counters carry no threshold by design rather than by delay, so unlike a health metric they will stay unscored after the agreements are signed. They never colour a function's status and never contribute to the SLA figure.",
+  },
+  {
+    term: "Unscored",
+    definition:
+      "Read, but not judged. A reading is unscored while no threshold is in force — which today is **every reading on this page**, because the bars are still being negotiated. This is why the strip carries no green and no red: a pass/fail colour would assert a bar nobody has signed. Blue means the number exists, and nothing more.",
+  },
+  {
+    term: "Gap",
+    definition:
+      "A period the source was asked and gave back no defensible number — an endpoint down, a schema moved. Not a zero, not a breach, and not the team going quiet: it is a hole in the instrument, and it is drawn amber. A period **we** failed to ask in is a different claim again, drawn in its own grey and dropped from the coverage denominator.",
   },
   {
     term: "Coverage · 90d",

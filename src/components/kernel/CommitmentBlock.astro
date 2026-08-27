@@ -5,6 +5,7 @@ import UptimeStrip from "./UptimeStrip.astro";
 import {
   barCaptionFor,
   formatDay,
+  formatDayInYear,
   formatValue,
   pluralize,
   collectionLog,
@@ -125,16 +126,31 @@ const stripCaption = [
 
 /*
  * The one line that keeps the strip and the percentage from contradicting each
- * other. The bars span the whole window; the fraction counts from the day
- * unattended collection started, and drops the days our own collector returned
- * nothing for anyone. Unsaid next to them, a reader counts the gaps, reads
- * 100%, and concludes the number is lying.
+ * other. Unsaid next to them, a reader counts the gaps, reads 100%, and
+ * concludes the number is lying.
+ *
+ * The bars always span the window. The fraction starts where collection did,
+ * which can fall on either side of the window's edge, and the two cases are
+ * opposite claims rather than one claim worded loosely:
+ *
+ *   - started inside the window — the usual case, and a young commitment. The
+ *     bars reach further back than the count does.
+ *   - started before it — a backfilled feed. The count reaches further back
+ *     than the bars do, so `randomness-relays` reports 376 of 400 days against
+ *     a strip of 90. Saying "earlier days are drawn, not counted" here is
+ *     exactly backwards, which is what shipped.
  */
 const startedOn = commitment.collection.startedOn;
 const outageDays = commitment.collection.outageDates.length;
+const startedBeforeWindow = Boolean(
+  startedOn && range && startedOn < range.start,
+);
 const coverageNote = [
-  startedOn
-    ? `Counted from ${formatDay(startedOn)}, when collection started — earlier days are drawn, not counted.`
+  startedOn && !startedBeforeWindow
+    ? `Counted from ${formatDayInYear(startedOn)}, when collection started — earlier days are drawn, not counted.`
+    : null,
+  startedOn && startedBeforeWindow
+    ? `Counted from ${formatDayInYear(startedOn)}, when collection started — the fraction reaches back ${commitment.coverage.expected} ${commitment.coverage.unit}, further than the ${periods.length} the bars draw.`
     : null,
   outageDays > 0
     ? `${outageDays} ${pluralize(outageDays, "day")} lost to our own platform, excluded from the denominator.`

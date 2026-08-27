@@ -56,7 +56,7 @@ const measuredFunctions = functions.filter((fn) => fn.measured).length;
 const tiles = [
   {
     value: usd(program.committedUsd) ?? "no award this batch",
-    label: "Committed across the slate",
+    label: "Contracted across the slate",
     sub: `${fundedTeams} funded of ${plural(projects.length, "reporting team")}`,
   },
   {
@@ -150,8 +150,16 @@ const functionCard = (fn: FunctionEntry): CardRow => {
     ...(fn.isInScope === false
       ? [{ label: "Kernel scope", value: "catalogued, not funded this term" }]
       : []),
+    /*
+     * The API serves one money field, `committedUsd`, and it carries the full
+     * contract value — Forest reads $504k here against $252k committed through
+     * December on the funded list, and every other award is out by its own
+     * ratio. Labelling it "Committed through Dec" made the page state a number
+     * it does not have. Until the indexer serves that second column, the label
+     * says what the figure is.
+     */
     {
-      label: "Committed through Dec",
+      label: "Total contract",
       value: committed
         ? `${committed} across ${plural(fn.grantRefs.length, "grant")}`
         : "no active grant",
@@ -175,6 +183,13 @@ const functionCard = (fn: FunctionEntry): CardRow => {
 
 /** Tier order comes from the overview so the page cannot disagree with it. */
 const tierBlocks = [...data.tiers]
+  /*
+   * A tier the catalogue holds nothing in gets no section. It used to render a
+   * heading and an "inventory pending" note, which is a paragraph explaining an
+   * absence nobody asked about — and the tier table above no longer links here
+   * for it either.
+   */
+  .filter((tier) => tier.catalogued > 0)
   .sort((a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier))
   .map((tier) => {
     const rows = functions.filter((fn) => fn.tier === tier.tier);
@@ -277,8 +292,10 @@ const projectCard = (project: ProjectEntry): CardRow => {
       label: "Growth counters",
       value: counts.growth > 0 ? String(counts.growth) : "none",
     },
+    /* The full contract value, not the amount committed through December —
+       see the note on the function card above. */
     {
-      label: "Committed through Dec",
+      label: "Total contract",
       value: committed
         ? `${committed} across ${plural(project.grantRefs.length, "grant")}`
         : "no award this batch",

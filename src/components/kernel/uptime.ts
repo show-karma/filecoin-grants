@@ -576,12 +576,33 @@ const MONTHS = [
   "Dec",
 ];
 
-/** `2026-08-21` → `Aug 21`. Dates on this page are always inside one window. */
+/**
+ * `2026-08-21` → `Aug 21`. For the strip's own axis, where every label is a bar
+ * inside the current window and a year would be noise on all of them.
+ */
 export function formatDay(iso: string): string {
   const day = dayIndex(iso);
   if (Number.isNaN(day)) return iso;
   const date = new Date(day * MS_PER_DAY);
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}`;
+}
+
+/**
+ * `2025-07-20` → `Jul 20 2025`, `2026-07-20` → `Jul 20`.
+ *
+ * For dates that are not guaranteed to sit inside the window — the day
+ * collection started, above all. A backfilled commitment can have been
+ * collecting since 2025, and bare `Jul 20` reads as five weeks ago rather than
+ * thirteen months. The year is added only when it differs from the window's, so
+ * the ordinary case stays as short as it was.
+ */
+export function formatDayInYear(iso: string): string {
+  const day = dayIndex(iso);
+  if (Number.isNaN(day)) return iso;
+  const date = new Date(day * MS_PER_DAY);
+  const year = date.getUTCFullYear();
+  const suffix = year === new Date(`${buildDate()}T00:00:00Z`).getUTCFullYear() ? "" : ` ${year}`;
+  return `${formatDay(iso)}${suffix}`;
 }
 
 /**

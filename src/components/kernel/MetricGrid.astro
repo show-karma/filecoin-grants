@@ -54,7 +54,9 @@ const committed = formatUsd(program.committedUsd);
 const metrics: KernelMetric[] = [
   {
     value: committed ?? "—",
-    label: "Committed across funded teams",
+    /* The sum of full contract values — see `InventoryPanel`. Not the amount
+       committed through the end of the batch, which the API does not serve. */
+    label: "Contracted across funded teams",
     note: committed
       ? `${fundedTeams} funded of ${count(program.projectsReporting, "reporting team")} · batch ends Dec`
       : `No award recorded this batch · ${count(program.projectsReporting, "reporting team")}`,

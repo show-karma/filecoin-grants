@@ -815,19 +815,37 @@ export function buildCommitment(
 /* Assembly                                                             */
 /* ------------------------------------------------------------------ */
 
+/** The identity of a commitment across the API's separate payloads. */
+export const commitmentKey = (indicatorId: string, projectUID: string): string =>
+  `${indicatorId}::${projectUID}`;
+
 /**
- * One row per indicator. A commitment can surface more than once — two projects
- * report the same indicator, or one indicator hangs off two functions — so any
- * surface that COUNTS commitments must dedupe first. Every count on the page
- * goes through here, otherwise the inventory and the metrics tiles quote two
- * different totals for the same thing.
+ * One row per commitment, where a commitment is an indicator **as reported by
+ * one project** — never an indicator alone.
+ *
+ * The distinction is not academic. Ankr and Chain.Love both report
+ * `chain-sync-rpc-mainnet-head-lag`, `…-fevm-eth-head-lag` and
+ * `…-calibnet-head-lag` under `chain-sync-state`, and each carries its own
+ * series: on 2026-08-24 the fevm lag reads 1 for Chain.Love and 0 for Ankr, and
+ * the two feeds do not even hold the same number of readings. Keying on the
+ * indicator alone treated the second team as a duplicate of the first and
+ * dropped it — the function rendered "7 health metrics · worst of 7" over ten
+ * commitments, computed its coverage and its strip from seven of them, and
+ * still named Ankr as a reporting team while showing none of Ankr's readings.
+ *
+ * A commitment can still surface more than once for the reason this function
+ * exists — one indicator hanging off two functions, or the same row arriving
+ * through two payloads — and those are the collisions the pair key catches.
+ * Every surface that COUNTS commitments goes through here, otherwise the
+ * inventory and the metrics tiles quote two different totals for one thing.
  */
 export function uniqueCommitments(commitments: Commitment[]): Commitment[] {
   const seen = new Set<string>();
   const unique: Commitment[] = [];
   for (const commitment of commitments) {
-    if (seen.has(commitment.indicatorId)) continue;
-    seen.add(commitment.indicatorId);
+    const key = commitmentKey(commitment.indicatorId, commitment.projectUID);
+    if (seen.has(key)) continue;
+    seen.add(key);
     unique.push(commitment);
   }
   return unique;
@@ -844,9 +862,6 @@ export function commitmentCounts(commitments: Commitment[]): {
   return { total: unique.length, health: unique.length - growth, growth };
 }
 
-/** The identity of a commitment across the API's separate payloads. */
-export const commitmentKey = (indicatorId: string, projectUID: string): string =>
-  `${indicatorId}::${projectUID}`;
 
 export function assembleKernelData(
   overview: KernelOverviewResponse,
