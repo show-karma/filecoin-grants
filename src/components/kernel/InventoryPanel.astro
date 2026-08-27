@@ -191,6 +191,16 @@ const functionCard = (fn: FunctionEntry): CardRow => {
   };
 };
 
+/**
+ * The one comparator every list on this panel sorts by.
+ *
+ * `sensitivity: "base"` so case never leads — the slate holds `drand` beside
+ * `Blockscout`, and a codepoint sort files the one lowercase name after every
+ * other. `numeric` so a name ending in a number sorts 2 before 10.
+ */
+const byText = (a: string, b: string) =>
+  a.localeCompare(b, "en", { sensitivity: "base", numeric: true });
+
 /** Tier order comes from the overview so the page cannot disagree with it. */
 const tierBlocks = [...data.tiers]
   /*
@@ -212,12 +222,21 @@ const tierBlocks = [...data.tiers]
      * Randomness, VM & Programmability, Networking and Proving, which is what a
      * reader is scanning for. The coarse label still appears on each card.
      */
-    const categories = [...new Set(rows.map((fn) => fn.subCategory))].map(
-      (category) => ({
+    /*
+     * Both levels alphabetical. The API returns functions in its own order, so
+     * left alone the headings came out in first-appearance order — no order at
+     * all to a reader, who is scanning for one name and has to read every
+     * heading to know it is not there. Tier order is still the API's, because
+     * that one is a ranking rather than a list.
+     */
+    const categories = [...new Set(rows.map((fn) => fn.subCategory))]
+      .sort(byText)
+      .map((category) => ({
         category,
-        rows: rows.filter((fn) => fn.subCategory === category),
-      }),
-    );
+        rows: rows
+          .filter((fn) => fn.subCategory === category)
+          .sort((a, b) => byText(a.kernelFunction, b.kernelFunction)),
+      }));
     /*
      * Catalogued and funded are different things: `important` holds two
      * functions the map lists and Kernel does not fund this term. Read off each
@@ -344,16 +363,9 @@ const projectCard = (project: ProjectEntry): CardRow => {
  * without reading every row. Award-descending put the largest grant first,
  * which ranked teams by budget on a page about whether the work is being
  * measured, and told a reader looking for `drand` nothing about where to look.
- *
- * `sensitivity: "base"` so case does not lead: the slate holds `drand`
- * alongside `Blockscout` and `FilOz`, and a codepoint sort would file the one
- * lowercase name after every other team.
  */
 const byNameAsc = (a: ProjectEntry, b: ProjectEntry) =>
-  teamName(a).localeCompare(teamName(b), "en", {
-    sensitivity: "base",
-    numeric: true,
-  });
+  byText(teamName(a), teamName(b));
 
 const projectGroups = [
   {
