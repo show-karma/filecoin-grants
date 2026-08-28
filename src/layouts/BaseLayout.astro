@@ -4,6 +4,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import { SITE } from "../data/site";
 import { MAIN_NAV, type NavEntry } from "../data/nav";
+import Analytics from "@vercel/analytics/astro";
 
 type Props = {
   title: string;
@@ -122,5 +123,6 @@ const fullTitle = title === SITE.title ? title : `${title} · ${SITE.title}`;
       <slot />
     </main>
     <SiteFooter />
+    <Analytics />
   </body>
 </html>

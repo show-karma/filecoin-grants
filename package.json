@@ -25,6 +25,7 @@
     "@fontsource-variable/inter-tight": "^5.2.5",
     "@fontsource-variable/jetbrains-mono": "^5.2.5",
     "@tailwindcss/vite": "^4.1.11",
+    "@vercel/analytics": "^2.0.1",
     "astro": "^5.12.0",
     "blo": "^2.0.0",
     "tailwindcss": "^4.1.11"
