@@ -5,6 +5,7 @@ import { barCaption, worstOf } from "./uptime";
 import {
   collectionStatus,
   coveragePctLabel,
+  daysSilent,
   tierColor,
   tierLabel,
   type CardRow,
@@ -22,12 +23,14 @@ const {
   evidenced = [],
   coverage,
   commitments,
+  asOf = null,
   prose = null,
   meta,
   emptyNote,
 } = Astro.props;
 
-const status = collectionStatus(coverage);
+const status = collectionStatus(commitments, asOf);
+const silentFor = daysSilent(commitments, asOf);
 const hasStrip = commitments.length > 0;
 
 const FLAG_CLASS: Record<Flag["tone"], string> = {
@@ -45,15 +48,21 @@ const FLAG_CLASS: Record<Flag["tone"], string> = {
 
 const CHIP_CLASS: Record<string, string> = {
   collecting: "border-ok/40 text-ok",
-  gaps: "border-bad/40 text-bad",
-  silent: "border-line text-muted",
+  silent: "border-bad/40 text-bad",
+  never: "border-line text-muted",
 };
 
-const CHIP_LABEL: Record<string, string> = {
-  collecting: "collecting",
-  gaps: "gaps in collection",
-  silent: "not collecting",
-};
+/*
+ * The silent chip names the gap in days rather than grading it. "3 days without
+ * a reading" is a claim the reader can check against the table below; a verdict
+ * on whether that is acceptable is not ours to publish.
+ */
+const chipLabel =
+  status === "collecting"
+    ? "collecting"
+    : status === "never"
+      ? "never reported"
+      : `${silentFor} ${silentFor === 1 ? "day" : "days"} without a reading`;
 
 const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
 ---
@@ -141,19 +150,19 @@ const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
       <div class="flex items-center justify-between gap-3 sm:contents">
         <div class="sm:w-28 sm:text-right">
           <p
-            class={`font-mono text-lg ${status === "silent" ? "text-muted" : "font-medium text-ink"}`}
+            class={`font-mono text-lg ${status === "never" ? "text-muted" : "font-medium text-ink"}`}
           >
             {coveragePctLabel(coverage)}
           </p>
           <p class="mono-meta uppercase">
-            {status === "silent" ? "Nothing collected" : "Coverage · 90d"}
+            {status === "never" ? "Nothing collected" : "Coverage · 90d"}
           </p>
           <p class="mt-1.5">
             <span
               class={`inline-block rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem] ${CHIP_CLASS[status]}`}
             >
               {status === "collecting" && <span aria-hidden="true">✓ </span>}
-              {CHIP_LABEL[status]}
+              {chipLabel}
             </span>
           </p>
         </div>

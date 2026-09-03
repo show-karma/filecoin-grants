@@ -26,6 +26,19 @@ const { data } = Astro.props;
 
 const { functions, projects, program } = data;
 
+/*
+ * The freshest reading anywhere on the page. Silence is measured against it
+ * rather than against today, because the sync lands a day behind and a team
+ * must not be marked quiet for our own ingestion lag.
+ */
+const asOf =
+  projects
+    .flatMap((project) => project.commitments)
+    .map((commitment) => commitment.latest?.date)
+    .filter((date): date is string => Boolean(date))
+    .sort()
+    .at(-1) ?? null;
+
 /**
  * The function↔tier lookup. A commitment names only its `kernelId`, so this is
  * how a team's rows get their tier badges.
@@ -179,9 +192,9 @@ const functionCard = (fn: FunctionEntry): CardRow => {
     kicker,
     title: fn.kernelFunction,
     flags,
-    metPct: fn.sla.metPct,
     coverage: fn.coverage ?? null,
     commitments,
+    asOf,
     prose: fn.kernelValue,
     meta,
     emptyNote:
@@ -356,8 +369,8 @@ const projectCard = (project: ProjectEntry): CardRow => {
       project.coverage && project.coverage.pct !== null
         ? project.coverage.pct / 100
         : null,
-    metPct: project.sla.metPct,
     coverage: project.coverage ?? null,
+    asOf,
     commitments,
     meta,
     emptyNote:
