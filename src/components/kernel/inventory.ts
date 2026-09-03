@@ -1,4 +1,5 @@
 import type { Commitment, KernelCoverage } from "../../data/kernel-api";
+import { cadenceDays, dayIndex } from "./uptime";
 
 /**
  * The API's tier ids, not the local editorial ones in `data/kernel.ts`: the
@@ -127,10 +128,11 @@ export type CardRow = {
    * which, which is the only part of that sentence they came for.
    */
   evidenced?: { tier: string; name: string }[];
-  metPct: number | null;
   /** Collection completeness — the headline figure on every inventory card. */
   coverage: KernelCoverage | null;
   commitments: Commitment[];
+  /** Freshest reading anywhere on the page, the reference silence is measured against. */
+  asOf?: string | null;
   prose?: string | null;
   meta: MetaItem[];
   /** Shown in the expanded body when nothing reports against this row. */
@@ -154,42 +156,54 @@ export { formatUsd as usd } from "../../data/kernel-api";
  */
 
 /**
- * Display threshold for the "meeting" chip. The API scores each reading but
- * publishes no verdict, so the page has to draw the line itself; it is a
- * presentation choice and moves the moment the API carries one.
+ * How long a row has been silent, measured against the freshest reading on the
+ * page rather than against today — the sync lands a day behind, and charging a
+ * team for our own ingestion lag is the mistake this whole figure exists to
+ * avoid.
+ *
+ * Null when the row has never reported.
  */
-export const MEETING_MIN_PCT = 95;
-
-export type SlaStatus = "meeting" | "missing" | "unmeasured";
+export const daysSilent = (
+  commitments: Commitment[],
+  asOf: string | null,
+): number | null => {
+  if (!asOf) return null;
+  const latest = commitments
+    .map((commitment) => commitment.latest?.date)
+    .filter((date): date is string => Boolean(date))
+    .sort()
+    .at(-1);
+  return latest ? dayIndex(asOf) - dayIndex(latest) : null;
+};
 
 /**
- * No threshold anywhere in the catalogue today, so `metPct` is null on every
- * row. That is `unmeasured` — never 0%, which would read as a total outage.
+ * The interval this row promises a reading in: the finest cadence among its
+ * commitments, because one daily metric going quiet is news even when the
+ * monthly ones beside it are not yet due.
  */
-export const slaStatus = (metPct: number | null): SlaStatus =>
-  metPct === null
-    ? "unmeasured"
-    : metPct >= MEETING_MIN_PCT
-      ? "meeting"
-      : "missing";
+export const promisedIntervalDays = (commitments: Commitment[]): number =>
+  commitments.length === 0
+    ? 1
+    : Math.min(...commitments.map((c) => cadenceDays(c.cadence)));
 
-export const slaPctLabel = (metPct: number | null) =>
-  metPct === null ? "—" : `${metPct.toFixed(1)}%`;
+export type CollectionStatus = "collecting" | "silent" | "never";
 
 /**
- * A feed with a hole in it is still collecting, just not completely — so the
- * chip needs a middle state. Below this share of its promised periods a row
- * reads as gappy rather than healthy.
+ * A row is silent once it has missed the interval it promised — a daily metric
+ * quiet for two days has stopped reporting, a monthly one has not.
+ *
+ * Deliberately not a percentage: the threshold that used to live here was 95%,
+ * inherited from the SLA status it replaced, and nothing about coverage made
+ * that number mean anything. Time since the last reading is a claim a reader
+ * can check.
  */
-export const COLLECTING_MIN_PCT = 95;
-
-export type CollectionStatus = "collecting" | "gaps" | "silent";
-
 export const collectionStatus = (
-  coverage: KernelCoverage | null,
+  commitments: Commitment[],
+  asOf: string | null,
 ): CollectionStatus => {
-  if (!coverage || coverage.pct === null) return "silent";
-  return coverage.pct >= COLLECTING_MIN_PCT ? "collecting" : "gaps";
+  const silent = daysSilent(commitments, asOf);
+  if (silent === null) return "never";
+  return silent > promisedIntervalDays(commitments) ? "silent" : "collecting";
 };
 
 export const coveragePctLabel = (coverage: KernelCoverage | null) =>
