@@ -29,8 +29,12 @@ export const MAIN_NAV: NavEntry[] = [
      * A funding programme is read as its own story first: each entry opens the
      * programme's cover page here on the site, not a pre-filtered listing in
      * the app. The listing is still one click away, under "Projects Explorer"
-     * below, so browsing every funded project stays a deliberate choice rather
-     * than the only way in (DEV-647).
+     * below, so browsing every project stays a deliberate choice rather than
+     * the only way in (DEV-647).
+     *
+     * "Projects Explorer" is the listing the app's own tab bar calls "Browse
+     * Projects", and it is the same URL there — the header, the app's navbar
+     * and that tab all point at app.filpgf.io/browse-projects.
      */
     groups: [
       {
