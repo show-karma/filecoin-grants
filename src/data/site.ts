@@ -1,6 +1,18 @@
 export const EXTERNAL = {
   app: "https://app.filpgf.io",
-  explorer: "https://app.filpgf.io/projects",
+  /**
+   * "Projects Explorer" — the app listing of everything submitted to the
+   * programmes, which the app's own tab bar calls "Browse Projects".
+   *
+   * NOT {@link fundedProjects}: that one is the funded-grants listing, a
+   * narrower set, and the app hides its tab from this tenant. The two were the
+   * same URL until the header, the app navbar and that tab were made to agree
+   * on one destination; `/browse-projects` is a whitelabel alias of the app's
+   * `/browse-applications` (gap-app-v2 `WHITELABEL_ROUTE_ALIASES`).
+   */
+  explorer: "https://app.filpgf.io/browse-projects",
+  /** Funded-grants listing. Only ever linked programme-scoped — see {@link PROGRAM_PROJECTS_URL}. */
+  fundedProjects: "https://app.filpgf.io/projects",
   reports: "https://app.filpgf.io/reports",
   financials: "https://app.filpgf.io/financials",
   filecoin: "https://www.filecoin.io/learn",
@@ -27,7 +39,7 @@ export const PROGRAM_ID = "992";
 export const PROGRAM_REPORTS_URL = `${EXTERNAL.reports}?programId=${PROGRAM_ID}`;
 
 /** Funded projects for that programme. */
-export const PROGRAM_PROJECTS_URL = `${EXTERNAL.explorer}?programId=${PROGRAM_ID}`;
+export const PROGRAM_PROJECTS_URL = `${EXTERNAL.fundedProjects}?programId=${PROGRAM_ID}`;
 
 /**
  * Report-type ids from the Karma reports API. Linking by type (rather than to a
