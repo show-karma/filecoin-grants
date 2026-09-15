@@ -1,6 +1,6 @@
 ---
 title: "Introducing the Filecoin Kernel"
-date: 2026-09-15
+date: 2026-09-14
 description: "Kernel is a new approach to funding the Filecoin network's essential infrastructure: defined by functions rather than projects, monitored through a public health dashboard, and funded on a stable annual retainer."
 author: "Protocol Labs Filecoin Impact Fund & Open Source Observer"
 ---
