@@ -27,7 +27,7 @@ export const prerender = false;
 /*
  * `kernelData` is null when the Kernel API could not be read for this render.
  * The page then keeps only what is true without it — the tier definitions, the
- * program's terms, the glossary — and drops every figure, section and nav entry
+ * program's terms, the glossary — and drops every figure and section
  * that would otherwise state something it cannot evidence. A half-populated
  * inventory would be worse than none: it would read as "these are the
  * commitments" while quietly omitting most of them.
@@ -37,19 +37,6 @@ export const prerender = false;
  * visitors for a full expiration window.
  */
 const kernelData = await loadKernelData();
-const nav = [
-  { label: "Objective", href: "#objective" },
-  /* The section has always been here; only the link to it was missing. */
-  { label: "Timeline", href: "#timeline" },
-  { label: "Categories", href: "#categories" },
-  ...(kernelData
-    ? [
-        { label: "Inventory", href: "#inventory" },
-        { label: "Metrics", href: "#metrics" },
-      ]
-    : []),
-  { label: "Terms", href: "#terms" },
-];
 
 /*
  * The tier cards carry a function count, so it is injected from the API like
@@ -104,7 +91,6 @@ const KERNEL_DOES_NOT_FUND = [
 <BaseLayout
   title="Kernel"
   description="Kernel funds the functions Filecoin depends on to keep producing blocks, proving storage, and staying observable. It is treated as a near-fixed cost rather than a growth bet."
-  nav={nav}
   cta={{ label: "Apply · FY27", href: NEXT_ROUND.ctaHref }}
   breadcrumb="Kernel"
   accent="kernel"
