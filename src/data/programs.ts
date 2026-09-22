@@ -110,8 +110,6 @@ export const RND_OPEN_RFPS = {
   title: "R&D RFPs Opening Soon",
   description:
     "Focus areas listed below will regularly be updated to ensure the focus areas remain targeted to ecosystem priorities. Will be accepting applications soon!",
-  linkText: "Follow the blog for the announcement",
-  href: "/blog/",
 };
 
 export type FocusArea = {
@@ -193,5 +191,5 @@ export const RND_EVALUATION: { label: string; value: string }[] = [
       "Three phases: AI-assisted shortlist, committee vetting, final allocation",
   },
   { label: "Assessed", value: "Against Filecoin's 2026 network objectives" },
-  { label: "Strongest", value: "Shipped products with named paying customers" },
+  { label: "Strongest", value: "Shipped products with named paying customers within six months" },
 ];
