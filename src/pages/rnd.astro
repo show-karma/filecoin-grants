@@ -5,7 +5,10 @@ import SectionHeader from "../components/SectionHeader.astro";
 import ArrowLink from "../components/ArrowLink.astro";
 import CriteriaList from "../components/CriteriaList.astro";
 import PageHero from "../components/PageHero.astro";
+import FocusAreaCard from "../components/rnd/FocusAreaCard.astro";
 import {
+  RND_EVALUATION,
+  RND_FOCUS_AREAS,
   RND_LOOKING_FOR,
   RND_NOT_IN_SCOPE,
   RND_OPEN_RFPS,
@@ -89,5 +92,33 @@ import {
         <ArrowLink href={RND_OPEN_RFPS.href} label={RND_OPEN_RFPS.linkText} />
       </p>
     </div>
+
+    <div class="mt-10 space-y-6">
+      {
+        RND_FOCUS_AREAS.map((area, index) => (
+          <FocusAreaCard area={area} index={index} />
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- Evaluation -->
+  <Section id="evaluation">
+    <SectionHeader eyebrow="Evaluation" title="How proposals are reviewed" />
+
+    <dl
+      class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line md:grid-cols-3"
+    >
+      {
+        RND_EVALUATION.map((row) => (
+          <div class="bg-surface p-5">
+            <dt class="mono-meta uppercase">{row.label}</dt>
+            <dd class="mt-1.5 text-[0.95rem] leading-relaxed text-ink">
+              {row.value}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
   </Section>
 </BaseLayout>
