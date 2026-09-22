@@ -2,10 +2,12 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Section from "../components/Section.astro";
 import SectionHeader from "../components/SectionHeader.astro";
-import ArrowLink from "../components/ArrowLink.astro";
 import CriteriaList from "../components/CriteriaList.astro";
 import PageHero from "../components/PageHero.astro";
+import FocusAreaCard from "../components/rnd/FocusAreaCard.astro";
 import {
+  RND_EVALUATION,
+  RND_FOCUS_AREAS,
   RND_LOOKING_FOR,
   RND_NOT_IN_SCOPE,
   RND_OPEN_RFPS,
@@ -15,7 +17,7 @@ import {
 <BaseLayout
   title="R&D"
   description="R&D backs work that closes gaps in the network before they become problems. RFPs are published as gaps are identified and applications are reviewed as they arrive, with funding released in stages as the work proves out."
-  cta={{ label: "Get notified", href: RND_OPEN_RFPS.href }}
+  cta={{ label: "Get notified", href: "/blog/" }}
   breadcrumb="R&D"
   accent="rd"
 >
@@ -85,9 +87,33 @@ import {
       <p class="mt-3 text-[0.95rem] leading-relaxed">
         {RND_OPEN_RFPS.description}
       </p>
-      <p class="mt-5">
-        <ArrowLink href={RND_OPEN_RFPS.href} label={RND_OPEN_RFPS.linkText} />
-      </p>
+    </div>
+
+    <div class="mt-10 space-y-6">
+      {
+        RND_FOCUS_AREAS.map((area, index) => (
+          <FocusAreaCard area={area} index={index} />
+        ))
+      }
+    </div>
+
+    <div
+      id="evaluation"
+      class="mt-6 scroll-mt-24 rounded-lg border border-line bg-surface p-6 sm:p-7"
+    >
+      <p class="eyebrow">Evaluation</p>
+      <h3 class="mt-2.5 text-xl">How proposals are reviewed</h3>
+
+      <dl class="mt-5 space-y-2.5 border-t border-line-soft pt-5">
+        {
+          RND_EVALUATION.map((row) => (
+            <div class="flex flex-col gap-1 sm:flex-row sm:gap-5">
+              <dt class="mono-meta w-24 shrink-0 uppercase">{row.label}</dt>
+              <dd class="text-[0.95rem] leading-relaxed">{row.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
   </Section>
 </BaseLayout>

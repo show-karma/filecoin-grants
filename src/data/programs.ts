@@ -107,9 +107,89 @@ export const RND_NOT_IN_SCOPE = [
 
 export const RND_OPEN_RFPS = {
   eyebrow: "Coming soon",
-  title: "The first R&D RFPs are being drafted now.",
+  title: "R&D RFPs Opening Soon",
   description:
-    "Each one will name a specific gap, say which program the work is meant to serve, and stay open until it's filled or withdrawn. They'll be published here and on the blog as they're ready.",
-  linkText: "Follow the blog for the announcement",
-  href: "/blog/",
+    "Focus areas listed below will regularly be updated to ensure the focus areas remain targeted to ecosystem priorities. Will be accepting applications soon!",
 };
+
+export type FocusArea = {
+  title: string;
+  /** A condition every proposal in the area must meet, shown under the title. */
+  note?: string;
+  inScope: string[];
+  notInScope: string[];
+};
+
+export const RND_FOCUS_AREAS: FocusArea[] = [
+  {
+    title: "Customer-facing products built on Filecoin",
+    inScope: [
+      "Products for AI workloads, such as agent memory, tamper-evident audit logs, and training-data provenance",
+      "Products for creative, media, and archival data storage, for studios and cultural institutions",
+      "Products for compliance and regulated data, with write-once retention and audit trails",
+      "Products for real-world-asset and onchain-data teams with near-to-medium term potential to convert to ARR",
+    ],
+    notInScope: [
+      "Platform extensions (SDKs, adapters, gateways)",
+      "Unvalidated MVPs or demos",
+      "Acquisitions, channel business development, and marketing",
+      "Research-only projects",
+    ],
+  },
+  {
+    title: "Storage provider economics and growth",
+    inScope: [
+      "Recruitment programs targeting adjacent differentiated supply, such as colocation operators and regional cloud providers",
+      "Retention infrastructure for the existing provider base",
+      "Rigorous economic modeling for storage providers, published as an ongoing public resource",
+      "Financial products that reduce capital risk, such as equipment financing and revenue-sharing arrangements",
+    ],
+    notInScope: [
+      "New mining-hardware ventures",
+      "Marketing campaigns without economic modeling",
+      "One-off incentive programs",
+    ],
+  },
+  {
+    title: "AI infrastructure products on Filecoin",
+    inScope: [
+      "Verifiable-compute and audit services: productized services pairing Filecoin storage with verifiable execution",
+      "Training-data provenance products: commercial offerings that solve audit and licensing-provenance problems",
+      "Cross-stack verifiable-AI infrastructure, with owned products and customers",
+      "Machine-readable ecosystem knowledge: services that create and maintain technical documentation",
+    ],
+    notInScope: [
+      "General-purpose AI products that use Filecoin incidentally",
+      "Research-only projects",
+      "Open-source contributions without customer-facing products",
+    ],
+  },
+  {
+    title: "FIL value accrual: burn and lock mechanisms",
+    note: "Proposals must include a credible path to mainnet within the grant horizon.",
+    inScope: [
+      "Fee-and-burn mechanisms on stablecoin payment rails, routing payments through swap-to-FIL-and-burn",
+      "Protocol-level fee burns tied to network activity",
+      "FIL-locking primitives for storage providers and customers, through staking, escrow, or collateral",
+      "FIL-locking primitives for ecosystem participants, with lock-and-earn mechanisms",
+      "Measurement, dashboards, and verification for burn rates and locked supply",
+    ],
+    notInScope: [
+      "Research papers without implementation plans",
+      "Mechanisms without mainnet viability",
+      "Speculative tokenomics requiring broad consensus changes",
+      "One-off \u201cbuy and burn\u201d marketing",
+      "Designs dependent on a single counterparty",
+    ],
+  },
+];
+
+export const RND_EVALUATION: { label: string; value: string }[] = [
+  {
+    label: "Process",
+    value:
+      "Three phases: AI-assisted shortlist, committee vetting, final allocation",
+  },
+  { label: "Assessed", value: "Against Filecoin's 2026 network objectives" },
+  { label: "Strongest", value: "Shipped products with named paying customers within six months" },
+];

@@ -1,0 +1,25 @@
+---
+import CriteriaList from "../CriteriaList.astro";
+import type { FocusArea } from "../../data/programs";
+
+type Props = { area: FocusArea; index: number };
+const { area, index } = Astro.props;
+const number = String(index + 1).padStart(2, "0");
+---
+
+<article class="rounded-lg border border-line bg-surface p-6 sm:p-7">
+  <p class="eyebrow">Focus / {number}</p>
+  <h3 class="mt-2.5 text-xl">{area.title}</h3>
+  {
+    area.note && (
+      <p class="mt-2.5 text-[0.95rem] leading-relaxed">{area.note}</p>
+    )
+  }
+
+  <div class="mt-6 space-y-6">
+    <CriteriaList label="In scope" items={area.inScope} tone="in" />
+    <div class="border-t border-line-soft pt-6">
+      <CriteriaList label="Not in scope" items={area.notInScope} tone="out" />
+    </div>
+  </div>
+</article>
