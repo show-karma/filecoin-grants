@@ -13,8 +13,8 @@ const { program } = data;
 const count = (n: number, one: string, many = `${one}s`) =>
   `${n} ${n === 1 ? one : many}`;
 
-/** Trims the trailing `.0` the API's one-decimal percentages often carry. */
-const pct = (value: number) => `${Number(value.toFixed(1))}%`;
+/* One decimal always, matching the tier table above and the notebook. */
+const pct = (value: number) => `${value.toFixed(1)}%`;
 
 const metrics = countCommitments(data.projects.flatMap((p) => p.commitments));
 const grantRefs = new Set(data.projects.flatMap((p) => p.grantRefs ?? []));
@@ -24,17 +24,14 @@ const teams = new Set(
   data.projects.map((project) => project.team).filter(Boolean),
 ).size;
 
-/* Upstream splits these into drafted and not-yet-drafted; the API serves
-   neither, so the page states the total. */
-const unmeasured = data.functions.filter((entry) => !entry.measured).length;
+/* A function with a metric written but unsigned is not one nobody has proposed
+   anything for; the catalog counts them apart and so does this row. */
+const proposed = program.functionsProposed ?? null;
+const drafted = program.metricsDrafted ?? null;
+const unscoped = program.functionsUnscoped ?? null;
 
-/* Catalogued so the map is complete, but outside what Kernel funds this term. */
-const outOfScope = data.functions.filter(
-  (entry) => entry.isInScope === false,
-).length;
-
-/* No pass-rate tile: only 26 of 911 readings in the window carry a threshold,
-   and a rate over that minority describes a different programme. */
+/* No pass-rate tile: most readings in the window carry no threshold at all,
+   and a rate over the scored minority describes a different programme. */
 const coverage = program.coverage ?? null;
 
 const tiles: KernelMetric[] = [
@@ -52,15 +49,19 @@ const tiles: KernelMetric[] = [
     note: `${count(teams, "team")} · ${count(grantRefs.size, "grant row")}`,
   },
   {
-    value: `${unmeasured}`,
-    label: `${unmeasured === 1 ? "Function has" : "Functions have"} no metric yet`,
-    note: "Nothing is collected against them",
+    value: proposed === null ? "—" : `${proposed}`,
+    label: `${proposed === 1 ? "Function" : "Functions"} with metrics proposed`,
+    note:
+      drafted === null
+        ? "Awaiting a signed appendix"
+        : `${count(drafted, "metric")} drafted, awaiting a signed appendix`,
     noteTone: "warn",
   },
   {
-    value: `${outOfScope}`,
-    label: `${outOfScope === 1 ? "Function is" : "Functions are"} out of scope this term`,
-    note: "Catalogued for the map, not funded in this batch",
+    value: unscoped === null ? "—" : `${unscoped}`,
+    label: `${unscoped === 1 ? "Function" : "Functions"} not yet scoped`,
+    note: "No metric proposed against them yet",
+    noteTone: "warn",
   },
   {
     value: `${program.singleMaintainerCritical}`,

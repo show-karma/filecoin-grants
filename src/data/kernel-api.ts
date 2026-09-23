@@ -81,6 +81,10 @@ export type KernelProgramStats = {
   functionsMeasured: number;
   measurementCoveragePct: number | null;
   unmeasuredInScope: number;
+  /** Optional on the wire so an older backend degrades to "—" rather than 0. */
+  functionsProposed?: number;
+  metricsDrafted?: number;
+  functionsUnscoped?: number;
   healthMet: KernelSla;
   coverage?: KernelCoverage;
   singleMaintainerCritical: number;
