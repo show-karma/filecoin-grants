@@ -860,10 +860,9 @@ export function uniqueCommitments(commitments: Commitment[]): Commitment[] {
 /**
  * The canonical metric count for any set of rows.
  *
- * Health commitments and growth counters used to be counted apart and shown
- * apart. The split was upstream's, not a reader's: both are one number fetched
- * on a cadence, and separating them made every surface quote two figures where
- * the question was always "how many metrics".
+ * `commitmentType` is the indexer's own classification, not a column OSO
+ * serves, so the health/growth split was never a distinction upstream drew.
+ * Both are one number fetched on a cadence.
  */
 export function countCommitments(commitments: Commitment[]): number {
   return uniqueCommitments(commitments).length;
