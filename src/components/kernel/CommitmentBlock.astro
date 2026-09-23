@@ -136,7 +136,7 @@ const coverageNote = [
     ? `Counted from ${formatDayInYear(startedOn)}, when collection started — earlier days are drawn, not counted.`
     : null,
   outageDays > 0
-    ? `${outageDays} ${pluralize(outageDays, "day")} lost to our own platform, excluded from the denominator.`
+    ? `${outageDays} ${pluralize(outageDays, "day")} the monitor did not run, excluded from the denominator — the same nights for every team.`
     : null,
 ]
   .filter(Boolean)

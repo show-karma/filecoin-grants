@@ -97,7 +97,7 @@ const LEGEND = [
   { text: "threshold missed", color: "var(--color-strip-missed)" },
   { text: "measured, no threshold in force", color: "var(--color-strip-read)" },
   { text: "no defensible number", color: "var(--color-strip-novalue)" },
-  { text: "our platform was down", color: "var(--color-strip-outage)" },
+  { text: "the monitor did not run", color: "var(--color-strip-outage)" },
   { text: "no reading taken", color: "var(--color-strip-none)" },
 ];
 
@@ -383,9 +383,9 @@ const projectGroup = {
       > asks what the network needs and whether anyone is watching it. The percentage
       is reading coverage — the share of the periods a metric's own cadence expects
       that carry a value over the last {WINDOW_DAYS} days, counted from the day unattended
-      collection started rather than from before anyone was watching, with days lost
-      to an outage of our own platform excluded outright. Open any row for the metrics
-      behind it — what is collected, when, and every reading taken.
+      collection started rather than from before anyone was watching, and with the
+      nights the monitor itself did not run excluded outright. Open any row for the
+      metrics behind it — what is collected, when, and every reading taken.
     </p>
   </SectionHeader>
 

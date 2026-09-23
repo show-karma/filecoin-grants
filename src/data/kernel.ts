@@ -174,7 +174,7 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     term: "Coverage · 30d",
     definition:
-      "How much of the record was actually read — periods that carried a reading against the periods the cadence promised, counted at **each metric's own cadence** rather than per day, so a weekly metric is not penalised for being coarse. The count starts when automated collection started, not 30 days ago: a source cannot be backfilled to before anyone was watching it, so a young commitment is measured against its own run. Days our own platform returned nothing on are dropped from the denominator entirely — that is our failure to measure, not the team's failure to report — which is why a strip can show a visible gap beside 100%. The bars, unlike the fraction, always span the full 30 days.",
+      "How much of the record was actually read — periods that carried a reading against the periods the cadence promised, counted at **each metric's own cadence** rather than per day, so a weekly metric is not penalised for being coarse. The count starts when automated collection started, not 30 days ago: a source cannot be backfilled to before anyone was watching it, so a young commitment is measured against its own run. Days the monitoring pipeline itself did not run are dropped from the denominator entirely — that is a failure to measure, not the team's failure to report — which is why a strip can show a visible gap beside 100%. The bars, unlike the fraction, always span the full 30 days.",
   },
   {
     term: "Domain",
