@@ -65,6 +65,10 @@ const slug = (value: string) =>
  */
 const grantRefs = new Set(projects.flatMap((p) => p.grantRefs ?? []));
 const monitoredFunctions = functions.filter((fn) => fn.measured).length;
+/* ChainSafe holds two awards and arrives as two project rows, so the team
+   count and the row count are different numbers and get different tiles. */
+const teams = new Set(projects.map((project) => project.team).filter(Boolean))
+  .size;
 
 /*
  * What is being watched, counted three ways — and no money in any of them.
@@ -76,7 +80,7 @@ const monitoredFunctions = functions.filter((fn) => fn.measured).length;
  */
 const tiles = [
   {
-    value: String(projects.length),
+    value: String(teams),
     label: "Teams",
     sub: "Reporting at least one metric",
   },
@@ -353,17 +357,6 @@ const projectCard = (project: ProjectEntry): CardRow => {
     title: teamName(project),
     flags,
     evidenced,
-    /*
-     * Reading coverage, not award size. The bar used to be `committedUsd /
-     * largestAward`, so Ankr's $28k against Forest's $504k drew a 6% sliver
-     * beside a row reading 100.0% — two numbers about different things, one of
-     * them budget, sitting on top of each other. It now tracks the percentage
-     * printed at the end of its own row.
-     */
-    share:
-      project.coverage && project.coverage.pct !== null
-        ? project.coverage.pct / 100
-        : null,
     coverage: project.coverage ?? null,
     asOf,
     commitments,

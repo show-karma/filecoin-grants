@@ -120,8 +120,6 @@ export type CardRow = {
   kicker: Kicker[];
   title: string;
   flags: Flag[];
-  /** Reading coverage as a fraction, 0–1. Null where nothing is collected. */
-  share?: number | null;
   /**
    * The functions this row's own commitments name, with the tier each sits in.
    * A count told a reader a team covers two functions without ever saying

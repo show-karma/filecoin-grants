@@ -20,12 +20,22 @@ const metrics = countCommitments(data.projects.flatMap((p) => p.commitments));
 const grantRefs = new Set(data.projects.flatMap((p) => p.grantRefs ?? []));
 
 /*
- * A function nobody reports on is not measurable in principle, not merely
- * unmeasured this window — the tier tables cannot see it at all, which is the
- * risk the tile is there to name.
+ * Teams, not rows. ChainSafe holds two awards and arrives as two project rows,
+ * so counting rows said 14 where the monitoring notebook says 13. A grant row
+ * is its own figure and keeps its own noun.
  */
-const unreported = data.functions.filter(
-  (entry) => entry.isInScope && entry.maintainers === 0,
+const teams = new Set(
+  data.projects.map((project) => project.team).filter(Boolean),
+).size;
+
+/* Catalogued, and nothing is collected against it. Upstream splits these into
+   "a metric is drafted" and "nothing is drafted yet"; the page cannot, because
+   a drafted-but-unsigned metric is never served to it. */
+const unmeasured = data.functions.filter((entry) => !entry.measured).length;
+
+/* Catalogued so the map is complete, but outside what Kernel funds this term. */
+const outOfScope = data.functions.filter(
+  (entry) => entry.isInScope === false,
 ).length;
 
 /*
@@ -52,29 +62,19 @@ const tiles: KernelMetric[] = [
   {
     value: `${metrics}`,
     label: "Metrics collected",
-    note: `${count(program.projectsReporting, "team")} · ${count(grantRefs.size, "grant row")}`,
+    note: `${count(teams, "team")} · ${count(grantRefs.size, "grant row")}`,
   },
   {
-    value:
-      program.measurementCoveragePct === null
-        ? "—"
-        : pct(program.measurementCoveragePct),
-    label: "Measurement coverage",
-    /*
-     * Two numbers, two agreements: the noun follows the total it counts, the
-     * verb follows the subject ("1 of 1 in-scope function reports", "1 of 29
-     * in-scope functions report").
-     */
-    note: `${program.unmeasuredInScope} of ${count(program.functionsInScope, "in-scope function")} ${
-      program.unmeasuredInScope === 1 ? "reports" : "report"
-    } no metric`,
+    value: `${unmeasured}`,
+    label: `${unmeasured === 1 ? "Function has" : "Functions have"} no metric yet`,
+    note: "Nothing is collected against them",
     noteTone: "warn",
   },
-  /*
-   * These two carry the same number today and will diverge later, so they are
-   * worded as two rungs of one ladder — down to one team, then down to none —
-   * rather than as two unrelated risks that happen to coincide.
-   */
+  {
+    value: `${outOfScope}`,
+    label: `${outOfScope === 1 ? "Function is" : "Functions are"} out of scope this term`,
+    note: "Catalogued for the map, not funded in this batch",
+  },
   {
     value: `${program.singleMaintainerCritical}`,
     label: `Top-tier ${
@@ -83,28 +83,15 @@ const tiles: KernelMetric[] = [
     note: "Posture calls for 2+ implementations",
     noteTone: "warn",
   },
-  {
-    value: `${unreported}`,
-    label: `${unreported === 1 ? "Function has" : "Functions have"} no maintaining team at all`,
-    note: "Invisible to this page until one signs up",
-    noteTone: "warn",
-  },
-  {
-    value: `${program.projectsReporting}`,
-    label:
-      program.projectsReporting === 1 ? "Team reporting" : "Teams reporting",
-    note: `Across ${count(program.functionsInScope, "declared function")}`,
-  },
 ];
 ---
 
 {
   /*
-  Six tiles fill both grids exactly — 2×3 and 3×2 — so the filler the five-tile
-  version needed is gone. The <dl> constraint that forced it still holds: only
-  <dt>/<dd> groups may sit here, never a placeholder element.
-  Within each group the <dt> leads in the DOM and `order` lifts the figure
-  above it visually.
+  Five tiles, 3 + 2 on a wide screen — the shape the monitoring notebook uses.
+  The <dl> constraint holds: only <dt>/<dd> groups may sit here, never a
+  placeholder element to square the grid off. Within each group the <dt> leads
+  in the DOM and `order` lifts the figure above it visually.
 */
 }
 <dl
