@@ -4,7 +4,11 @@ import type {
   KernelData,
   ProjectEntry,
 } from "../../data/kernel-api";
-import { commitmentCounts, uniqueCommitments } from "../../data/kernel-api";
+import {
+  countCommitments,
+  uniqueCommitments,
+  WINDOW_DAYS,
+} from "../../data/kernel-api";
 import SectionHeader from "../SectionHeader.astro";
 import InventoryCard from "./InventoryCard.astro";
 import {
@@ -18,13 +22,12 @@ import {
   teamDisplayName,
   tierColor,
   tierLabel,
-  usd,
 } from "./inventory";
 
 type Props = { data: KernelData };
 const { data } = Astro.props;
 
-const { functions, projects, program } = data;
+const { functions, projects } = data;
 
 /*
  * The freshest reading anywhere on the page. Silence is measured against it
@@ -60,28 +63,27 @@ const slug = (value: string) =>
  * One helper for every count on the page, so the inventory and the metrics
  * tiles can never quote different totals for the same thing.
  */
-const allCounts = commitmentCounts(projects.flatMap((p) => p.commitments));
-const measuredFunctions = functions.filter((fn) => fn.measured).length;
 const grantRefs = new Set(projects.flatMap((p) => p.grantRefs ?? []));
+const monitoredFunctions = functions.filter((fn) => fn.measured).length;
+/* ChainSafe holds two awards, so team count and row count differ. */
+const teams = new Set(projects.map((project) => project.team).filter(Boolean))
+  .size;
 
-/*
- * Two tiles, and no money in either.
- *
- * The slate's contract value led this row, which made the first thing read on
- * an inventory of what is being *watched* a budget. Coverage of the catalogue
- * is the claim this section can make, so it leads instead; the awards are still
- * on every row that holds one.
- */
 const tiles = [
   {
-    value: `${measuredFunctions}/${functions.length}`,
-    label: "Kernel functions monitored",
-    sub: `${functions.length - measuredFunctions} report nothing at all`,
+    value: String(teams),
+    label: "Teams",
+    sub: "Reporting at least one metric",
   },
   {
-    value: String(allCounts.total),
-    label: "Metrics collected",
-    sub: `${plural(projects.length, "team")} · ${plural(grantRefs.size, "grant")}`,
+    value: String(grantRefs.size),
+    label: "Grants",
+    sub: "Karma applications with a metric against them",
+  },
+  {
+    value: String(countCommitments(projects.flatMap((p) => p.commitments))),
+    label: "Metrics",
+    sub: "Each collected on its own cadence",
   },
 ];
 
@@ -91,7 +93,9 @@ const tiles = [
  * paints.
  */
 const LEGEND = [
-  { text: "reading collected", color: "var(--color-strip-read)" },
+  { text: "threshold met", color: "var(--color-strip-met)" },
+  { text: "threshold missed", color: "var(--color-strip-missed)" },
+  { text: "measured, no threshold in force", color: "var(--color-strip-read)" },
   { text: "no defensible number", color: "var(--color-strip-novalue)" },
   { text: "our platform was down", color: "var(--color-strip-outage)" },
   { text: "no reading taken", color: "var(--color-strip-none)" },
@@ -107,8 +111,7 @@ const functionCard = (fn: FunctionEntry): CardRow => {
    * number beside a card is derived from the rows inside it.
    */
   const commitments = uniqueCommitments(fn.commitments);
-  const counts = commitmentCounts(commitments);
-  const committed = usd(fn.committedUsd);
+  const metrics = countCommitments(commitments);
 
   const flags: Flag[] = [];
   if (fn.isInScope === false) {
@@ -119,17 +122,11 @@ const functionCard = (fn: FunctionEntry): CardRow => {
   } else if (fn.maintainers === 1) {
     flags.push({ text: "single maintainer", tone: "warn" });
   }
-  if (counts.health === 0) {
-    flags.push({ text: "no health metric", tone: "bad" });
-  } else {
-    flags.push({ text: plural(counts.health, "health metric"), tone: "muted" });
-  }
-  if (counts.growth > 0) {
-    flags.push({
-      text: plural(counts.growth, "growth counter"),
-      tone: "muted",
-    });
-  }
+  flags.push(
+    metrics === 0
+      ? { text: "no metric", tone: "bad" }
+      : { text: plural(metrics, "metric"), tone: "muted" },
+  );
 
   /* Exact per-award names: a function's reporting teams come from the OSO slugs
      on its own commitments, never from the ambiguous `team` slug. */
@@ -159,31 +156,18 @@ const functionCard = (fn: FunctionEntry): CardRow => {
      * spent its second chip on the fine one.
      */
     {
-      label: "Health commitments",
-      value: counts.health > 0 ? String(counts.health) : "none",
-    },
-    {
-      label: "Growth counters",
-      value: counts.growth > 0 ? String(counts.growth) : "none",
+      label: "Metrics",
+      value: metrics > 0 ? String(metrics) : "none",
     },
     /* Only where it changes the reading — an in-scope function needs no row
        telling the reader that it is in scope. */
     ...(fn.isInScope === false
       ? [{ label: "Kernel scope", value: "catalogued, not funded this term" }]
       : []),
-    /*
-     * The API serves one money field, `committedUsd`, and it carries the full
-     * contract value — Forest reads $504k here against $252k committed through
-     * December on the funded list, and every other award is out by its own
-     * ratio. Labelling it "Committed through Dec" made the page state a number
-     * it does not have. Until the indexer serves that second column, the label
-     * says what the figure is.
-     */
     {
-      label: "Total contract",
-      value: committed
-        ? `${committed} across ${plural(fn.grantRefs.length, "grant")}`
-        : "no active grant",
+      label: "Grants",
+      value:
+        fn.grantRefs.length > 0 ? fn.grantRefs.join(" ") : "no active grant",
     },
   ];
 
@@ -198,7 +182,7 @@ const functionCard = (fn: FunctionEntry): CardRow => {
     prose: fn.kernelValue,
     meta,
     emptyNote:
-      "No team has committed a health metric for this function yet. Until one does, its condition is not visible to this page.",
+      "No team has committed a metric for this function yet. Until one does, its condition is not visible to this page.",
   };
 };
 
@@ -223,7 +207,8 @@ const tierBlocks = [...data.tiers]
   .filter((tier) => tier.catalogued > 0)
   .sort((a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier))
   .map((tier) => {
-    const rows = functions.filter((fn) => fn.tier === tier.tier);
+    /* Only what reports: the rest would render as a card of blank figures. */
+    const rows = functions.filter((fn) => fn.tier === tier.tier && fn.measured);
     /*
      * Grouped on the finer of the API's two labels. `category` is a family of
      * five — 18 of the 31 functions are "Blockchain Core & Physical Storage" —
@@ -259,7 +244,6 @@ const tierBlocks = [...data.tiers]
 
 // -------------------------------------------------------------- by project
 
-
 /**
  * ChainSafe holds two awards and both arrive as `team: "chainsafe"`, so the
  * award's OSO slug is what tells the two rows apart and what carries a real
@@ -270,8 +254,7 @@ const teamName = (project: ProjectEntry) =>
 
 const projectCard = (project: ProjectEntry): CardRow => {
   const commitments = uniqueCommitments(project.commitments);
-  const counts = commitmentCounts(commitments);
-  const committed = usd(project.committedUsd);
+  const metrics = countCommitments(commitments);
 
   const kernelsByTier = new Map<string, Set<string>>();
   const kernelIds = new Set<string>();
@@ -307,13 +290,12 @@ const projectCard = (project: ProjectEntry): CardRow => {
    * What the row is for, not what it cost. The award led this line and set the
    * bar's width, which ranked teams by budget down a page about whether their
    * work is being watched — and put a number on a monitoring row that the
-   * monitoring notebook does not carry at all. The money stays in the expanded
-   * body, where it answers a question somebody went looking for.
+   * monitoring notebook does not carry at all.
    */
   const flags: Flag[] = [
     {
-      text: plural(counts.total, "metric"),
-      tone: counts.total === 0 ? "bad" : "ink",
+      text: plural(metrics, "metric"),
+      tone: metrics === 0 ? "bad" : "ink",
     },
     { text: plural(kernelIds.size, "kernel function"), tone: "muted" },
   ];
@@ -323,24 +305,27 @@ const projectCard = (project: ProjectEntry): CardRow => {
 
   const meta: MetaItem[] = [
     {
+      label: "Kernel functions",
+      value: String(kernelIds.size),
+    },
+    {
       label: "Domains",
       value: domains.size > 0 ? [...domains].join(", ") : "none catalogued",
     },
     {
-      label: "Health commitments",
-      value: counts.health > 0 ? String(counts.health) : "none",
+      label: "Metrics",
+      value: metrics > 0 ? String(metrics) : "none",
     },
     {
-      label: "Growth counters",
-      value: counts.growth > 0 ? String(counts.growth) : "none",
+      label: project.grantRefs.length === 1 ? "Grant" : "Grants",
+      value:
+        project.grantRefs.length > 0
+          ? project.grantRefs.join(" ")
+          : "no award this batch",
     },
-    /* The full contract value, not the amount committed through December —
-       see the note on the function card above. */
     {
-      label: "Total contract",
-      value: committed
-        ? `${committed} across ${plural(project.grantRefs.length, "grant")}`
-        : "no award this batch",
+      label: "OSO project",
+      value: project.osoProjectSlug ?? "unmapped",
     },
   ];
 
@@ -358,17 +343,6 @@ const projectCard = (project: ProjectEntry): CardRow => {
     title: teamName(project),
     flags,
     evidenced,
-    /*
-     * Reading coverage, not award size. The bar used to be `committedUsd /
-     * largestAward`, so Ankr's $28k against Forest's $504k drew a 6% sliver
-     * beside a row reading 100.0% — two numbers about different things, one of
-     * them budget, sitting on top of each other. It now tracks the percentage
-     * printed at the end of its own row.
-     */
-    share:
-      project.coverage && project.coverage.pct !== null
-        ? project.coverage.pct / 100
-        : null,
     coverage: project.coverage ?? null,
     asOf,
     commitments,
@@ -388,20 +362,12 @@ const projectCard = (project: ProjectEntry): CardRow => {
 const byNameAsc = (a: ProjectEntry, b: ProjectEntry) =>
   byText(teamName(a), teamName(b));
 
-const projectGroups = [
-  {
-    key: "funded",
-    title: "Funded this batch",
-    subtitle: "Teams holding an award in the current batch.",
-    rows: projects.filter((p) => p.committedUsd > 0).sort(byNameAsc),
-  },
-  {
-    key: "unfunded",
-    title: "No award this batch",
-    subtitle: "Teams reporting without an award in the current batch.",
-    rows: projects.filter((p) => p.committedUsd <= 0).sort(byNameAsc),
-  },
-].filter((group) => group.rows.length > 0);
+const projectGroup = {
+  title: "Funded this batch",
+  subtitle:
+    "Each row is one Karma application and the metrics it pays for. Cross-checks nobody is paid for are in the by-function view, beside the funded reading they corroborate.",
+  rows: [...projects].sort(byNameAsc),
+};
 ---
 
 <div>
@@ -416,10 +382,10 @@ const projectGroups = [
         class="font-semibold text-ink">by function</strong
       > asks what the network needs and whether anyone is watching it. The percentage
       is reading coverage — the share of the periods a metric's own cadence expects
-      that carry a value, counted from the day unattended collection started rather
-      than from 90 days ago, with days lost to an outage of our own platform excluded
-      outright. Open any row for the metrics behind it — what is collected, when, and
-      every reading taken.
+      that carry a value over the last {WINDOW_DAYS} days, counted from the day unattended
+      collection started rather than from before anyone was watching, with days lost
+      to an outage of our own platform excluded outright. Open any row for the metrics
+      behind it — what is collected, when, and every reading taken.
     </p>
   </SectionHeader>
 
@@ -437,24 +403,6 @@ const projectGroups = [
       ))
     }
   </ul>
-
-  {/*
-    Said once, here, instead of five times in the cards below. Every metric on
-    this page reads `unscored`, and until this line existed a reader had to
-    infer the reason from a badge repeated on every card.
-  */}
-  <p
-    class="mt-6 flex gap-3 rounded-md border border-warn/30 bg-warn/8 px-4 py-3 text-sm leading-relaxed text-body"
-  >
-    <span class="mono-meta shrink-0 pt-0.5 text-warn" aria-hidden="true">&#9432;</span>
-    <span>
-      <strong class="font-semibold text-ink"
-        >SLA thresholds are still being negotiated.</strong
-      > This page reports what is being measured, not whether a target was met. Monitoring
-      follows the signed agreements: a function is measured once an agreement names
-      a metric for it.
-    </span>
-  </p>
 
   <fieldset class="mt-8 border-0 p-0">
     <legend class="sr-only">Read the inventory by</legend>
@@ -497,7 +445,7 @@ const projectGroups = [
         By function
         <span
           class="rounded-full border border-line px-2 py-0.5 font-mono text-[0.6875rem] tracking-normal text-muted"
-          >{functions.length}</span
+          >{monitoredFunctions}</span
         >
       </label>
     </div>
@@ -517,32 +465,34 @@ const projectGroups = [
         }
       </div>
 
-      <div class="mt-10 space-y-12">
-        {
-          projectGroups.map((group) => (
-            <section aria-labelledby={`inv-group-${group.key}`}>
-              <div class="flex items-baseline justify-between gap-4 border-b border-line pb-2">
-                <h3
-                  id={`inv-group-${group.key}`}
-                  class="font-mono text-xs font-medium tracking-[0.14em] text-ink uppercase"
-                >
-                  {group.title}
-                </h3>
-                <p class="mono-meta shrink-0">
-                  {plural(group.rows.length, "team")}
-                </p>
-              </div>
-              <p class="mono-meta mt-2 uppercase">{group.subtitle}</p>
-              <ul class="mt-4 space-y-3">
-                {group.rows.map((project) => (
-                  <li>
-                    <InventoryCard {...projectCard(project)} />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))
-        }
+      <div class="mt-10">
+        <section aria-labelledby="inv-group-funded">
+          <div
+            class="flex items-baseline justify-between gap-4 border-b border-line pb-2"
+          >
+            <h3
+              id="inv-group-funded"
+              class="font-mono text-xs font-medium tracking-[0.14em] text-ink uppercase"
+            >
+              {projectGroup.title}
+            </h3>
+            <p class="mono-meta shrink-0">
+              {plural(projectGroup.rows.length, "row")}
+            </p>
+          </div>
+          <p class="mt-2 text-sm leading-relaxed text-body">
+            {projectGroup.subtitle}
+          </p>
+          <ul class="mt-4 space-y-3">
+            {
+              projectGroup.rows.map((project) => (
+                <li>
+                  <InventoryCard {...projectCard(project)} />
+                </li>
+              ))
+            }
+          </ul>
+        </section>
       </div>
     </div>
 
@@ -563,11 +513,9 @@ const projectGroups = [
                   {tierLabel(tier.tier)}
                 </h3>
                 <p class="mono-meta shrink-0">
-                  {tier.catalogued === 0
-                    ? "inventory pending"
-                    : outOfScope === rows.length && rows.length > 0
-                      ? `${plural(rows.length, "function")} · out of scope`
-                      : plural(tier.catalogued, "function")}
+                  {rows.length === 0
+                    ? "nothing monitored"
+                    : `${rows.length} monitored`}
                 </p>
               </div>
 
@@ -601,9 +549,14 @@ const projectGroups = [
 
                   {rows.length < tier.catalogued && (
                     <p class="mt-4 rounded-md border border-line bg-surface px-4 py-3 font-mono text-xs leading-relaxed text-muted">
-                      Showing {rows.length} of{" "}
-                      {plural(tier.catalogued, "function")} in this tier. The
-                      remainder are in the full inventory.
+                      {plural(
+                        tier.catalogued - rows.length,
+                        "further function",
+                      )}{" "}
+                      in this tier{" "}
+                      {tier.catalogued - rows.length === 1 ? "is" : "are"}{" "}
+                      catalogued with no metric reporting against{" "}
+                      {tier.catalogued - rows.length === 1 ? "it" : "them"} yet.
                     </p>
                   )}
                 </>
@@ -663,7 +616,9 @@ const projectGroups = [
     border-bottom-color: transparent;
   }
 
-  fieldset:has([data-panel="function"] :target) .inv-tabs [data-tab="function"] {
+  fieldset:has([data-panel="function"] :target)
+    .inv-tabs
+    [data-tab="function"] {
     color: var(--color-ink);
     border-bottom-color: var(--color-accent);
   }

@@ -28,8 +28,6 @@ export type Tier = {
   detail: string;
   example: string;
   posture: string;
-  /** Short posture phrasing used in the overview table. */
-  postureShort: string;
   /**
    * How many functions are catalogued in this tier. Always null in {@link
    * TIERS} — the count belongs to the API, and the page injects it at the call
@@ -51,7 +49,6 @@ export const TIERS: Tier[] = [
       "Distributed randomness beacon — without it, block production stops.",
     posture:
       "Must fund. Non-negotiable security requirements. Audits milestone-gated.",
-    postureShort: "Must fund — non-negotiable",
     functions: null,
   },
   {
@@ -65,7 +62,6 @@ export const TIERS: Tier[] = [
       "Testnets: the network continues without them, but at least one is needed to stage and rehearse upgrades.",
     posture:
       "Fund for diversity that ensures uptime — maintain two or more implementations. Budget negotiable.",
-    postureShort: "Fund for redundancy — 2+ implementations",
     functions: null,
   },
   {
@@ -79,7 +75,6 @@ export const TIERS: Tier[] = [
       "A testnet faucet: it makes test FIL easy to get, but the network runs without it.",
     posture:
       "Fund maintenance, not features. Flag any repo with zero active developers.",
-    postureShort: "Fund maintenance, not features",
     functions: null,
   },
   {
@@ -93,7 +88,6 @@ export const TIERS: Tier[] = [
       "F3: the network exists without it, but it improves UX considerably and encourages growth.",
     posture:
       "Discretionary. Fund only where aligned with the sustainability strategy.",
-    postureShort: "Discretionary",
     functions: null,
   },
 ];
@@ -165,17 +159,12 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     term: "Health metric",
     definition:
-      "A commitment with a reading cadence and a public endpoint, reported by the maintaining team and fetched by a pipeline that team does not control. It is meant to carry a threshold too, and none is in force yet — see **Unscored**. A function with no health metric cannot be assessed at all and is marked **not measured**.",
-  },
-  {
-    term: "Growth counter",
-    definition:
-      "A commitment tracked for **direction, never pass/fail**. Growth counters carry no threshold by design rather than by delay, so unlike a health metric they will stay unscored after the agreements are signed. They never colour a function's status and never contribute to the SLA figure.",
+      "A commitment with a reading cadence and a public endpoint, reported by the maintaining team and fetched by a pipeline that team does not control. Where a signed agreement states a threshold the reading is judged against it; where it does not, see **Unscored**. A function with no metric cannot be assessed at all and is marked **not measured**.",
   },
   {
     term: "Unscored",
     definition:
-      "Read, but not judged. A reading is unscored while no threshold is in force — which today is **every reading on this page**, because the bars are still being negotiated. This is why the strip carries no green and no red: a pass/fail colour would assert a bar nobody has signed. Blue means the number exists, and nothing more.",
+      "Measured, but not judged — **no threshold was in force** for that metric on the day it was read. Usually because the signed appendix names the metric but leaves its number to confirm, which only the recipient can settle. Most readings on this page are unscored, which is why the page reports coverage rather than a pass rate: blue means the number exists, and nothing more.",
   },
   {
     term: "Gap",
@@ -183,14 +172,9 @@ export const GLOSSARY: GlossaryEntry[] = [
       "A period the source was asked and gave back no defensible number — an endpoint down, a schema moved. Not a zero, not a breach, and not the team going quiet: it is a hole in the instrument, and it is drawn amber. A period **we** failed to ask in is a different claim again, drawn in its own grey and dropped from the coverage denominator.",
   },
   {
-    term: "Coverage · 90d",
+    term: "Coverage · 30d",
     definition:
-      "How much of the record was actually read — periods that carried a reading against the periods the cadence promised, counted at **each metric's own cadence** rather than per day. The count starts when automated collection started, not 90 days ago: a source cannot be backfilled to before anyone was watching it, so a young commitment is measured against its own run. Days our own platform returned nothing on are dropped from the denominator entirely — that is our failure to measure, not the team's failure to report — which is why a strip can show a visible gap beside 100%. The bars, unlike the fraction, always span the full 90 days.",
-  },
-  {
-    term: "SLA met · 90d",
-    definition:
-      "The share of reading periods that sat within threshold. No threshold is signed off upstream yet, so every commitment reads as **unscored** — read on schedule, but not yet judged against a bar.",
+      "How much of the record was actually read — periods that carried a reading against the periods the cadence promised, counted at **each metric's own cadence** rather than per day, so a weekly metric is not penalised for being coarse. The count starts when automated collection started, not 30 days ago: a source cannot be backfilled to before anyone was watching it, so a young commitment is measured against its own run. Days our own platform returned nothing on are dropped from the denominator entirely — that is our failure to measure, not the team's failure to report — which is why a strip can show a visible gap beside 100%. The bars, unlike the fraction, always span the full 30 days.",
   },
   {
     term: "Domain",

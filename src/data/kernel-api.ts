@@ -21,7 +21,13 @@
 import { apiOrigin } from "../lib/api-origin";
 
 
-export const WINDOW_DAYS = 90;
+export const WINDOW_DAYS = 30;
+
+/** The window's name wherever a heading or a term has to print it. */
+export const WINDOW_LABEL = `${WINDOW_DAYS}d`;
+
+/** The heading over any coverage figure. */
+export const COVERAGE_LABEL = `Coverage · ${WINDOW_LABEL}`;
 
 /** Per-request budget. The indicators payload is ~400 KB per project. */
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -75,6 +81,10 @@ export type KernelProgramStats = {
   functionsMeasured: number;
   measurementCoveragePct: number | null;
   unmeasuredInScope: number;
+  /** Optional on the wire so an older backend degrades to "—" rather than 0. */
+  functionsProposed?: number;
+  metricsDrafted?: number;
+  functionsUnscoped?: number;
   healthMet: KernelSla;
   coverage?: KernelCoverage;
   singleMaintainerCritical: number;
@@ -621,7 +631,7 @@ function toDay(iso: string): string {
  *
  * Anchoring on the freshest reading instead would make a stalled sync invisible
  * — the window would slide back with the data and every commitment would read
- * "90 of 90 days" while nothing had reported for a week. Anchoring on the build
+ * "30 of 30 days" while nothing had reported for a week. Anchoring on the build
  * date lets those trailing days render as missing, which is the whole point of
  * a coverage figure. It is still deterministic within a build: resolved once,
  * before any commitment is derived.
@@ -648,7 +658,7 @@ export function maxReadingDate(indicators: ProjectIndicator[]): string | null {
 /**
  * Keep the readings inside the rolling window. The reference day counts as one
  * of the `windowDays`, so a daily commitment tops out at exactly the window and
- * can never report "91 of 90 days read".
+ * can never report "31 of 30 days read".
  */
 export function windowSeries(
   series: Reading[],
@@ -851,15 +861,15 @@ export function uniqueCommitments(commitments: Commitment[]): Commitment[] {
   return unique;
 }
 
-/** The canonical "N commitments · X health · Y growth" figures. */
-export function commitmentCounts(commitments: Commitment[]): {
-  total: number;
-  health: number;
-  growth: number;
-} {
-  const unique = uniqueCommitments(commitments);
-  const growth = unique.filter((commitment) => commitment.commitmentType === "growth").length;
-  return { total: unique.length, health: unique.length - growth, growth };
+/**
+ * The canonical metric count for any set of rows.
+ *
+ * `commitmentType` is the indexer's own classification, not a column OSO
+ * serves, so the health/growth split was never a distinction upstream drew.
+ * Both are one number fetched on a cadence.
+ */
+export function countCommitments(commitments: Commitment[]): number {
+  return uniqueCommitments(commitments).length;
 }
 
 
@@ -1020,7 +1030,7 @@ export async function loadKernelData(): Promise<KernelData | null> {
     );
 
     // One window for the whole page, ending today, so every commitment is
-    // measured against the same 90 days and a team that stopped reporting shows
+    // measured against the same window and a team that stopped reporting shows
     // the silence rather than a window that slid back with it.
     const referenceDate = buildDate();
 

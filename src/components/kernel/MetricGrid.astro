@@ -1,6 +1,6 @@
 ---
 import type { KernelData } from "../../data/kernel-api";
-import { formatUsd } from "../../data/kernel-api";
+import { countCommitments, WINDOW_DAYS } from "../../data/kernel-api";
 import type { KernelMetric } from "../../data/kernel";
 
 type Props = {
@@ -8,140 +8,85 @@ type Props = {
 };
 
 const { data } = Astro.props;
-const { program, windowDays } = data;
+const { program } = data;
 
 const count = (n: number, one: string, many = `${one}s`) =>
   `${n} ${n === 1 ? one : many}`;
 
-/** Trims the trailing `.0` the API's one-decimal percentages often carry. */
-const pct = (value: number) => `${Number(value.toFixed(1))}%`;
+/* One decimal always, matching the tier table above and the notebook. */
+const pct = (value: number) => `${value.toFixed(1)}%`;
 
-/*
- * Commitments are counted once each, keyed by indicator: a commitment reported
- * against several functions appears in more than one project's list, and
- * summing those lists would inflate the total.
- */
-const commitments = new Map(
-  data.projects
-    .flatMap((project) => project.commitments)
-    .map((commitment) => [commitment.indicatorId, commitment]),
-);
-const health = [...commitments.values()].filter(
-  (commitment) => commitment.commitmentType === "health",
-).length;
-const growth = commitments.size - health;
+const metrics = countCommitments(data.projects.flatMap((p) => p.commitments));
+const grantRefs = new Set(data.projects.flatMap((p) => p.grantRefs ?? []));
 
-const fundedTeams = data.projects.filter(
-  (project) => project.committedUsd > 0,
-).length;
+/* ChainSafe holds two awards, so team count and grant-row count differ. */
+const teams = new Set(
+  data.projects.map((project) => project.team).filter(Boolean),
+).size;
 
-/*
- * A function nobody reports on is not measurable in principle, not merely
- * unmeasured this window — the tier tables cannot see it at all, which is the
- * risk the tile is there to name.
- */
-const unreported = data.functions.filter(
-  (entry) => entry.isInScope && entry.maintainers === 0,
-).length;
+/* A function with a metric written but unsigned is not one nobody has proposed
+   anything for; the catalog counts them apart and so does this row. */
+const proposed = program.functionsProposed ?? null;
+const drafted = program.metricsDrafted ?? null;
+const unscoped = program.functionsUnscoped ?? null;
 
-/*
- * The shared formatter, not a local one: it is the single rounding rule on the
- * page, and it returns null rather than `$0` for an amount nobody has awarded —
- * a tile that says `$0` reads as a decision, when the truth is an absence.
- */
-const committed = formatUsd(program.committedUsd);
+/* No pass-rate tile: most readings in the window carry no threshold at all,
+   and a rate over the scored minority describes a different programme. */
+const coverage = program.coverage ?? null;
 
-const metrics: KernelMetric[] = [
+const tiles: KernelMetric[] = [
   {
-    value: committed ?? "—",
-    /* The sum of full contract values — see `InventoryPanel`. Not the amount
-       committed through the end of the batch, which the API does not serve. */
-    label: "Contracted across funded teams",
-    note: committed
-      ? `${fundedTeams} funded of ${count(program.projectsReporting, "reporting team")} · batch ends Dec`
-      : `No award recorded this batch · ${count(program.projectsReporting, "reporting team")}`,
-    noteTone: committed ? "muted" : "warn",
+    value: coverage && coverage.pct !== null ? pct(coverage.pct) : "—",
+    label: `Reading coverage · rolling ${count(WINDOW_DAYS, "day")}`,
+    note: coverage
+      ? `${coverage.received} of ${coverage.expected} expected reading periods carry a value`
+      : "Nothing collected in this window",
+    noteTone: coverage ? "muted" : "warn",
   },
   {
-    /*
-     * While no threshold is in force there is nothing to take a percentage of,
-     * and an em dash under "SLA met" spends the most valuable slot on the page
-     * saying nothing. The count of judged readings is a real number with the
-     * same subject — it is 0, and the note says why — so the tile only becomes
-     * a percentage once something has actually been judged.
-     */
-    value:
-      program.healthMet.metPct === null
-        ? `${program.healthMet.scored}`
-        : pct(program.healthMet.metPct),
-    label:
-      program.healthMet.metPct === null
-        ? "Readings judged against a threshold"
-        : "SLA met across all health commitments",
+    value: `${metrics}`,
+    label: "Metrics collected",
+    note: `${count(teams, "team")} · ${count(grantRefs.size, "grant row")}`,
+  },
+  {
+    value: proposed === null ? "—" : `${proposed}`,
+    label: `${proposed === 1 ? "Function" : "Functions"} with metrics proposed`,
     note:
-      program.healthMet.metPct === null
-        ? "Every threshold is withdrawn pending an executed agreement"
-        : `Rolling ${count(windowDays, "day")} · ${count(health, "health commitment")}, ${count(growth, "growth counter")}`,
-    noteTone: program.healthMet.metPct === null ? "warn" : "muted",
-  },
-  {
-    value:
-      program.measurementCoveragePct === null
-        ? "—"
-        : pct(program.measurementCoveragePct),
-    label: "Measurement coverage",
-    /*
-     * Two numbers, two agreements: the noun follows the total it counts, the
-     * verb follows the subject ("1 of 1 in-scope function reports", "1 of 29
-     * in-scope functions report").
-     */
-    note: `${program.unmeasuredInScope} of ${count(program.functionsInScope, "in-scope function")} ${
-      program.unmeasuredInScope === 1 ? "reports" : "report"
-    } no health metric`,
+      drafted === null
+        ? "Awaiting a signed appendix"
+        : `${count(drafted, "metric")} drafted, awaiting a signed appendix`,
     noteTone: "warn",
   },
-  /*
-   * These two carry the same number today and will diverge later, so they are
-   * worded as two rungs of one ladder — down to one team, then down to none —
-   * rather than as two unrelated risks that happen to coincide.
-   */
+  {
+    value: unscoped === null ? "—" : `${unscoped}`,
+    label: `${unscoped === 1 ? "Function" : "Functions"} not yet scoped`,
+    note: "No metric proposed against them yet",
+    noteTone: "warn",
+  },
   {
     value: `${program.singleMaintainerCritical}`,
     label: `Top-tier ${
       program.singleMaintainerCritical === 1 ? "function is" : "functions are"
-    } down to a single maintaining team`,
+    } measured through one team only`,
     note: "Posture calls for 2+ implementations",
     noteTone: "warn",
-  },
-  {
-    value: `${unreported}`,
-    label: `${unreported === 1 ? "Function has" : "Functions have"} no maintaining team at all`,
-    note: "Invisible to this page until one signs up",
-    noteTone: "warn",
-  },
-  {
-    value: `${program.projectsReporting}`,
-    label:
-      program.projectsReporting === 1 ? "Team reporting" : "Teams reporting",
-    note: `Across ${count(program.functionsInScope, "declared function")}`,
   },
 ];
 ---
 
 {
   /*
-  Six tiles fill both grids exactly — 2×3 and 3×2 — so the filler the five-tile
-  version needed is gone. The <dl> constraint that forced it still holds: only
-  <dt>/<dd> groups may sit here, never a placeholder element.
-  Within each group the <dt> leads in the DOM and `order` lifts the figure
-  above it visually.
+  Five tiles, 3 + 2 on a wide screen — the shape the monitoring notebook uses.
+  The <dl> constraint holds: only <dt>/<dd> groups may sit here, never a
+  placeholder element to square the grid off. Within each group the <dt> leads
+  in the DOM and `order` lifts the figure above it visually.
 */
 }
 <dl
   class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-3"
 >
   {
-    metrics.map((metric) => (
+    tiles.map((metric) => (
       <div class="flex flex-col bg-surface p-5">
         <dt class="order-2 mt-1.5 text-sm leading-snug text-body">
           {metric.label}

@@ -1,6 +1,7 @@
 ---
 import CommitmentList from "./CommitmentList.astro";
 import UptimeStrip from "./UptimeStrip.astro";
+import { COVERAGE_LABEL } from "../../data/kernel-api";
 import { barCaption, worstOf } from "./uptime";
 import {
   collectionStatus,
@@ -19,7 +20,6 @@ const {
   kicker,
   title,
   flags,
-  share = null,
   evidenced = [],
   coverage,
   commitments,
@@ -46,8 +46,8 @@ const FLAG_CLASS: Record<Flag["tone"], string> = {
   bad: "text-bad",
 };
 
+/* No `collecting` key: the chip is drawn only for a row that has stopped. */
 const CHIP_CLASS: Record<string, string> = {
-  collecting: "border-ok/40 text-ok",
   silent: "border-bad/40 text-bad",
   never: "border-line text-muted",
 };
@@ -58,13 +58,9 @@ const CHIP_CLASS: Record<string, string> = {
  * on whether that is acceptable is not ours to publish.
  */
 const chipLabel =
-  status === "collecting"
-    ? "collecting"
-    : status === "never"
-      ? "never reported"
-      : `${silentFor} ${silentFor === 1 ? "day" : "days"} without a reading`;
-
-const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
+  status === "never"
+    ? "never reported"
+    : `${silentFor} ${silentFor === 1 ? "day" : "days"} without a reading`;
 ---
 
 <details class="inv-card rounded-lg border border-line bg-surface" id={id}>
@@ -112,19 +108,6 @@ const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
         )
       }
 
-      {
-        sharePct !== null && (
-          <div
-            class="mt-3 h-1 max-w-56 overflow-hidden rounded-full bg-line-soft"
-            aria-hidden="true"
-          >
-            <div
-              class="h-full rounded-full bg-accent"
-              style={`width:${sharePct}%`}
-            />
-          </div>
-        )
-      }
     </div>
 
     <div
@@ -155,16 +138,17 @@ const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
             {coveragePctLabel(coverage)}
           </p>
           <p class="mono-meta uppercase">
-            {status === "never" ? "Nothing collected" : "Coverage · 90d"}
+            {status === "never" ? "Nothing collected" : COVERAGE_LABEL}
           </p>
-          <p class="mt-1.5">
-            <span
-              class={`inline-block rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem] ${CHIP_CLASS[status]}`}
-            >
-              {status === "collecting" && <span aria-hidden="true">✓ </span>}
-              {chipLabel}
-            </span>
-          </p>
+          {status !== "collecting" && (
+            <p class="mt-1.5">
+              <span
+                class={`inline-block rounded-full border px-2.5 py-0.5 font-mono text-[0.6875rem] ${CHIP_CLASS[status]}`}
+              >
+                {chipLabel}
+              </span>
+            </p>
+          )}
         </div>
 
         <span class="inv-chev mono-meta shrink-0">▾</span>

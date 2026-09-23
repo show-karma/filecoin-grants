@@ -96,9 +96,9 @@ const KERNEL_DOES_NOT_FUND = [
   accent="kernel"
 >
   <PageHero
-    eyebrow="Kernel · Program overview"
+    eyebrow="Kernel · Independent monitoring"
     title="What keeps the network running."
-    intro="Kernel funds the functions Filecoin depends on to keep producing blocks, proving storage, and staying observable. It is treated as a near-fixed cost rather than a growth bet: the goal is not more features, it is that nothing essential quietly stops being maintained."
+    intro="Every night, each metric below is fetched from the team's own infrastructure by a pipeline they do not control, and the reading is appended to a public record. Where an executed agreement sets a threshold, the reading is judged against it from the day that agreement was signed; everything else is measured and shown unjudged."
   >
     <div class="mt-12">
       <TierOverview data={kernelData} />
@@ -139,9 +139,11 @@ const KERNEL_DOES_NOT_FUND = [
           kernelData && (
             <>
               <p>
-                Every commitment on this page names a threshold, a reading
-                cadence and a public endpoint anyone can call — so the audit is
-                a lookup, not a conversation.
+                This page is the audit trail: every metric on it names a reading
+                cadence and a public source anyone can call. Where an executed
+                agreement states a threshold, the reading is judged against it
+                from the day that agreement was signed; where it does not, the
+                reading is shown and left unjudged.
               </p>
               {/* The button is wrapped so the column's space-y sets its
                   spacing, rather than a margin utility racing space-y for the
@@ -208,9 +210,9 @@ const KERNEL_DOES_NOT_FUND = [
     kernelData && (
       <Section id="metrics">
         <SectionHeader
-          eyebrow="Kernel metrics"
-          title="How the program is doing"
-          intro="Aggregate health matters less than coverage. A function with no maintainer and no metric is invisible to this page, which is exactly what makes it dangerous."
+          eyebrow="Coverage"
+          title="What in Kernel is being measured so far"
+          intro="Aggregate health matters less than coverage: most metrics still carry no agreed bar, so a pass rate over the scored minority would describe a different program. A function with no maintainer and no metric is invisible to this page, which is exactly what makes it dangerous."
         />
         <div class="mt-10">
           <MetricGrid data={kernelData} />

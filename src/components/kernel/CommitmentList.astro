@@ -6,54 +6,24 @@ import { pluralize } from "./uptime";
 type Props = { commitments: Commitment[] };
 const { commitments } = Astro.props;
 
-/*
- * The two kinds are never mixed in one list: a growth counter has no threshold
- * and no verdict, so ranking it beside a health commitment would imply a
- * pass/fail it can never have.
- */
-const health = commitments.filter((c) => c.commitmentType !== "growth");
-const growth = commitments.filter((c) => c.commitmentType === "growth");
-
-const groups = [
-  {
-    key: "health",
-    title: "Health commitments",
-    /*
-     * Not "a threshold, met or missed": no threshold is in force, so this
-     * header promised a verdict the cards below it do not carry — every one of
-     * them reads `unscored`. It says what the metric is collected on instead,
-     * which is the claim the page can actually make.
-     */
-    note: `${health.length} ${pluralize(health.length, "metric")} · measured on a cadence, judged by nothing yet`,
-    items: health,
-  },
-  {
-    key: "growth",
-    title: "Growth counters",
-    note: `${growth.length} ${pluralize(growth.length, "counter")} · tracked for direction, never pass/fail`,
-    items: growth,
-  },
-].filter((group) => group.items.length > 0);
+/* Not "a threshold, met or missed": most of these carry no threshold at all. */
+const note = `${commitments.length} ${pluralize(commitments.length, "metric")} · measured on a cadence, judged by nothing yet`;
 ---
 
 {
-  groups.length === 0 ? (
-    <p class="mono-meta">no commitments reported</p>
+  commitments.length === 0 ? (
+    <p class="mono-meta">no metrics reported</p>
   ) : (
-    <div class="space-y-8">
-      {groups.map((group) => (
-        <section>
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-2">
-            <h4 class="text-[0.95rem] font-semibold">{group.title}</h4>
-            <p class="mono-meta">{group.note}</p>
-          </div>
-          <div class="mt-4 space-y-4">
-            {group.items.map((commitment) => (
-              <CommitmentBlock commitment={commitment} />
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
+    <section>
+      <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-2">
+        <h4 class="text-[0.95rem] font-semibold">Metrics</h4>
+        <p class="mono-meta">{note}</p>
+      </div>
+      <div class="mt-4 space-y-4">
+        {commitments.map((commitment) => (
+          <CommitmentBlock commitment={commitment} />
+        ))}
+      </div>
+    </section>
   )
 }

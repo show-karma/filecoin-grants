@@ -87,12 +87,13 @@ describe("toPeriods", () => {
       }),
     );
 
-    // Two days of readings, ninety days of record: cropping to the run is what
-    // made a commitment first read yesterday look like one read all quarter.
-    // The window is drawn whole and folded to the bar budget, two days a bar.
-    expect(periods).toHaveLength(WINDOW_DAYS / 2);
+    // Two days of readings, a month of record: cropping to the run is what made
+    // a commitment first read yesterday look like one read all month. The
+    // window is drawn whole, and at 30 days it fits the bar budget uncompressed
+    // — one bar a day, which is what the strip promises.
+    expect(periods).toHaveLength(WINDOW_DAYS);
     expect(periods[0]!.date).toBe(day(-(WINDOW_DAYS - 1)));
-    expect(periods[periods.length - 1]!.date).toBe(day(-1));
+    expect(periods[periods.length - 1]!.date).toBe(day(0));
   });
 
   it("keeps a reading unjudged while no threshold was in force", () => {

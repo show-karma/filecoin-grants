@@ -16,7 +16,6 @@ import {
 type Props = { commitment: Commitment };
 const { commitment } = Astro.props;
 
-const isGrowth = commitment.commitmentType === "growth";
 const periods = toPeriods(commitment);
 /*
  * Handed to both the strip and the chart so the two axes are labelled from one
@@ -26,22 +25,15 @@ const periods = toPeriods(commitment);
 const range = windowOf(commitment);
 const readings = collectionLog(commitment);
 
-/*
- * Four states, not two. A growth counter is tracked for direction and never
- * judged; a health commitment with readings but no signed threshold has been
- * read and left unscored, which is neither failing nor unmeasured — today that
- * is every health commitment. Only a commitment with no rows at all is silent.
- */
-const status: "growth" | "meeting" | "failing" | "unmeasured" | "silent" =
+/* Unscored is not failing: most readings carry no threshold to be judged against. */
+const status: "meeting" | "failing" | "unmeasured" | "silent" =
   commitment.collection.rows === 0
     ? "silent"
-    : isGrowth
-      ? "growth"
-      : commitment.sla.metPct === null || commitment.sla.scored === 0
-        ? "unmeasured"
-        : commitment.sla.passed === commitment.sla.scored
-          ? "meeting"
-          : "failing";
+    : commitment.sla.metPct === null || commitment.sla.scored === 0
+      ? "unmeasured"
+      : commitment.sla.passed === commitment.sla.scored
+        ? "meeting"
+        : "failing";
 
 /*
  * The chip says what is happening to the metric, and the cadence it happens on.
@@ -50,10 +42,6 @@ const status: "growth" | "meeting" | "failing" | "unmeasured" | "silent" =
  * now carries once — and said nothing about this metric in particular.
  */
 const CHIP: Record<typeof status, { label: string; class: string }> = {
-  growth: {
-    label: "Tracked for direction",
-    class: "border-line text-muted",
-  },
   meeting: { label: "✓ Meeting", class: "border-ok/40 text-ok" },
   failing: { label: "Not meeting", class: "border-bad/40 text-bad" },
   unmeasured: { label: "↗ Monitored", class: "border-accent/40 text-accent" },
@@ -131,38 +119,21 @@ const interruptionText = commitment.interruptions
   .join(" · ");
 const extraInterruptions = Math.max(0, commitment.interruptions.length - 3);
 
-const stripCaption = [
-  barCaptionFor(commitment),
-  isGrowth ? "never pass/fail" : "not judged — no bar in force",
-].join(" · ");
+const stripCaption = barCaptionFor(commitment);
 
 /*
- * The one line that keeps the strip and the percentage from contradicting each
- * other. Unsaid next to them, a reader counts the gaps, reads 100%, and
- * concludes the number is lying.
- *
- * The bars always span the window. The fraction starts where collection did,
- * which can fall on either side of the window's edge, and the two cases are
- * opposite claims rather than one claim worded loosely:
- *
- *   - started inside the window — the usual case, and a young commitment. The
- *     bars reach further back than the count does.
- *   - started before it — a backfilled feed. The count reaches further back
- *     than the bars do, so `randomness-relays` reports 376 of 400 days against
- *     a strip of 90. Saying "earlier days are drawn, not counted" here is
- *     exactly backwards, which is what shipped.
+ * Unsaid beside the strip, a reader counts the gaps, reads 100%, and concludes
+ * the number is lying. The API clips the fraction to the window the bars draw,
+ * so only a run that began inside the window needs explaining.
  */
 const startedOn = commitment.collection.startedOn;
 const outageDays = commitment.collection.outageDates.length;
-const startedBeforeWindow = Boolean(
-  startedOn && range && startedOn < range.start,
+const startedInsideWindow = Boolean(
+  startedOn && range && startedOn >= range.start,
 );
 const coverageNote = [
-  startedOn && !startedBeforeWindow
+  startedInsideWindow && startedOn
     ? `Counted from ${formatDayInYear(startedOn)}, when collection started — earlier days are drawn, not counted.`
-    : null,
-  startedOn && startedBeforeWindow
-    ? `Counted from ${formatDayInYear(startedOn)}, when collection started — the fraction reaches back ${commitment.coverage.expected} ${commitment.coverage.unit}, further than the ${periods.length} the bars draw.`
     : null,
   outageDays > 0
     ? `${outageDays} ${pluralize(outageDays, "day")} lost to our own platform, excluded from the denominator.`
@@ -269,9 +240,7 @@ const COLLECTION_LABEL: Record<string, string> = {
           <div class="flex flex-wrap gap-x-2">
             <dt class="mono-meta uppercase">Judgement</dt>
             <dd class="font-mono text-xs text-body">
-              {isGrowth
-                ? "none — a growth counter is read for direction, never pass/fail"
-                : `no threshold signed off yet, so no reading is scored (SLA met: ${slaMet ?? "—"})`}
+              {`no threshold signed off yet, so no reading is scored (SLA met: ${slaMet ?? "—"})`}
             </dd>
           </div>
         )
@@ -410,7 +379,9 @@ const COLLECTION_LABEL: Record<string, string> = {
                     page wider than the viewport. */}
                 <th scope="col" class="border-b border-line py-1.5 pr-4 font-normal break-all">
                   {commitment.metricName}
-                  {unit ? ` (${unit})` : ""}
+                </th>
+                <th scope="col" class="border-b border-line py-1.5 pr-4 font-normal">
+                  unit
                 </th>
                 <th scope="col" class="border-b border-line py-1.5 font-normal">
                   collection
@@ -431,6 +402,9 @@ const COLLECTION_LABEL: Record<string, string> = {
                     ) : (
                       formatValue(reading.value)
                     )}
+                  </td>
+                  <td class="border-b border-line-soft py-1 pr-4 text-muted whitespace-nowrap">
+                    {unit || "—"}
                   </td>
                   <td
                     class:list={[
