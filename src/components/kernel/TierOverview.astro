@@ -1,5 +1,5 @@
 ---
-import type { KernelData } from "../../data/kernel-api";
+import { COVERAGE_LABEL, type KernelData } from "../../data/kernel-api";
 import { TIERS } from "../../data/kernel";
 import { tierColor } from "./tier";
 
@@ -12,8 +12,8 @@ const { data = null } = Astro.props;
 
 /**
  * One row of the table, for every tier the API has catalogued something in.
- * Only the tier's name, rule and posture are editorial —
- * they are definitions, true whether or not anything is running. Every figure
+ * Only the tier's name and rule are editorial — they are definitions, true
+ * whether or not anything is running. Every figure
  * comes from the API or is not shown: with no live row the numeric cells go to
  * their unknown state rather than to a remembered one, because a table that
  * quotes last year's percentages during an outage is worse than a blank one.
@@ -47,31 +47,16 @@ const rows = TIERS.map((tier) => {
     href: live ? `#inv-tier-${live.tier}` : null,
     functions: live ? live.catalogued || null : null,
     /*
-     * The inventory below lists every catalogued function in the tier, in
-     * scope or not, so "all listed" is the honest sub-label — except where
-     * some of them sit outside Kernel's scope, which the count alone would
-     * quietly read as "funded here".
+     * Teams holding a grant that reports against this tier. It replaces the
+     * old "15 of 24 reporting" under the percentage, which put a fraction
+     * about the catalogue beside a percentage about the collection and read as
+     * though the two divided into each other.
      */
-    listedLabel:
-      live && live.inScope < live.catalogued
-        ? live.inScope === 0
-          ? "None in scope"
-          : `${live.inScope} in scope`
-        : "All listed",
+    projects: live ? live.projects : null,
     coverage:
       live?.coverage && live.coverage.pct !== null
         ? `${live.coverage.pct.toFixed(1)}%`
         : null,
-    /*
-     * The sub-label under the percentage, and deliberately not the fraction the
-     * percentage is computed from. Periods-read-of-periods-promised is a claim
-     * about the collector and stays high by construction: a tier reporting on
-     * one function out of five still reads 100%. What a reader needs beside
-     * that number is how much of the tier it speaks for, so the sub-label
-     * counts functions with a reporter, and the two together say "complete,
-     * over very little".
-     */
-    coverageDetail: live ? `${live.measured} of ${live.catalogued} reporting` : null,
   };
 }).filter((row) => !row.empty);
 ---
@@ -92,8 +77,8 @@ const rows = TIERS.map((tier) => {
       <tr class="border-b border-ink">
         <th scope="col" class="mono-meta pb-2.5 uppercase">Tier</th>
         <th scope="col" class="mono-meta pb-2.5 uppercase">Functions</th>
-        <th scope="col" class="mono-meta pb-2.5 uppercase">Coverage · 90d</th>
-        <th scope="col" class="mono-meta pb-2.5 uppercase">Funding posture</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">Projects funded</th>
+        <th scope="col" class="mono-meta pb-2.5 uppercase">{COVERAGE_LABEL}</th>
       </tr>
     </thead>
     <tbody>
@@ -152,11 +137,21 @@ const rows = TIERS.map((tier) => {
                   <p class="font-mono text-lg font-medium text-ink">
                     {row.functions}
                   </p>
-                  <p class="mono-meta mt-1 uppercase">{row.listedLabel}</p>
+                  <p class="mono-meta mt-1 uppercase">In inventory</p>
                 </>
               )}
             </td>
             <td class="py-5 pr-6">
+              <p
+                class:list={[
+                  "font-mono text-lg",
+                  row.projects ? "font-medium text-ink" : "text-muted",
+                ]}
+              >
+                {row.projects ?? "—"}
+              </p>
+            </td>
+            <td class="py-5">
               {row.coverage === null ? (
                 <>
                   <p class="font-mono text-lg text-muted" aria-hidden="true">
@@ -165,15 +160,11 @@ const rows = TIERS.map((tier) => {
                   <p class="mono-meta mt-1 uppercase">Nothing collected</p>
                 </>
               ) : (
-                <>
-                  <p class="font-mono text-lg font-medium text-ink">
-                    {row.coverage}
-                  </p>
-                  <p class="mono-meta mt-1 uppercase">{row.coverageDetail}</p>
-                </>
+                <p class="font-mono text-lg font-medium text-ink">
+                  {row.coverage}
+                </p>
               )}
             </td>
-            <td class="py-5 text-sm text-body">{row.tier.postureShort}</td>
           </tr>
         ))
       }
@@ -216,22 +207,26 @@ const rows = TIERS.map((tier) => {
    *
    * A click that lands on a link, a button, or a text selection is left alone.
    */
-  document.querySelectorAll<HTMLElement>(".tier-row[data-href]").forEach((row) => {
-    row.addEventListener("click", (event) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.closest("a, button")) return;
-      if (window.getSelection()?.toString()) return;
-      const href = row.dataset.href;
-      if (href) window.openInventoryTier?.(href.slice(1));
+  document
+    .querySelectorAll<HTMLElement>(".tier-row[data-href]")
+    .forEach((row) => {
+      row.addEventListener("click", (event) => {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest("a, button")) return;
+        if (window.getSelection()?.toString()) return;
+        const href = row.dataset.href;
+        if (href) window.openInventoryTier?.(href.slice(1));
+      });
     });
-  });
 
-  document.querySelectorAll<HTMLAnchorElement>("a.tier-link").forEach((link) => {
-    link.addEventListener("click", (event) => {
-      const id = link.getAttribute("href")?.slice(1);
-      if (!id || !window.openInventoryTier) return;
-      event.preventDefault();
-      window.openInventoryTier(id);
+  document
+    .querySelectorAll<HTMLAnchorElement>("a.tier-link")
+    .forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const id = link.getAttribute("href")?.slice(1);
+        if (!id || !window.openInventoryTier) return;
+        event.preventDefault();
+        window.openInventoryTier(id);
+      });
     });
-  });
 </script>

@@ -1,6 +1,7 @@
 ---
 import CommitmentList from "./CommitmentList.astro";
 import UptimeStrip from "./UptimeStrip.astro";
+import { COVERAGE_LABEL } from "../../data/kernel-api";
 import { barCaption, worstOf } from "./uptime";
 import {
   collectionStatus,
@@ -155,7 +156,7 @@ const sharePct = share === null ? null : Math.max(2, Math.round(share * 100));
             {coveragePctLabel(coverage)}
           </p>
           <p class="mono-meta uppercase">
-            {status === "never" ? "Nothing collected" : "Coverage · 90d"}
+            {status === "never" ? "Nothing collected" : COVERAGE_LABEL}
           </p>
           <p class="mt-1.5">
             <span

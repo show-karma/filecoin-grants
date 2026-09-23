@@ -1,6 +1,6 @@
 ---
 import type { KernelData } from "../../data/kernel-api";
-import { formatUsd } from "../../data/kernel-api";
+import { countCommitments, WINDOW_DAYS } from "../../data/kernel-api";
 import type { KernelMetric } from "../../data/kernel";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 };
 
 const { data } = Astro.props;
-const { program, windowDays } = data;
+const { program } = data;
 
 const count = (n: number, one: string, many = `${one}s`) =>
   `${n} ${n === 1 ? one : many}`;
@@ -16,24 +16,8 @@ const count = (n: number, one: string, many = `${one}s`) =>
 /** Trims the trailing `.0` the API's one-decimal percentages often carry. */
 const pct = (value: number) => `${Number(value.toFixed(1))}%`;
 
-/*
- * Commitments are counted once each, keyed by indicator: a commitment reported
- * against several functions appears in more than one project's list, and
- * summing those lists would inflate the total.
- */
-const commitments = new Map(
-  data.projects
-    .flatMap((project) => project.commitments)
-    .map((commitment) => [commitment.indicatorId, commitment]),
-);
-const health = [...commitments.values()].filter(
-  (commitment) => commitment.commitmentType === "health",
-).length;
-const growth = commitments.size - health;
-
-const fundedTeams = data.projects.filter(
-  (project) => project.committedUsd > 0,
-).length;
+const metrics = countCommitments(data.projects.flatMap((p) => p.commitments));
+const grantRefs = new Set(data.projects.flatMap((p) => p.grantRefs ?? []));
 
 /*
  * A function nobody reports on is not measurable in principle, not merely
@@ -45,44 +29,30 @@ const unreported = data.functions.filter(
 ).length;
 
 /*
- * The shared formatter, not a local one: it is the single rounding rule on the
- * page, and it returns null rather than `$0` for an amount nobody has awarded —
- * a tile that says `$0` reads as a decision, when the truth is an absence.
+ * Reading coverage leads, and no pass rate follows it.
+ *
+ * The slot above held "SLA met", which spent the most valuable tile on the
+ * page on a percentage over whatever minority carried a threshold that day —
+ * 26 readings out of 911 as this shipped. A pass rate over the scored few
+ * describes a different programme than the one being funded, so the tile that
+ * leads is the one claim this page can make in full: how much of what was
+ * promised actually arrived.
  */
-const committed = formatUsd(program.committedUsd);
+const coverage = program.coverage ?? null;
 
-const metrics: KernelMetric[] = [
+const tiles: KernelMetric[] = [
   {
-    value: committed ?? "—",
-    /* The sum of full contract values — see `InventoryPanel`. Not the amount
-       committed through the end of the batch, which the API does not serve. */
-    label: "Contracted across funded teams",
-    note: committed
-      ? `${fundedTeams} funded of ${count(program.projectsReporting, "reporting team")} · batch ends Dec`
-      : `No award recorded this batch · ${count(program.projectsReporting, "reporting team")}`,
-    noteTone: committed ? "muted" : "warn",
+    value: coverage && coverage.pct !== null ? pct(coverage.pct) : "—",
+    label: `Reading coverage · rolling ${count(WINDOW_DAYS, "day")}`,
+    note: coverage
+      ? `${coverage.received} of ${coverage.expected} expected reading periods carry a value`
+      : "Nothing collected in this window",
+    noteTone: coverage ? "muted" : "warn",
   },
   {
-    /*
-     * While no threshold is in force there is nothing to take a percentage of,
-     * and an em dash under "SLA met" spends the most valuable slot on the page
-     * saying nothing. The count of judged readings is a real number with the
-     * same subject — it is 0, and the note says why — so the tile only becomes
-     * a percentage once something has actually been judged.
-     */
-    value:
-      program.healthMet.metPct === null
-        ? `${program.healthMet.scored}`
-        : pct(program.healthMet.metPct),
-    label:
-      program.healthMet.metPct === null
-        ? "Readings judged against a threshold"
-        : "SLA met across all health commitments",
-    note:
-      program.healthMet.metPct === null
-        ? "Every threshold is withdrawn pending an executed agreement"
-        : `Rolling ${count(windowDays, "day")} · ${count(health, "health commitment")}, ${count(growth, "growth counter")}`,
-    noteTone: program.healthMet.metPct === null ? "warn" : "muted",
+    value: `${metrics}`,
+    label: "Metrics collected",
+    note: `${count(program.projectsReporting, "team")} · ${count(grantRefs.size, "grant row")}`,
   },
   {
     value:
@@ -97,7 +67,7 @@ const metrics: KernelMetric[] = [
      */
     note: `${program.unmeasuredInScope} of ${count(program.functionsInScope, "in-scope function")} ${
       program.unmeasuredInScope === 1 ? "reports" : "report"
-    } no health metric`,
+    } no metric`,
     noteTone: "warn",
   },
   /*
@@ -109,7 +79,7 @@ const metrics: KernelMetric[] = [
     value: `${program.singleMaintainerCritical}`,
     label: `Top-tier ${
       program.singleMaintainerCritical === 1 ? "function is" : "functions are"
-    } down to a single maintaining team`,
+    } measured through one team only`,
     note: "Posture calls for 2+ implementations",
     noteTone: "warn",
   },
@@ -141,7 +111,7 @@ const metrics: KernelMetric[] = [
   class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-3"
 >
   {
-    metrics.map((metric) => (
+    tiles.map((metric) => (
       <div class="flex flex-col bg-surface p-5">
         <dt class="order-2 mt-1.5 text-sm leading-snug text-body">
           {metric.label}

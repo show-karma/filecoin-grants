@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   assembleKernelData,
   buildCommitment,
-  commitmentCounts,
+  countCommitments,
   coverageUnit,
   computeSla,
   expectedPeriods,
@@ -19,6 +19,7 @@ import {
   normalizeSeries,
   parseBreakdown,
   windowSeries,
+  WINDOW_DAYS,
   type IndicatorDatapoint,
   type KernelFunctionApi,
   type KernelOverviewResponse,
@@ -578,27 +579,44 @@ describe("coverage against the captured slate", () => {
      * team sorted second and quoted 34 for 37 real commitments.
      */
     expect(uniqueCommitments(commitments)).toHaveLength(37);
-    expect(commitmentCounts(commitments)).toEqual({ total: 37, health: 32, growth: 5 });
+    expect(countCommitments(commitments)).toBe(37);
   });
 
   it("windows the series on the build date, not on the freshest reading", () => {
     // Nothing has reported since the 21st. Anchoring on the data would slide
     // the window back with it and hide a stalled sync; the served coverage
     // counts those trailing days as missing precisely because we do not.
+    //
+    // The run is rewritten to a dense daily series longer than the window, so
+    // the assertion turns on where the window's far edge falls rather than on
+    // how far back this fixture's own readings happen to reach.
     const payload = payloads.find((candidate) =>
       candidate.indicators.some((indicator) => indicator.name === "drand-relay-statuspage"),
     )!;
-    const indicator = payload.indicators.find(
+    const captured = payload.indicators.find(
       (candidate) => candidate.name === "drand-relay-statuspage",
     )!;
+    const template = captured.datapoints[0]!;
+    const indicator: ProjectIndicator = {
+      ...captured,
+      datapoints: Array.from({ length: WINDOW_DAYS + 10 }, (_unused, back) => {
+        const day = new Date(Date.parse(`${freshestReading}T00:00:00Z`));
+        day.setUTCDate(day.getUTCDate() - back);
+        const stamp = `${day.toISOString().slice(0, 10)}T00:00:00.000Z`;
+        return { ...template, id: `synthetic-${back}`, startDate: stamp, endDate: stamp };
+      }),
+    };
 
     const anchoredOnBuild = buildCommitment(payload.projectUID, indicator, { referenceDate })!;
     const anchoredOnData = buildCommitment(payload.projectUID, indicator, {
       referenceDate: freshestReading,
     })!;
 
-    expect(anchoredOnBuild.latest?.date).toBe("2026-08-21");
-    expect(anchoredOnBuild.series.length).toBe(anchoredOnData.series.length - 3);
+    // The anchor sits three days past the last reading, so the window's far
+    // edge moved with it and left three of the oldest readings behind.
+    expect(anchoredOnBuild.latest?.date).toBe(freshestReading);
+    expect(anchoredOnData.series.length).toBe(WINDOW_DAYS);
+    expect(anchoredOnBuild.series.length).toBe(WINDOW_DAYS - 3);
   });
 
   it("surfaces the served record verbatim instead of recomputing it", () => {
@@ -672,7 +690,7 @@ describe("coverage against the captured slate", () => {
      */
     const chainSync = data.functions.find((fn) => fn.kernelId === "chain-sync-state");
     expect(chainSync?.commitments).toHaveLength(10);
-    expect(commitmentCounts(chainSync!.commitments).total).toBe(10);
+    expect(countCommitments(chainSync!.commitments)).toBe(10);
     expect(chainSync?.declaredCommitments).toBe(7);
 
     // Everywhere the API counts the same way the page does, the page can never
@@ -681,12 +699,12 @@ describe("coverage against the captured slate", () => {
     for (const fn of data.functions) {
       if (fn.kernelId === "chain-sync-state") continue;
       expect(
-        commitmentCounts(fn.commitments).total,
+        countCommitments(fn.commitments),
         fn.kernelId,
       ).toBeLessThanOrEqual(fn.declaredCommitments);
     }
     const explorer = data.functions.find((fn) => fn.kernelId === "mainnet-explorer");
-    expect(commitmentCounts(explorer!.commitments).total).toBe(1);
+    expect(countCommitments(explorer!.commitments)).toBe(1);
     expect(explorer?.declaredCommitments).toBe(2);
   });
 

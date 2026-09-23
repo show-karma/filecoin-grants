@@ -143,23 +143,22 @@ function dateOfPeriod(index: number, cadence: string): string {
  * ordinary case today and stays the ordinary case for any commitment whose
  * appendix is unsigned: the number exists, and the page says so and no more.
  *
+ * The threshold in force on the day is the whole test — a commitment carrying
+ * none scores `read` whatever upstream types it as.
+ *
  * `judgePeriod` is called with no fallback bar, exactly as `buildCommitment`
  * calls it for `sla` and `interruptions`: each reading is scored against the
  * threshold it carried, so a bar signed in August cannot retroactively grade
  * July. Passing the commitment-level threshold as a fallback here would judge
  * pre-threshold periods the headline SLA leaves unscored.
  */
-function periodState(commitment: Commitment, period: ReadingPeriod): PeriodState {
-  // A growth counter is tracked for direction and carries no bar, so it is
-  // never judged — but it was still collected, which is what the bar shows.
-  if (commitment.commitmentType === "growth") return "read";
+function periodState(period: ReadingPeriod): PeriodState {
   const met = judgePeriod(period, null, null);
   return met === null ? "read" : met ? "met" : "missed";
 }
 
 /** The same judgement one reading at a time, for the numbers table. */
-function readingState(commitment: Commitment, reading: Reading): PeriodState {
-  if (commitment.commitmentType === "growth") return "read";
+function readingState(reading: Reading): PeriodState {
   const met = judge(reading.value, reading.thresholdOp, reading.thresholdValue);
   return met === null ? "read" : met ? "met" : "missed";
 }
@@ -201,11 +200,6 @@ type Grid = {
   unit: string;
   /** How many commitments the bars actually speak for. */
   sourceCount: number;
-  /**
-   * Set when every commitment handed in was a growth counter and the rollup
-   * therefore has nothing to draw — which is not the same as no readings.
-   */
-  growthOnly: boolean;
 };
 
 const EMPTY_GRID: Grid = {
@@ -213,7 +207,6 @@ const EMPTY_GRID: Grid = {
   periodsPerBar: 0,
   unit: "reading",
   sourceCount: 0,
-  growthOnly: false,
 };
 
 /**
@@ -222,7 +215,7 @@ const EMPTY_GRID: Grid = {
  *
  * Anchored on the build date, not on the freshest reading — the same choice
  * `buildCommitment` makes. A window that slid back with the data would hide a
- * stalled sync: coverage would say "63 of 90 days" while the strip beside it
+ * stalled sync: coverage would say "21 of 30 days" while the strip beside it
  * showed an unbroken record ending at the last reading.
  */
 function windowRange(): { start: string; end: string } {
@@ -237,27 +230,11 @@ function windowRange(): { start: string; end: string } {
  * fraction and the SLA percentage are the same partition of the same window by
  * construction rather than by agreement.
  *
- * `includeGrowth` is true for every rolled-up strip, which it was not while the
- * palette was a verdict. A growth counter carries no threshold, so under the
- * old colours its every reading was amber and one counter in a set would paint
- * a warning over periods in which every health commitment was met — hence the
- * exclusion. A counter now reads `read` like anything else that was collected,
- * it cannot colour a row worse than it is, and dropping it understated what a
- * team reports: the rollups said "worst of 3" where the notebook said 4.
+ * Every commitment handed in draws a bar.
  */
-function buildGrid(
-  commitments: Commitment[],
-  { includeGrowth }: { includeGrowth: boolean },
-): Grid {
-  const eligible = includeGrowth
-    ? commitments
-    : commitments.filter((c) => c.commitmentType !== "growth");
-  const growthOnly = commitments.length > 0 && eligible.length === 0;
-
-  const active = eligible.filter((c) => c.series.length > 0);
-  if (active.length === 0) {
-    return { ...EMPTY_GRID, growthOnly };
-  }
+function buildGrid(commitments: Commitment[]): Grid {
+  const active = commitments.filter((c) => c.series.length > 0);
+  if (active.length === 0) return EMPTY_GRID;
 
   const { start, end } = windowRange();
 
@@ -279,7 +256,7 @@ function buildGrid(
     for (const commitment of active) {
       const filled = new Set<number>();
       for (const period of groupByPeriod(commitment.series, commitment.cadence)) {
-        const state = periodState(commitment, period);
+        const state = periodState(period);
         for (const reading of period.readings) {
           const index = periodIndex(reading.date, gridCadence);
           if (index === null) continue;
@@ -306,7 +283,7 @@ function buildGrid(
     }
 
     /*
-     * 90 days ending in August touch four calendar months, while the coverage
+     * a window ending in August touches several months, while the coverage
      * denominator is the promise the cadence makes — `ceil(90/30)` = 3. Drop
      * the oldest bars only while they are empty, so the strip never shows more
      * bars than the fraction beside it counts, and never hides a period that
@@ -323,7 +300,7 @@ function buildGrid(
     const byDate = new Map<string, PeriodState>();
     for (const commitment of active) {
       for (const period of groupByPeriod(commitment.series, commitment.cadence)) {
-        const state = periodState(commitment, period);
+        const state = periodState(period);
         for (const reading of period.readings) {
           const at = reading.date.slice(0, 10);
           byDate.set(at, worseAcrossCommitments(byDate.get(at) ?? "none", state));
@@ -352,7 +329,7 @@ function buildGrid(
     ? (UNIT_NOUN[coverageUnit(gridCadence)] ?? "period")
     : "reading";
 
-  return { periods, periodsPerBar, unit, sourceCount: active.length, growthOnly };
+  return { periods, periodsPerBar, unit, sourceCount: active.length };
 }
 
 /**
@@ -401,7 +378,7 @@ function cadenceBars(commitment: Commitment): Bar[] {
   const states = new Map<number, PeriodState>();
   for (const period of groupByPeriod(commitment.series, commitment.cadence)) {
     if (period.index === null) continue;
-    states.set(period.index, periodState(commitment, period));
+    states.set(period.index, periodState(period));
   }
 
   // An absent period is drawn, never skipped, and says why it is absent: a day
@@ -426,7 +403,7 @@ function cadenceBars(commitment: Commitment): Bar[] {
 function readingBars(commitment: Commitment): Bar[] {
   const bars = new Map<string, PeriodState>();
   for (const period of groupByPeriod(commitment.series, commitment.cadence)) {
-    const state = periodState(commitment, period);
+    const state = periodState(period);
     for (const reading of period.readings) {
       bars.set(reading.date.slice(0, 10), state);
     }
@@ -457,16 +434,9 @@ function compress(bars: { date: string; state: PeriodState }[]): Period[] {
 /**
  * One strip standing for several commitments: per period the worst state any
  * of them was in. A row is only "no reading" when every commitment is absent.
- * Growth counters are excluded — see `buildGrid`.
  */
 export function worstOf(commitments: Commitment[]): Period[] {
-  return buildGrid(commitments, { includeGrowth: true }).periods;
-}
-
-function describeBars(grid: Grid): string {
-  return grid.periodsPerBar === 1
-    ? `1 bar = 1 ${grid.unit}`
-    : `1 bar = ${grid.periodsPerBar} ${grid.unit}s`;
+  return buildGrid(commitments).periods;
 }
 
 /**
@@ -490,17 +460,16 @@ export function barCaptionFor(commitment: Commitment): string {
 }
 
 /**
- * e.g. `1 bar = 1 day · worst of 4`. Doubles as the empty-state line, so a
- * caller that passes both to `UptimeStrip` says the right thing when there is
- * no health record to draw.
+ * The empty-state line for a rolled-up strip, and nothing else.
+ *
+ * It used to describe the bars — `1 bar = 2 days · worst of 4`. At a 30-day
+ * window a bar is one day and there is nothing to explain; "worst of 4" was
+ * never read as the reduction it names, only as a fourth number on a row that
+ * already carries three. A strip with bars in it is now captionless.
  */
-export function barCaption(commitments: Commitment[]): string {
-  const grid = buildGrid(commitments, { includeGrowth: true });
-  if (grid.growthOnly) return "growth counters only · no health record";
-  if (grid.periods.length === 0) return "no readings in the window";
-
-  const unit = describeBars(grid);
-  return grid.sourceCount > 1 ? `${unit} · worst of ${grid.sourceCount}` : unit;
+export function barCaption(commitments: Commitment[]): string | undefined {
+  const grid = buildGrid(commitments);
+  return grid.periods.length === 0 ? "no readings in the window" : undefined;
 }
 
 /**
@@ -544,7 +513,7 @@ export function collectionLog(commitment: Commitment): CollectionRow[] {
   const rows: CollectionRow[] = commitment.series.map((reading) => ({
     date: reading.date,
     value: reading.value,
-    state: readingState(commitment, reading),
+    state: readingState(reading),
     collection: "read",
   }));
   for (const day of commitment.collection.noValueDates) {
@@ -565,7 +534,7 @@ export function readingsInWindow(
     .map((reading) => ({
       date: reading.date,
       value: reading.value,
-      state: readingState(commitment, reading),
+      state: readingState(reading),
     }))
     .reverse();
 }
