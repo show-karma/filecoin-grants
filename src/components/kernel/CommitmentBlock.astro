@@ -66,7 +66,7 @@ const metaParts = [
  * evidence the feed runs unattended, so the two are counted apart rather than
  * pooled into one "13 readings".
  */
-const { rows, unattended, review, observed } = commitment.collection;
+const { rows, unattended, review } = commitment.collection;
 const collectionParts = [
   unattended > 0
     ? `${unattended} unattended ${commitment.method || "automated"} ${pluralize(unattended, "run")}`
@@ -84,11 +84,6 @@ const collectionParts = [
  */
 const isUrl = (value: string | null) => Boolean(value && /^https?:\/\//.test(value));
 const proofUrl = isUrl(commitment.proof) ? commitment.proof : null;
-
-const slaMet =
-  commitment.sla.metPct === null
-    ? null
-    : `${Math.round(commitment.sla.metPct * 10) / 10}%`;
 
 const coveragePct =
   commitment.coverage.expected > 0
@@ -122,25 +117,36 @@ const extraInterruptions = Math.max(0, commitment.interruptions.length - 3);
 const stripCaption = barCaptionFor(commitment);
 
 /*
- * Unsaid beside the strip, a reader counts the gaps, reads 100%, and concludes
- * the number is lying. The API clips the fraction to the window the bars draw,
- * so only a run that began inside the window needs explaining.
+ * What the bars add up to, said once. A period is blank when the source was
+ * asked and answered nothing, or when no row exists at all — a day upstream
+ * synthesised still carries a number, so it reads as covered here and is
+ * excluded from the coverage fraction rather than from the record.
  */
-const startedOn = commitment.collection.startedOn;
-const outageDays = commitment.collection.outageDates.length;
-const startedInsideWindow = Boolean(
-  startedOn && range && startedOn >= range.start,
-);
-const coverageNote = [
-  startedInsideWindow && startedOn
-    ? `Counted from ${formatDayInYear(startedOn)}, when collection started — earlier days are drawn, not counted.`
-    : null,
-  outageDays > 0
-    ? `${outageDays} ${pluralize(outageDays, "day")} lost to our own platform, excluded from the denominator.`
-    : null,
-]
-  .filter(Boolean)
-  .join(" ");
+const PERIOD_NOUN: Record<string, string> = {
+  days: "day",
+  weeks: "week",
+  months: "month",
+  readings: "reading",
+};
+const periodNoun = PERIOD_NOUN[commitment.coverage.unit] ?? "period";
+
+/* From the first period that reported, not from the window's edge: the bars
+   span the window whatever the run's age, so a metric first read yesterday
+   would otherwise be described as a month of silence. */
+const carries = (period: (typeof periods)[number]) =>
+  period.state !== "novalue" && period.state !== "none";
+const firstReported = periods.findIndex(carries);
+
+function buildCoverageNote(): string | null {
+  if (firstReported === -1) return null;
+  const since = formatDayInYear(periods[firstReported]!.date);
+  const blank = periods.slice(firstReported).filter((p) => !carries(p)).length;
+  if (blank === 0) return `Every ${periodNoun} since ${since} carries a reading.`;
+  const verb = blank === 1 ? "carries" : "carry";
+  return `${blank} ${pluralize(blank, periodNoun)} since ${since} ${verb} no reading.`;
+}
+
+const coverageNote = buildCoverageNote();
 
 const unit = commitment.unitOfMeasure ?? "";
 
@@ -204,74 +210,6 @@ const COLLECTION_LABEL: Record<string, string> = {
     )
   }
 
-  {/*
-    Open, not a disclosure. This sat behind "▸ how this value is computed"
-    inside a card the reader had already opened — a second click for the only
-    thing on the card that says what the number actually is.
-  */}
-  <details class="mt-3 border-t border-line-soft pt-2.5" open>
-    <summary class="mono-meta list-none marker:content-none">
-      How this value is computed
-    </summary>
-    <dl class="mt-2 space-y-1.5">
-      <div class="flex flex-wrap gap-x-2">
-        <dt class="mono-meta uppercase">Metric</dt>
-        <dd class="font-mono text-xs break-all text-body">
-          {commitment.metricName}
-          {unit ? ` (${unit})` : ""}
-        </dd>
-      </div>
-      <div class="flex flex-wrap gap-x-2">
-        <dt class="mono-meta uppercase">Collection</dt>
-        <dd class="font-mono text-xs text-body">
-          {commitment.method || "unstated"} · read {commitment.cadence}
-        </dd>
-      </div>
-      {
-        commitment.thresholdOp && commitment.thresholdValue !== null ? (
-          <div class="flex flex-wrap gap-x-2">
-            <dt class="mono-meta uppercase">Judgement</dt>
-            <dd class="font-mono text-xs text-body">
-              value {commitment.thresholdOp} {formatValue(commitment.thresholdValue)}
-              {unit ? ` ${unit}` : ""}
-            </dd>
-          </div>
-        ) : (
-          <div class="flex flex-wrap gap-x-2">
-            <dt class="mono-meta uppercase">Judgement</dt>
-            <dd class="font-mono text-xs text-body">
-              {`no threshold signed off yet, so no reading is scored (SLA met: ${slaMet ?? "—"})`}
-            </dd>
-          </div>
-        )
-      }
-      {
-        proofUrl && (
-          <div class="flex flex-wrap gap-x-2">
-            <dt class="mono-meta uppercase">Proof</dt>
-            <dd class="min-w-0">
-              <a
-                href={commitment.proof}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="font-mono text-xs break-all text-accent underline underline-offset-2"
-              >
-                {commitment.proof}
-              </a>
-            </dd>
-          </div>
-        )
-      }
-      {
-        commitment.grantRef && (
-          <div class="flex flex-wrap gap-x-2">
-            <dt class="mono-meta uppercase">Grant</dt>
-            <dd class="font-mono text-xs text-body">{commitment.grantRef}</dd>
-          </div>
-        )
-      }
-    </dl>
-  </details>
 
   <div class="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-line-soft pt-2.5">
     <span class="mono-meta uppercase">Collection</span>
