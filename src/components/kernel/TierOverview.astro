@@ -46,12 +46,6 @@ const rows = TIERS.map((tier) => {
     /* The tier's own heading in the inventory below. */
     href: live ? `#inv-tier-${live.tier}` : null,
     functions: live ? live.catalogued || null : null,
-    /*
-     * Teams holding a grant that reports against this tier. It replaces the
-     * old "15 of 24 reporting" under the percentage, which put a fraction
-     * about the catalogue beside a percentage about the collection and read as
-     * though the two divided into each other.
-     */
     projects: live ? live.projects : null,
     coverage:
       live?.coverage && live.coverage.pct !== null

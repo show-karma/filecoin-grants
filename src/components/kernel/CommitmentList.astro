@@ -6,18 +6,7 @@ import { pluralize } from "./uptime";
 type Props = { commitments: Commitment[] };
 const { commitments } = Astro.props;
 
-/*
- * One list. Health commitments and growth counters used to be ranked apart,
- * on the grounds that a counter carries no threshold and so no verdict —
- * but neither does any health commitment whose appendix is still unsigned,
- * which is most of them. The split named a distinction the cards themselves
- * never showed, and it made a reader count two totals to answer "what is
- * collected here".
- *
- * Not "a threshold, met or missed" in the note either: the header promised a
- * verdict the cards below it do not all carry. It says what the metrics are
- * collected on instead, which is the claim the page can actually make.
- */
+/* Not "a threshold, met or missed": most of these carry no threshold at all. */
 const note = `${commitments.length} ${pluralize(commitments.length, "metric")} · measured on a cadence, judged by nothing yet`;
 ---
 

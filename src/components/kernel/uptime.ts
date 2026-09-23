@@ -143,9 +143,6 @@ function dateOfPeriod(index: number, cadence: string): string {
  * ordinary case today and stays the ordinary case for any commitment whose
  * appendix is unsigned: the number exists, and the page says so and no more.
  *
- * The threshold in force on the day is the whole test — a commitment carrying
- * none scores `read` whatever upstream types it as.
- *
  * `judgePeriod` is called with no fallback bar, exactly as `buildCommitment`
  * calls it for `sla` and `interruptions`: each reading is scored against the
  * threshold it carried, so a bar signed in August cannot retroactively grade
@@ -230,7 +227,6 @@ function windowRange(): { start: string; end: string } {
  * fraction and the SLA percentage are the same partition of the same window by
  * construction rather than by agreement.
  *
- * Every commitment handed in draws a bar.
  */
 function buildGrid(commitments: Commitment[]): Grid {
   const active = commitments.filter((c) => c.series.length > 0);
@@ -459,14 +455,7 @@ export function barCaptionFor(commitment: Commitment): string {
     : `one bar = ${perBar} ${noun}s`;
 }
 
-/**
- * The empty-state line for a rolled-up strip, and nothing else.
- *
- * It used to describe the bars — `1 bar = 2 days · worst of 4`. At a 30-day
- * window a bar is one day and there is nothing to explain; "worst of 4" was
- * never read as the reduction it names, only as a fourth number on a row that
- * already carries three. A strip with bars in it is now captionless.
- */
+/** The empty-state line for a rolled-up strip. A strip with bars carries none. */
 export function barCaption(commitments: Commitment[]): string | undefined {
   const grid = buildGrid(commitments);
   return grid.periods.length === 0 ? "no readings in the window" : undefined;

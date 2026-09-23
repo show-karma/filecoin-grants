@@ -25,15 +25,7 @@ const periods = toPeriods(commitment);
 const range = windowOf(commitment);
 const readings = collectionLog(commitment);
 
-/*
- * What is in force on the day decides the state, and nothing else. A metric
- * with readings but no signed threshold has been read and left unscored, which
- * is neither failing nor unmeasured. Only one with no rows at all is silent.
- *
- * There used to be a fifth state for a commitment upstream types as a growth
- * counter. It said what `unmeasured` says — collected, judged by nothing — in
- * different words, on a distinction no reader of this card can act on.
- */
+/* Unscored is not failing: most readings carry no threshold to be judged against. */
 const status: "meeting" | "failing" | "unmeasured" | "silent" =
   commitment.collection.rows === 0
     ? "silent"
@@ -130,16 +122,9 @@ const extraInterruptions = Math.max(0, commitment.interruptions.length - 3);
 const stripCaption = barCaptionFor(commitment);
 
 /*
- * The one line that keeps the strip and the percentage from contradicting each
- * other. Unsaid next to them, a reader counts the gaps, reads 100%, and
- * concludes the number is lying.
- *
- * Only the young-commitment case gets a sentence. A commitment whose run
- * predates the window used to get its own, claiming the fraction reached
- * further back than the bars — true against a 90-day strip and a backfilled
- * feed, and false now that the API clips the fraction to the same window the
- * bars draw. What is left of the difference is the excluded days, which the
- * outage sentence names.
+ * Unsaid beside the strip, a reader counts the gaps, reads 100%, and concludes
+ * the number is lying. The API clips the fraction to the window the bars draw,
+ * so only a run that began inside the window needs explaining.
  */
 const startedOn = commitment.collection.startedOn;
 const outageDays = commitment.collection.outageDates.length;
@@ -395,9 +380,6 @@ const COLLECTION_LABEL: Record<string, string> = {
                 <th scope="col" class="border-b border-line py-1.5 pr-4 font-normal break-all">
                   {commitment.metricName}
                 </th>
-                {/* Its own column rather than a suffix on the heading above:
-                    read down a column of bare numbers, the unit is the first
-                    thing a reader has to go back up to the header to find. */}
                 <th scope="col" class="border-b border-line py-1.5 pr-4 font-normal">
                   unit
                 </th>

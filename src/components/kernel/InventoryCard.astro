@@ -46,11 +46,7 @@ const FLAG_CLASS: Record<Flag["tone"], string> = {
   bad: "text-bad",
 };
 
-/*
- * No chip while a row is collecting normally. A green tick on every row of a
- * healthy list carries no information and is not on the monitoring notebook
- * this page mirrors; the chip is there for the row that has stopped.
- */
+/* No `collecting` key: the chip is drawn only for a row that has stopped. */
 const CHIP_CLASS: Record<string, string> = {
   silent: "border-bad/40 text-bad",
   never: "border-line text-muted",

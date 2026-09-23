@@ -19,18 +19,13 @@ const pct = (value: number) => `${Number(value.toFixed(1))}%`;
 const metrics = countCommitments(data.projects.flatMap((p) => p.commitments));
 const grantRefs = new Set(data.projects.flatMap((p) => p.grantRefs ?? []));
 
-/*
- * Teams, not rows. ChainSafe holds two awards and arrives as two project rows,
- * so counting rows said 14 where the monitoring notebook says 13. A grant row
- * is its own figure and keeps its own noun.
- */
+/* ChainSafe holds two awards, so team count and grant-row count differ. */
 const teams = new Set(
   data.projects.map((project) => project.team).filter(Boolean),
 ).size;
 
-/* Catalogued, and nothing is collected against it. Upstream splits these into
-   "a metric is drafted" and "nothing is drafted yet"; the page cannot, because
-   a drafted-but-unsigned metric is never served to it. */
+/* Upstream splits these into drafted and not-yet-drafted; the API serves
+   neither, so the page states the total. */
 const unmeasured = data.functions.filter((entry) => !entry.measured).length;
 
 /* Catalogued so the map is complete, but outside what Kernel funds this term. */
@@ -38,16 +33,8 @@ const outOfScope = data.functions.filter(
   (entry) => entry.isInScope === false,
 ).length;
 
-/*
- * Reading coverage leads, and no pass rate follows it.
- *
- * The slot above held "SLA met", which spent the most valuable tile on the
- * page on a percentage over whatever minority carried a threshold that day —
- * 26 readings out of 911 as this shipped. A pass rate over the scored few
- * describes a different programme than the one being funded, so the tile that
- * leads is the one claim this page can make in full: how much of what was
- * promised actually arrived.
- */
+/* No pass-rate tile: only 26 of 911 readings in the window carry a threshold,
+   and a rate over that minority describes a different programme. */
 const coverage = program.coverage ?? null;
 
 const tiles: KernelMetric[] = [

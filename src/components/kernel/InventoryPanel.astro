@@ -65,19 +65,10 @@ const slug = (value: string) =>
  */
 const grantRefs = new Set(projects.flatMap((p) => p.grantRefs ?? []));
 const monitoredFunctions = functions.filter((fn) => fn.measured).length;
-/* ChainSafe holds two awards and arrives as two project rows, so the team
-   count and the row count are different numbers and get different tiles. */
+/* ChainSafe holds two awards, so team count and row count differ. */
 const teams = new Set(projects.map((project) => project.team).filter(Boolean))
   .size;
 
-/*
- * What is being watched, counted three ways — and no money in any of them.
- *
- * "17 of 31 functions monitored" led this row until it was cut: a fraction
- * whose denominator is the whole catalogue reads as a failing grade for the
- * programme, when the 14 it subtracts are functions nobody has drafted a
- * metric against yet. Those belong to the coverage tiles below, which say so.
- */
 const tiles = [
   {
     value: String(teams),
@@ -216,12 +207,7 @@ const tierBlocks = [...data.tiers]
   .filter((tier) => tier.catalogued > 0)
   .sort((a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier))
   .map((tier) => {
-    /*
-     * Only the functions something reports against. The catalogue's other 14
-     * rendered as a card with every figure blank, which is a lot of page
-     * spent on "nobody has drafted a metric for this yet" — a fact the
-     * coverage tiles above state once, in a number.
-     */
+    /* Only what reports: the rest would render as a card of blank figures. */
     const rows = functions.filter((fn) => fn.tier === tier.tier && fn.measured);
     /*
      * Grouped on the finer of the API's two labels. `category` is a family of
@@ -376,12 +362,6 @@ const projectCard = (project: ProjectEntry): CardRow => {
 const byNameAsc = (a: ProjectEntry, b: ProjectEntry) =>
   byText(teamName(a), teamName(b));
 
-/*
- * One group, not two. The list was split on `committedUsd` into "Funded this
- * batch" and "No award this batch" — a split this page can no longer draw now
- * that it states no award amounts, and one that has put every row in the first
- * bucket since the batch closed anyway.
- */
 const projectGroup = {
   title: "Funded this batch",
   subtitle:
