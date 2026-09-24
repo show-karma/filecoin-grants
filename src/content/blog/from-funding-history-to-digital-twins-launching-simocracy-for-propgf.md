@@ -1,7 +1,7 @@
 ---
 title: "From Funding History to Digital Twins: Launching Simocracy for ProPGF"
 date: 2026-09-24
-description: "Simocracy is now live on filpgf.io: digital twins of ProPGF reviewers take the first pass at evaluating applications, and humans keep the final say."
+description: "Launching Simocracy for Filecoin ProPGF."
 ---
 
 Every grant program has the same bottleneck: the attention of the people making decisions. Reviewers can deliberate carefully, but only over so many applications, and much of their time goes to first-pass reads instead of the hard calls where their judgment matters most.
