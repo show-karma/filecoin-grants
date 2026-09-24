@@ -1,8 +1,7 @@
 ---
 title: "From Funding History to Digital Twins: Launching Simocracy for ProPGF"
 date: 2026-09-24
-description: "Every grant program has the same bottleneck: the attention of the people making decisions. Reviewers can deliberate carefully, but only over so many applications, and much of their time goes to first-pass reads instead of the hard calls where their judgment matters most."
-author: "PLFIF Team"
+description: ""
 ---
 
 Every grant program has the same bottleneck: the attention of the people making decisions. Reviewers can deliberate carefully, but only over so many applications, and much of their time goes to first-pass reads instead of the hard calls where their judgment matters most.
@@ -15,7 +14,7 @@ Simocracy has already been tested with real money in community settings, most re
 
 The goal is not a generic AI reviewer but one that reflects a specific person's priorities, standards, and judgment.
 
-![Sim evaluations panel in Karma: marginal value curves for each reviewer's sim on one scale from $0 to $280,000, and a "Where the council lands" bar chart showing each sim's total value relative to the highest](/blog/from-funding-history-to-digital-twins-launching-simocracy-for-propgf/sim-evaluations.png)
+![](/blog/from-funding-history-to-digital-twins-launching-simocracy-for-propgf/sim-evaluations.png)
 
 In practice, a sim is not a separate AI model trained on each reviewer. It is a profile, a written record of that reviewer's priorities, standards, and red lines, built from their past decisions, call transcripts, and a structured interview, combined with the evaluation skills described below. [Karma](https://karmahq.xyz), the grants platform behind filpgf.io, handles the workflow from start to finish. Teams submit applications and milestone reports in Karma as usual. From there:
 
