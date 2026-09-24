@@ -7,11 +7,11 @@ author: "PLFIF Team"
 
 Every grant program has the same bottleneck: the attention of the people making decisions. Reviewers can deliberate carefully, but only over so many applications, and much of their time goes to first-pass reads instead of the hard calls where their judgment matters most.
 
-This year we set out to test a different approach. We are happy to share that the integration of Simocracy, developed in partnership with PL R&D and Karma, is now complete on [filpgf.io](https://www.filpgf.io/). Simocracy builds sims, or digital twins, of our active reviewers, and lets them take the first pass at evaluating applications while humans keep the final say.
+This year we set out to test a different approach. We are happy to share that the integration of Simocracy, developed in partnership with PL R&D and Karma, is now complete on [filpgf.io](http://filpgf.io). Simocracy builds sims, or digital twins, of our active reviewers, and lets them take the first pass at evaluating applications while humans keep the final say.
 
 Simocracy has already been tested with real money in community settings, most recently allocating $10,000 across ten days at [Edge Esmeralda](https://blog.cosmos-institute.org/p/we-gave-a-village-personal-ai-agents). ProPGF is the first standing grant program to run it as part of its regular review process.
 
-## How Simocracy works at ProPGF
+**How Simocracy works at ProPGF**
 
 The goal is not a generic AI reviewer but one that reflects a specific person's priorities, standards, and judgment.
 
@@ -25,7 +25,9 @@ In practice, a sim is not a separate AI model trained on each reviewer. It is a 
 
 We see this as a way to scale careful judgment without diluting it. Simocracy lets a committee's capacity stretch further while keeping accountability with the people who hold it.
 
-## What makes this possible: our funding history, turned into skills
+We'll publish more detailed research on the method and results soon.
+
+**What makes this possible: our funding history, turned into skills**
 
 A sim is only as good as the context it reasons from. Two pieces of groundwork over the last few months made Simocracy workable at ProPGF.
 
@@ -33,9 +35,9 @@ _Making our funding history usable._ Every grant program sits on a quiet asset i
 
 Most programs let that record scatter across spreadsheets. We did the unglamorous work of pulling our past funding data into one place, cleaning it, and categorizing it so it can be queried, compared, and reused. The dataset combines public information, such as funded projects, grant amounts, rounds, and reported outcomes, and data teams shared with us during application and reporting.
 
-_From research to agent skills._ Data on its own doesn't evaluate anything; it needs a method. Over several rounds, ProPGF has built one: in our program design and evaluation criteria, in research like our work on the [Filecoin Kernel](/blog/introducing-the-filecoin-kernel/), which clarified which functions make the network resilient, and in knowledge that has mostly lived in reviewers' heads. We have packaged that knowledge, together with our funding data, into skills: bundles of instructions, context, and data that AI agents can load when evaluating an application. An agent reviewing a proposal can check what we've funded before and what it delivered, place the proposal in the wider ecosystem, and apply our criteria consistently. These skills are the shared foundation every sim reasons from, and they compound: each round adds data, each committee decision sharpens the method, and each improvement flows back into the sims.
+_From research to agent skills._ Data on its own doesn't evaluate anything; it needs a method. Over several rounds, ProPGF has built one: in our program design and evaluation criteria, in research like our work on the Filecoin Kernel, which clarified which functions make the network resilient, and in knowledge that has mostly lived in reviewers' heads. We have packaged that knowledge, together with our funding data, into skills: bundles of instructions, context, and data that AI agents can load when evaluating an application. An agent reviewing a proposal can check what we've funded before and what it delivered, place the proposal in the wider ecosystem, and apply our criteria consistently. These skills are the shared foundation every sim reasons from, and they compound: each round adds data, each committee decision sharpens the method, and each improvement flows back into the sims.
 
-## What comes next for Simocracy
+### What comes next for Simocracy
 
 This is an experiment, and we're treating it like one. Over the coming rounds we will:
 
