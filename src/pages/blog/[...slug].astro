@@ -36,11 +36,7 @@ const { Content } = await render(post);
         <h1 class="mt-3 text-3xl leading-tight sm:text-4xl lg:text-5xl">
           {post.data.title}
         </h1>
-        {
-          post.data.description && (
-            <p class="mt-5 text-lg leading-relaxed">{post.data.description}</p>
-          )
-        }
+        <p class="mt-5 text-lg leading-relaxed">{post.data.description}</p>
       </header>
 
       <div class="prose-post mt-8 max-w-3xl">
