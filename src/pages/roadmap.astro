@@ -1,0 +1,743 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+---
+
+<BaseLayout
+  title="The filpgf.io roadmap"
+  description="What we’re building into the Filecoin PGF portal, who is building it, and when each piece ships."
+  breadcrumb="Roadmap"
+>
+  <PageHero
+    eyebrow="FILECOIN PGF · ROADMAP"
+    title="The filpgf.io roadmap"
+    intro="What we’re building into the Filecoin PGF portal, who is building it, and when each piece ships."
+  />
+
+  <div class="container-page pb-16 sm:pb-24">
+    <div class="prose-post max-w-3xl">
+      <p>
+        filpgf.io is becoming the place where the Filecoin Public Goods Funding
+        (PGF) program shows its work: what’s funded, how those projects are
+        doing, and how decisions get made. This page covers our objectives, the
+        features that deliver them and the teams building them, how funding
+        support comes together, and the roadmap for when each piece ships. For a
+        shorter version, see the companion blog post.
+      </p>
+
+      <p><strong>On this page</strong></p>
+      <ol>
+        <li><a href="#building-toward">What we’re building toward</a></li>
+        <li><a href="#building-with">Who we’re building with</a></li>
+        <li>
+          <a href="#features">The features, up close</a>
+          <ul>
+            <li>
+              <a href="#impact-tracking">Impact and maintenance tracking</a>
+            </li>
+            <li>
+              <a href="#ai-native">AI-native applications and reviews</a>
+            </li>
+            <li>
+              <a href="#admin-views">Admin views and funding workflows</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#funding-support"
+            >Funding support: faster decisions, fewer nudges</a
+          >
+        </li>
+        <li><a href="#ships">When each feature ships</a></li>
+        <li><a href="#adds-up">What this adds up to</a></li>
+      </ol>
+
+      <h2 id="building-toward">What we’re building toward</h2>
+      <p>
+        The build is organized around three objectives: understand what funding
+        produces, make applications and reviews faster and lighter, and give the
+        people running the program one place to see and act on everything. Each
+        one comes with a set of features, built together with our partners
+        <a href="https://www.karmahq.org/">Karma</a>,
+        <a href="https://www.oso.xyz/">OSO</a>, and
+        <a href="https://www.simocracy.org/">Simocracy</a>.
+      </p>
+
+      <p class="eyebrow">OBJECTIVE 1</p>
+      <h3>Measure impact and maintenance</h3>
+      <p>
+        Funding only matters if what it produces lasts. OSO tracks impact and
+        maintenance for every funded project across
+        <a href="https://www.filpgf.io/kernel/">Kernel</a>,
+        <a href="https://www.filpgf.io/rnd/">R&amp;D</a>, and
+        <a href="https://www.filpgf.io/revenue-development/"
+          >Revenue Development</a
+        >, and is being built out to flag stalled data sources before anyone has
+        to go looking. Verified outcomes will also be captured as project-level
+        hypercerts.
+      </p>
+      <p>
+        <strong>Includes:</strong> Metrics on cover pages and reports · Automated
+        health monitoring · Hypercerts on verified outcomes
+      </p>
+
+      <p class="eyebrow">OBJECTIVE 2</p>
+      <h3>Make applications and reviews AI-native</h3>
+      <p>
+        Applications adapt to each project’s scope of work, and a Simocracy sim
+        drafts the first review of every milestone. A person always makes the
+        call, and every review is captured in filpgf.io.
+      </p>
+      <p>
+        <strong>Includes:</strong> Adaptive applications · Sim-assisted milestone
+        review · Human sign-off
+      </p>
+
+      <p class="eyebrow">OBJECTIVE 3</p>
+      <h3>Track every funded project, keep ops light</h3>
+      <p>
+        Karma gives the program team one admin view of every application,
+        milestone, and invoice, queued by priority and age. Feedback from Slack,
+        Telegram, and Simocracy attaches to the item it belongs to, so there’s
+        less chasing for everyone.
+      </p>
+      <p>
+        <strong>Includes:</strong> Priority and age queues · Slack and Telegram feedback
+        · SLA reporting
+      </p>
+
+      <p>
+        <em
+          >Underneath all three: one source of truth for the program, so funded
+          teams, reviewers, and the program team all work from the same
+          information.</em
+        >
+      </p>
+
+      <p class="eyebrow">WHO WE’RE BUILDING WITH</p>
+      <h2 id="building-with">One loop, three partners</h2>
+      <p>
+        These pieces are being built to work together. Applications, reviews,
+        and impact data all feed one system, so what we learn at each step
+        informs the next. Every time the loop comes around, the next review
+        starts with better data than the last one, and the same process helps us
+        efficiently track and showcase the ecosystem’s needs and priorities, and
+        keep applicants and stakeholders informed about them.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Partner</th>
+            <th>What it does</th>
+            <th>Next in the loop</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Karma</strong><br />HOSTS &amp; SURFACES</td>
+            <td>
+              Holds the program’s records: incoming applications and milestones,
+              plus the reviews and metrics the loop produces, surfaced in admin
+              queues, cover pages, and Ask Karma.
+            </td>
+            <td>
+              <strong>Syncs</strong> applications &amp; milestones → Simocracy
+            </td>
+          </tr>
+          <tr>
+            <td><strong>2. Simocracy</strong><br />REVIEW</td>
+            <td>
+              A sim drafts the first assessment of every application and
+              milestone. A person reviews it and makes the call.
+            </td>
+            <td><strong>Informs</strong> funded projects to track → OSO</td>
+          </tr>
+          <tr>
+            <td><strong>3. OSO</strong><br />MEASURE</td>
+            <td>
+              Tracks impact and maintenance for every funded project, and flags
+              a stalled data source before anyone goes looking.
+            </td>
+            <td>
+              <strong>Feeds back</strong> impact &amp; maintenance metrics → Karma
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        <em
+          >At the center: filpgf.io · one shared record. Everything each partner
+          produces lands in the same place.</em
+        >
+      </p>
+
+      <p class="eyebrow">FEATURE SPOTLIGHTS</p>
+      <h2 id="features">The features, up close</h2>
+      <p>
+        Each objective comes down to a set of features. Here is what each one
+        does, what it looks like, and who is building it: OSO on impact and
+        maintenance data, Simocracy on AI-native applications and milestone
+        review, and Karma on the platform and admin views that tie everything
+        together.
+      </p>
+
+      <p class="eyebrow">FEATURE AREA 1</p>
+      <h3 id="impact-tracking">Impact and maintenance tracking</h3>
+      <p>Kernel · R&amp;D · Revenue Development</p>
+      <p>Built with <a href="https://www.oso.xyz/">OSO</a></p>
+      <p>
+        Funding a project is one decision. Knowing whether it keeps delivering
+        takes ongoing measurement. In filpgf.io, every funded project gets two
+        things kept current: <strong>impact</strong> (what the work is producing)
+        and <strong>maintenance</strong> (whether it is still actively built and cared
+        for). The approach runs across all three funding categories, with one addition
+        for RevDev: a revenue-linked metric such as paid usage, onchain revenue, or
+        paying customers.
+      </p>
+
+      <div class="rounded-lg border border-line bg-tint p-6">
+        <p class="eyebrow">THE TEAM</p>
+        <p>
+          <a href="https://www.oso.xyz/">Open Source Observer (OSO)</a> is an AI-native
+          data platform that pulls scattered signals into one semantic layer, so people
+          and agents work from the same source of truth. Its core measurements, such
+          as monthly active developers, builder retention, and new developer acquisition,
+          are how open source ecosystems tell a thriving project from one that has
+          gone quiet.
+        </p>
+      </div>
+
+      <p><strong>What gets tracked, by funding category</strong></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Tracked item</th>
+            <th>Kernel</th>
+            <th>R&amp;D</th>
+            <th>RevDev</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cover page with program-level and project-level metrics</td>
+            <td>●</td>
+            <td>●</td>
+            <td>●</td>
+          </tr>
+          <tr>
+            <td>Published health and maintenance metric per project</td>
+            <td>●</td>
+            <td>●</td>
+            <td>●</td>
+          </tr>
+          <tr>
+            <td>Automated monitoring for stale or failing data sources</td>
+            <td>●</td>
+            <td>●</td>
+            <td>●</td>
+          </tr>
+          <tr>
+            <td>
+              Revenue-linked metric (paid usage, onchain revenue, or paying
+              customers)
+            </td>
+            <td>—</td>
+            <td>—</td>
+            <td>●</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <em
+          >Planned coverage by funding category. Goals: 90% of approved Kernel,
+          RevDev and R&amp;D projects carry at least one published health
+          metric, and 100% of RevDev projects carry a revenue-linked metric.
+          These are program goals, not yet results.</em
+        >
+      </p>
+
+      <p><strong>Kernel health monitoring, funded teams this batch</strong></p>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="rounded-lg border border-line p-5">
+          <p class="eyebrow">READING COVERAGE · 30D</p>
+          <p class="text-3xl"><strong>100%</strong></p>
+          <p>922 of 922 expected reading periods carry a value</p>
+        </div>
+        <div class="rounded-lg border border-line p-5">
+          <p class="eyebrow">METRICS COLLECTED</p>
+          <p class="text-3xl"><strong>45</strong></p>
+          <p>each on its own cadence, from a public source</p>
+        </div>
+        <div class="rounded-lg border border-line p-5">
+          <p class="eyebrow">ACTIVE GRANTS</p>
+          <p class="text-3xl"><strong>14</strong></p>
+          <p>Projects with a metric against them</p>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Kernel functions by tier</th>
+            <th>Metrics</th>
+            <th>Functions</th>
+            <th>Coverage · 30d</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ankr</td><td>1 Essential</td><td>3</td><td>1</td><td>100.0%</td>
+          </tr>
+          <tr>
+            <td>Blockscout</td><td>2 Essential</td><td>6</td><td>2</td><td
+              >100.0%</td
+            >
+          </tr>
+          <tr>
+            <td>Chain.Love</td><td>1 Essential</td><td>5</td><td>1</td><td
+              >100.0%</td
+            >
+          </tr>
+          <tr>
+            <td>Curio / FilOz</td><td>3 Essential</td><td>5</td><td>3</td><td
+              >100.0%</td
+            >
+          </tr>
+          <tr>
+            <td>drand / Randamu</td><td>1 Irreplaceable · 1 Essential</td><td
+              >5</td
+            ><td>2</td><td>100.0%</td>
+          </tr>
+          <tr>
+            <td>Filecoin Community Services / ChainSafe</td><td>3 Essential</td
+            ><td>3</td><td>3</td><td>100.0%</td>
+          </tr>
+          <tr>
+            <td>Filecoin Data Portal</td><td>1 Essential</td><td>1</td><td>1</td
+            ><td>100.0%</td>
+          </tr>
+          <tr>
+            <td>Filecoin Docs / FIL-B</td><td>1 Essential</td><td>2</td><td
+              >1</td
+            ><td>100.0%</td>
+          </tr>
+          <tr>
+            <td>Forest / ChainSafe</td><td>2 Essential</td><td>2</td><td>2</td
+            ><td>100.0%</td>
+          </tr>
+          <tr>
+            <td>Goldsky</td><td>1 Essential</td><td>2</td><td>1</td><td
+              >100.0%</td
+            >
+          </tr>
+          <tr>
+            <td>IPNI / OIF</td><td>1 Essential</td><td>4</td><td>1</td><td
+              >100.0%</td
+            >
+          </tr>
+          <tr>
+            <td>Plumbline</td><td>1 Essential</td><td>1</td><td>1</td><td
+              >100.0%</td
+            >
+          </tr>
+          <tr>
+            <td>USDFC / Secured Finance</td><td>1 Important</td><td>4</td><td
+              >1</td
+            ><td>100.0%</td>
+          </tr>
+          <tr>
+            <td>Zondax</td><td>1 Essential</td><td>2</td><td>1</td><td
+              >100.0%</td
+            >
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <em
+          >Snapshot from the
+          <a href="https://www.filpgf.io/kernel/"
+            >live Kernel monitoring view on filpgf.io</a
+          >, 25 September 2026. Every metric is fetched nightly from a public
+          source by a pipeline the team does not control. Projects, the Kernel
+          functions they steward, and their metric definitions are registered in
+          the public
+          <a href="https://github.com/filecoin-project/pgf-monitor"
+            >pgf-monitor repository</a
+          >.</em
+        >
+      </p>
+
+      <p>
+        Automation keeps the numbers honest. Automated project health monitoring
+        will flag when a source in the metrics dashboard goes down or drops
+        below a threshold, so the team notices a stale number before the
+        community does. Verified metrics then flow into cover pages, project
+        views, bi-weekly and monthly reports, and the Ask Karma assistant. For
+        Kernel, this already runs in public: the projects stewarding each Kernel
+        function and their metric definitions are registered in the
+        <a href="https://github.com/filecoin-project/pgf-monitor"
+          >pgf-monitor repository on GitHub</a
+        >, which powers the
+        <a href="https://www.filpgf.io/kernel/"
+          >Kernel health monitoring on filpgf.io</a
+        >.
+      </p>
+
+      <p class="eyebrow">FEATURE AREA 2</p>
+      <h3 id="ai-native">AI-native applications and reviews</h3>
+      <p>Application intake · Milestone review</p>
+      <p>Built with <a href="https://www.simocracy.org/">Simocracy</a></p>
+      <p>
+        Two processes go AI-native: how projects apply, and how the the projects
+        are reviewed. For both project applications and projects milestones, a
+        sim does the first pass and a person reviews it and decides if it’s
+        cleared for approval. The point is to make the ops side of reviews
+        lightweight, for reviewers and for the teams receiving funding.
+        Simocracy is
+        <a
+          href="https://www.filpgf.io/blog/from-funding-history-to-digital-twins-launching-simocracy-for-propgf/"
+          >now live in our review process</a
+        > and interactions are ongoing.
+      </p>
+
+      <div class="rounded-lg border border-line bg-tint p-6">
+        <p class="eyebrow">THE TEAM</p>
+        <p>
+          <a href="https://www.simocracy.org/">Simocracy</a> is a platform for AI-powered
+          governance participation. Someone completes a five-minute interview and
+          mints a <strong>sim</strong>: a digital twin with an avatar, a
+          constitution that captures their values, and a speaking style.
+          Simocracy’s own line is “sims as the engine, humans as the steering
+          wheel,” and it has already been used in funding experiments such as
+          Funding the Commons.
+        </p>
+      </div>
+
+      <h4>AI-native application process</h4>
+      <p>
+        Applications will be pre-populated using existing project information,
+        so Kernel teams do not need to resubmit information already on file.
+        Teams can review the pre-populated application, make any necessary
+        updates, and submit.
+      </p>
+
+      <h4>AI-native milestone review</h4>
+      <p>
+        Sim reviewer assignment and assessment, milestone submission
+        notifications to the human reviewer, reminder triggers, and escalation
+        flags for reviews that exceed their turnaround time.
+      </p>
+
+      <p><strong>The two processes, step by step</strong></p>
+
+      <p><strong>AI-native application process</strong></p>
+      <div class="grid gap-4 sm:grid-cols-4">
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Adaptive intake</strong></p>
+          <p>Questions fit the project →</p>
+        </div>
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>AI-assisted draft</strong></p>
+          <p>Built from the scope of work →</p>
+        </div>
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Applicant sign-off</strong></p>
+          <p>Reviews and submits →</p>
+        </div>
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Committee review</strong></p>
+          <p>Sims assist, humans decide</p>
+        </div>
+      </div>
+
+      <p><strong>AI-native milestone review</strong></p>
+      <div class="grid gap-4 sm:grid-cols-4">
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Milestone submitted</strong></p>
+          <p>Update filed in filpgf.io →</p>
+        </div>
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Sim assessment</strong></p>
+          <p>Assigned sim reviewer →</p>
+        </div>
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Human reviewer</strong></p>
+          <p>Notified, reminded, escalated →</p>
+        </div>
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Decision recorded</strong></p>
+          <p>Captured in filpgf.io</p>
+        </div>
+      </div>
+
+      <h3 id="admin-views">Admin views and funding workflows</h3>
+      <p>Queues · Payments · Feedback · Export</p>
+      <p>Built with Karma</p>
+      <p>
+        Built in partnership with Karma, the <strong>admin view</strong> is the centerpiece
+        for the team running the program. Reviews and payment items queue up by priority
+        and age, so it is always clear what to pick up next. Feedback from reviewers
+        and funded teams in selected Telegram and Slack channels, along with Simocracy
+        feedback, is integrated automatically into those same work items. The aim
+        is better turnaround times and a better experience for every stakeholder,
+        with AI making the ops side of reviews lightweight.
+      </p>
+
+      <div class="rounded-lg border border-line bg-tint p-6">
+        <p class="eyebrow">THE TEAM</p>
+        <p>
+          <a href="https://www.karmahq.org/">Karma</a> is an AI-powered funding platform
+          that foundations and ecosystems use to run funding programs from application
+          to outcome. As our platform partner, Karma is building filpgf.io alongside
+          our team and holds the program’s records, bringing together metrics and
+          sim reviews. For Filecoin, it handles intake and review workflows, onboarding
+          tasks like document signing and KYB tracking, invoice tracking, and payment
+          disbursements. Karma is also a headless platform, so all program data can
+          be accessed through MCP and Agent Skills as well as the web app.
+        </p>
+      </div>
+
+      <p><strong>How the pieces connect</strong></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Feeds in</th>
+            <th>Platform</th>
+            <th>Surfaces as</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>Slack &amp; Telegram</strong><br />Reviewer &amp; project
+              feedback<br /><br />
+              <strong>OSO</strong><br />Impact &amp; maintenance data<br /><br
+              />
+              <strong>Simocracy</strong><br />Sim reviews &amp; feedback
+            </td>
+            <td><strong>Karma</strong><br />Platform partner for filpgf.io</td>
+            <td>
+              <strong>Public views</strong><br />Funding, projects, impact<br
+              /><br />
+              <strong>Project &amp; reviewer views</strong><br />Status,
+              reviews, invoices<br /><br />
+              <strong>Admin queues</strong><br />Reviews &amp; payments by
+              priority
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <em>Simplified data flow. Illustrative, not an architecture diagram.</em
+        >
+      </p>
+
+      <p class="eyebrow">HOW IT COMES TOGETHER</p>
+      <h2 id="funding-support">
+        Funding support: faster decisions, fewer nudges
+      </h2>
+      <p>
+        The three objectives above meet in the day-to-day experience of funding
+        support. Sims prepare the first pass and admins work from one queue, so
+        people spend their time on judgment calls rather than chasing updates.
+        These are the service commitments filpgf.io is designed to support,
+        helping us keep SLAs consistent across a decentralized environment:
+      </p>
+      <ul>
+        <li>
+          Project milestone reviewers are notified of their sim’s assessment
+          within one business day.
+        </li>
+        <li>
+          Standard milestone reviews are completed within one week. Reviews that
+          require changes or further discussion may take additional time, with a
+          target ceiling of two weeks.
+        </li>
+        <li>
+          We’re targeting a two-week payout window for invoices on verified
+          milestones.
+        </li>
+      </ul>
+
+      <p><strong>Service commitments for funded projects</strong></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Commitment</th>
+            <th>Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>Reviewer notified</strong><br />of their sim’s assessment
+            </td>
+            <td>within 1 business day</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Standard milestone review</strong><br />no changes needed
+            </td>
+            <td>within 1 week</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Review needing changes</strong><br />or further discussion
+            </td>
+            <td>2-week ceiling target</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Invoice payout</strong><br />on a verified milestone
+            </td>
+            <td>target 2-week window</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Project follow-ups</strong></p>
+          <p>
+            Overdue milestone updates get a nudge every 3 business days, then
+            weekly after 10.
+          </p>
+        </div>
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Reviewer follow-ups</strong></p>
+          <p>
+            Pending reviews follow the same cadence, so nothing stalls quietly.
+          </p>
+        </div>
+        <div class="rounded-lg border border-line p-4">
+          <p><strong>Admin queues</strong></p>
+          <p>
+            Every application, milestone and invoice becomes a work item with a
+            status and an age.
+          </p>
+        </div>
+      </div>
+      <p>
+        <em
+          >The service model filpgf.io is designed to support. Admin views will
+          report SLA performance every two weeks.</em
+        >
+      </p>
+
+      <p>
+        Feedback from Simocracy and from selected Slack and Telegram automations
+        will be incorporated through successive iterations of this build-out.
+      </p>
+
+      <h2 id="ships">When each feature ships</h2>
+      <p>
+        Here is what we plan to ship and roughly when, in three delivery
+        windows. The roadmap is rolling: we revisit priorities every week, so
+        sequencing and dates may shift as we learn from funded teams, reviewers,
+        and admins.
+      </p>
+
+      <p class="eyebrow">SEP 1 – OCT 31, 2026 · IN PROGRESS</p>
+      <h3>Funding framework, transparency &amp; AI-native operations</h3>
+      <ul>
+        <li>
+          <strong>Funding metrics everywhere.</strong> Metrics land in cover pages,
+          individual project views, and bi-weekly/monthly reporting, and are available
+          through Ask Karma. (Metrics &amp; impact)
+        </li>
+        <li>
+          <strong>Simocracy integration v1.</strong> Selection Committee members sims
+          are up and running.(Sims &amp; reviews)
+        </li>
+        <li>
+          <strong>Automated milestone review.</strong> Sim reviewer assignment and
+          assessment, notifications to the human reviewer, reminder triggers, and
+          escalation flags for slow reviews. (Sims &amp; reviews)
+        </li>
+        <li>
+          <strong>AI-native application process v1.</strong> Application intake, AI-assisted
+          application development and review, and a submission workflow. (Applications)
+        </li>
+        <li>
+          <strong>Admin queues live.</strong> Applications, milestones and invoices
+          each get a work item with trackable status and age. (Admin operations)
+        </li>
+        <li>
+          <strong>Navigation for the new funding framework.</strong> UX and navigation
+          improvements that support the three funding categories. (UX &amp; comms)
+        </li>
+      </ul>
+
+      <p class="eyebrow">NOV 1 – DEC 31, 2026 · NEXT</p>
+      <h3>Funding ops data &amp; automation</h3>
+      <ul>
+        <li>
+          <strong>Keep iterating.</strong> Continued iterations of Simocracy, application
+          intake, admin queues, and metrics engagement (Ask Karma, reporting, cover
+          pages). (Sims · Apps · Admin · Metrics)
+        </li>
+        <li>
+          <strong>Slack &amp; Telegram integration v1.</strong> Relevant project discussions
+          connect to the matching admin work items and project records. (Integrations
+          · Admin operations)
+        </li>
+        <li>
+          <strong>Automated project health monitoring.</strong> Flags when a source
+          in the metrics dashboard is down or below threshold. (Metrics &amp; impact)
+        </li>
+        <li>
+          <strong>AI analytics dashboards for admins.</strong> Admins can sort and
+          view how AI assessments of milestones and applications line up with human
+          reviewer sign-off. (Admin operations · Sims &amp; reviews)
+        </li>
+      </ul>
+
+      <p class="eyebrow">JAN – FEB 2027 · LATER</p>
+      <h3>Integrated program intelligence</h3>
+      <ul>
+        <li>
+          <strong>Keep iterating.</strong> Continued iterations of Simocracy, application
+          intake, admin queues, and metrics engagement. (Sims · Apps · Admin · Metrics)
+        </li>
+        <li>
+          <strong>Project-level Hypercerts.</strong> Project-specific hypercerts that
+          capture and showcase verified outcomes and impact from funded work. (Metrics
+          &amp; impact · Integrations)
+        </li>
+        <li>
+          <strong>Showcase roadmap impact.</strong> Blogs and content highlighting
+          what shipped through the filpgf.io roadmap and the impact it delivered.
+          (UX &amp; comms)
+        </li>
+      </ul>
+
+      <h2 id="adds-up">What this adds up to</h2>
+      <p>
+        If the next six months go to plan, a community member can see where PGF
+        money went and how those projects are doing without asking anyone. A
+        funded team can check a milestone and an invoice without sending an
+        email. A reviewer can open one page, see a sim’s draft beside the full
+        application, and decide. And the team running the program can spot a
+        stalled project or a failing data source early, and report on it without
+        assembling a spreadsheet first.
+      </p>
+      <p>
+        We will keep sharing progress as each window closes. In the meantime,
+        explore the live portal and tell us what would make it more useful for
+        you.
+      </p>
+      <p>
+        <a href="https://app.filpgf.io"><strong>Explore filpgf.io →</strong></a>
+      </p>
+      <p>
+        <em
+          >Roadmap windows are indicative and may change as priorities evolve.
+          For the short version of this page, see the filpgf.io blog post.</em
+        >
+      </p>
+    </div>
+  </div>
+</BaseLayout>
