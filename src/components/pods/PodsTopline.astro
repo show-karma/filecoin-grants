@@ -1,0 +1,86 @@
+---
+import type { PodsData } from "../../data/pods-api";
+import { formatUsd } from "../../data/pods-api";
+
+type Props = { data: PodsData };
+const { data } = Astro.props;
+const { program } = data;
+
+const count = (n: number, one: string, many = `${one}s`) =>
+  `${n} ${n === 1 ? one : many}`;
+
+const committed = formatUsd(program.committedUsd);
+const paid = formatUsd(program.paidToDateUsd);
+
+/*
+ * A pod paid on rails the tracker does not cover contributes nothing to the
+ * total, which makes the figure a floor rather than the sum. Saying so beside
+ * it is the difference between a number and a misleading one.
+ */
+const untracked = program.podsFunded - program.podsWithTrackedPayments;
+const paidNote =
+  untracked === 0
+    ? `${Math.round((program.paidToDateUsd / program.committedUsd) * 100)}% of committed`
+    : `at least — ${count(untracked, "pod")} paid on rails the tracker does not cover`;
+
+const tiles = [
+  {
+    value: `${program.podsFunded}`,
+    label: "Pods funded",
+    note: "Each carries its own funding commitment, roadmap and reporting line",
+  },
+  {
+    value: committed ?? "—",
+    label: "Committed",
+    note: "Signed funding commitments across the pods",
+  },
+  {
+    value: paid ?? "—",
+    label: "Disbursed",
+    note: paidNote,
+    noteTone: untracked > 0 ? "warn" : "muted",
+  },
+  {
+    value: `${program.commitmentsDelivered} / ${program.commitmentsTotal}`,
+    label: "Commitments delivered",
+    note: "Goals the pods signed up to that are demonstrably done",
+  },
+  {
+    value: `${program.reviewsRead}`,
+    label: "Reviews read",
+    note: program.latestReviewAt
+      ? `Every figure below traces to one · latest ${program.latestReviewAt}`
+      : "Every figure below traces to one",
+  },
+];
+---
+
+<dl
+  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-3"
+>
+  {
+    tiles.map((tile) => (
+      <div class="flex flex-col bg-surface p-5">
+        <dt class="order-2 mt-1.5 text-sm leading-snug text-body">
+          {tile.label}
+        </dt>
+        <dd
+          class:list={[
+            "order-1 font-mono text-2xl font-medium tracking-tight",
+            tile.value === "—" ? "text-muted" : "text-ink",
+          ]}
+        >
+          {tile.value}
+        </dd>
+        <dd
+          class:list={[
+            "order-3 mt-2 font-mono text-xs leading-snug",
+            tile.noteTone === "warn" ? "text-warn" : "text-muted",
+          ]}
+        >
+          {tile.note}
+        </dd>
+      </div>
+    ))
+  }
+</dl>

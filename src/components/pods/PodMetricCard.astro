@@ -1,0 +1,88 @@
+---
+import type { PodMetric } from "../../data/pods-api";
+import {
+  changeOverWindow,
+  DELTA_WINDOW_DAYS,
+  latestReading,
+  progressPct,
+  withinCeiling,
+} from "../../data/pods-api";
+
+type Props = { metric: PodMetric };
+const { metric } = Astro.props;
+
+const latest = latestReading(metric);
+const change = changeOverWindow(metric);
+const pct = progressPct(metric);
+const within = withinCeiling(metric);
+
+/**
+ * Formatted from the figure's own magnitude, with the unit appended only when
+ * upstream states one — a count of storage providers and a revenue line cannot
+ * share one rule, and neither can be given a currency it never claimed.
+ */
+function format(value: number): string {
+  if (Math.abs(value) >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  }
+  if (Math.abs(value) >= 1_000) {
+    return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  }
+  if (Number.isInteger(value)) return value.toLocaleString("en-US");
+  return value.toFixed(2).replace(/\.?0+$/, "");
+}
+
+/* Currency reads as a prefix; everything else follows the figure. */
+const isMoney = metric.unit === "USD";
+const show = (value: number) =>
+  isMoney
+    ? `$${format(value)}`
+    : `${format(value)}${metric.unit ? ` ${metric.unit}` : ""}`;
+
+function buildTargetNote(): string {
+  if (metric.target === null) return "no numeric target committed";
+  const target = show(metric.target);
+  if (pct !== null) return `${Math.round(pct)}% of the ${target} target`;
+  if (within === true) return `within the ${target} ceiling`;
+  if (within === false) return `over the ${target} ceiling`;
+  return `target · ${target}`;
+}
+
+const targetNote = buildTargetNote();
+
+const changeLabel =
+  change === null || change === 0
+    ? "flat"
+    : `${change > 0 ? "↑" : "↓"} ${show(Math.abs(change))}`;
+---
+
+<div class="rounded-lg border border-line bg-surface p-5">
+  <p class="mono-meta uppercase">{metric.metricLabel}</p>
+  <p class="mt-1 font-mono text-2xl font-medium tracking-tight text-ink">
+    {latest ? show(latest.value) : "—"}
+  </p>
+  <p
+    class:list={[
+      "mono-meta mt-1.5",
+      within === false ? "text-warn" : "",
+      metric.target === null ? "text-muted" : "",
+    ]}
+  >
+    {targetNote}
+  </p>
+
+  {
+    pct !== null && (
+      <div
+        class="mt-3 h-1 overflow-hidden rounded-full bg-line-soft"
+        aria-hidden="true"
+      >
+        <div class="h-full rounded-full bg-accent" style={`width:${pct}%`} />
+      </div>
+    )
+  }
+
+  <p class="mono-meta mt-3">
+    {changeLabel} over {DELTA_WINDOW_DAYS / 7} wks
+  </p>
+</div>

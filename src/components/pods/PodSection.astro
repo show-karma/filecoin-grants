@@ -1,0 +1,154 @@
+---
+import type { PodEntry } from "../../data/pods-api";
+import { formatUsd } from "../../data/pods-api";
+import PodMetricCard from "./PodMetricCard.astro";
+
+type Props = { pod: PodEntry };
+const { pod } = Astro.props;
+
+const shipped = pod.commitments.filter((c) => c.isDelivered);
+const open = pod.commitments.filter((c) => !c.isDelivered);
+
+const committed = formatUsd(pod.committedUsd);
+const paid = formatUsd(pod.paidToDateUsd);
+
+/*
+ * The roadmap text is one line of milestones separated by middots upstream.
+ * Split for the list rather than rendered as a paragraph, which is what it is
+ * — a set of commitments, not prose.
+ */
+const roadmapItems = (pod.roadmapText ?? "")
+  .split("·")
+  .map((part) => part.trim())
+  .filter(Boolean);
+
+/** Upstream's status vocabulary, and what each one is claiming. */
+const STATUS_TONE: Record<string, string> = {
+  done: "text-ok",
+  done_early: "text-ok",
+  done_late: "text-ok",
+  on_track: "text-body",
+  at_risk: "text-warn",
+  off_track: "text-bad",
+  unconfirmed: "text-muted",
+};
+---
+
+<article id={`pod-${pod.podSlug}`} class="scroll-mt-24">
+  <header class="border-b border-line pb-4">
+    <p class="mono-meta uppercase">Pod · {pod.podDisplayName}</p>
+    <h3 class="mt-2 text-2xl font-semibold tracking-tight text-ink">
+      {pod.podFullName}
+    </h3>
+    <p class="mono-meta mt-2">
+      Run by {pod.team}
+      {committed && <> · {committed} committed</>}
+      {paid && <> · {paid} disbursed</>}
+      {!pod.paidIsTracked && (
+        <span class="text-warn"> · paid outside the tracker</span>
+      )}
+    </p>
+  </header>
+
+  {
+    pod.metrics.length > 0 && (
+      <section class="mt-6">
+        <h4 class="text-[0.95rem] font-semibold text-ink">
+          Key impact metrics
+        </h4>
+        <p class="mono-meta mt-1">
+          read from the pod's own biweekly reviews
+        </p>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {pod.metrics.map((metric) => (
+            <PodMetricCard metric={metric} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <div class="mt-8 grid gap-8 lg:grid-cols-2">
+    {
+      shipped.length > 0 && (
+        <section>
+          <h4 class="text-[0.95rem] font-semibold text-ink">Shipped</h4>
+          <p class="mono-meta mt-1">commitments signed off as delivered</p>
+          <ul class="mt-3 space-y-2">
+            {shipped.map((c) => (
+              <li class="rounded-md border border-line bg-surface px-4 py-3">
+                <p class="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
+                  <span class="font-medium text-ink">{c.goalLabel}</span>
+                  <span class={`mono-meta ${STATUS_TONE[c.status] ?? "text-ok"}`}>
+                    {c.statusLabel ?? c.status}
+                  </span>
+                </p>
+                {c.achievedNotePublic && (
+                  <p class="mono-meta mt-1.5">{c.achievedNotePublic}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      open.length > 0 && (
+        <section>
+          <h4 class="text-[0.95rem] font-semibold text-ink">Still open</h4>
+          <p class="mono-meta mt-1">
+            what the pod is on the hook for, and where it stands
+          </p>
+          <ul class="mt-3 space-y-2">
+            {open.map((c) => (
+              <li class="rounded-md border border-line bg-surface px-4 py-3">
+                <p class="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
+                  <span class="font-medium text-ink">{c.goalLabel}</span>
+                  <span
+                    class={`mono-meta ${STATUS_TONE[c.status] ?? "text-muted"}`}
+                  >
+                    {c.statusLabel ?? c.status}
+                  </span>
+                </p>
+                {c.targetText && (
+                  <p class="mono-meta mt-1.5">target · {c.targetText}</p>
+                )}
+                {c.achievedNotePublic && (
+                  <p class="mt-1.5 text-sm leading-snug text-body">
+                    {c.achievedNotePublic}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+
+  {
+    roadmapItems.length > 0 && (
+      <section class="mt-8 rounded-lg border border-line bg-surface p-5">
+        <p class="mono-meta uppercase">
+          In flight now{pod.roadmapLabel && ` · ${pod.roadmapLabel}`}
+        </p>
+        <ul class="mt-3 space-y-1.5">
+          {roadmapItems.map((item) => (
+            <li class="text-sm leading-snug text-body">{item}</li>
+          ))}
+        </ul>
+        {pod.roadmapAmountsRedacted && (
+          <p class="mono-meta mt-3 text-warn">
+            Milestone amounts withheld upstream
+          </p>
+        )}
+        {pod.roadmapSource && (
+          <p class="mono-meta mt-2">
+            Transcribed from {pod.roadmapSource}
+          </p>
+        )}
+      </section>
+    )
+  }
+</article>

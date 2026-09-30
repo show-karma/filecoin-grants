@@ -1,0 +1,83 @@
+---
+import type { PodEntry } from "../../data/pods-api";
+import { formatUsd, openBookUsd, weightedBookUsd } from "../../data/pods-api";
+
+type Props = { pods: PodEntry[] };
+const { pods } = Astro.props;
+
+const withPipeline = pods.filter((pod) => pod.pipeline !== null);
+
+/*
+ * Never one funnel. A pod reporting deals carries a value and a win
+ * probability; a pod reporting partnerships carries neither, so the two are
+ * shown side by side and the counts are not added into a single number.
+ */
+const funnels = withPipeline.map((pod) => {
+  const pipeline = pod.pipeline!;
+  const open = openBookUsd(pipeline);
+  const weighted = weightedBookUsd(pipeline);
+  return {
+    pod,
+    pipeline,
+    open,
+    weighted,
+    hasValue: open !== null,
+    /* Widest stage sets the bar scale, so a funnel reads as a shape. */
+    widest: Math.max(1, ...pipeline.stages.map((s) => s.entityCount)),
+  };
+});
+---
+
+<div class="space-y-10">
+  {
+    funnels.map(({ pod, pipeline, open, weighted, hasValue, widest }) => (
+      <section>
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-2">
+          <h3 class="text-[0.95rem] font-semibold text-ink">
+            {pod.podDisplayName} — {pipeline.entityKind === "deal" ? "enterprise book" : "partnership funnel"}
+          </h3>
+          <p class="mono-meta">
+            {pipeline.totalEntities} tracked · {pipeline.openEntities} open
+            {pipeline.snapshotDate && ` · ${pipeline.snapshotDate}`}
+          </p>
+        </div>
+
+        {hasValue && (
+          <p class="mono-meta mt-3">
+            {formatUsd(open)} open book · {formatUsd(weighted)} weighted by each
+            opportunity's own win probability
+          </p>
+        )}
+        {!hasValue && (
+          <p class="mono-meta mt-3">
+            counts only — this tracker holds no deal size and no win probability
+          </p>
+        )}
+
+        <ul class="mt-4 space-y-2">
+          {pipeline.stages.map((stage) => (
+            <li class="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <span class="w-40 shrink-0 text-sm text-ink">
+                {stage.stage}
+                {stage.isFolded && (
+                  <span class="mono-meta text-muted"> · folded</span>
+                )}
+              </span>
+              <span class="w-10 shrink-0 text-right font-mono text-sm text-ink">
+                {stage.entityCount}
+              </span>
+              <span
+                class="h-2 min-w-[2px] rounded-full bg-accent"
+                style={`width:${(stage.entityCount / widest) * 42}%`}
+                aria-hidden="true"
+              />
+              {stage.amountUsd !== null && (
+                <span class="mono-meta">{formatUsd(stage.amountUsd)}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</div>

@@ -14,6 +14,23 @@ import {
   REVDEV_FUNDING_FACTS,
   REVDEV_ROADMAP_CRITERIA,
 } from "../data/programs";
+import PodsTopline from "../components/pods/PodsTopline.astro";
+import PodPipeline from "../components/pods/PodPipeline.astro";
+import PodSection from "../components/pods/PodSection.astro";
+import { loadPodsData } from "../data/pods-api";
+
+/*
+ * Rendered on demand rather than at build so the pods' own figures refresh
+ * without a deploy; Vercel ISR then caches the result.
+ */
+export const prerender = false;
+
+/*
+ * Null when the pods API could not be read for this render. The page then
+ * keeps only what is true without it — the programme's terms, the roadmap
+ * criteria — and drops every live figure rather than showing a stale one.
+ */
+const podsData = await loadPodsData();
 ---
 
 <BaseLayout
@@ -72,6 +89,53 @@ import {
       {PODS.map((pod) => <PodCard pod={pod} />)}
     </div>
   </Section>
+
+  {
+    podsData && (
+      <Section id="progress">
+        <SectionHeader
+          eyebrow="Progress"
+          title="Where the pods stand"
+          intro="Rebuilt from the pods' own biweekly business reviews, so it moves when they do rather than freezing on a reporting date. Every figure traces to a review or to a signed funding agreement."
+        />
+        <div class="mt-10">
+          <PodsTopline data={podsData} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && podsData.pods.some((pod) => pod.pipeline) && (
+      <Section id="pipeline" tint>
+        <SectionHeader
+          eyebrow="Pipeline"
+          title="What is coming"
+          intro="One pod runs an enterprise sales book with a value and a win probability on every opportunity; the other runs a partnership tracker that records neither. They are reported separately and never combined. Figures are aggregate only — counterparties are not named here."
+        />
+        <div class="mt-10">
+          <PodPipeline pods={podsData.pods} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && (
+      <Section id="pod-detail">
+        <SectionHeader
+          eyebrow="By pod"
+          title="Each pod against its own agreement"
+          intro="What each pod committed to, what it has shipped, and the metrics it is judged on. A pod that did not state a number in a given review is shown as missing rather than as zero."
+        />
+        <div class="mt-10 space-y-16">
+          {podsData.pods.map((pod) => (
+            <PodSection pod={pod} />
+          ))}
+        </div>
+      </Section>
+    )
+  }
 
   <!-- Funding -->
   <Section id="funding">
