@@ -81,6 +81,7 @@ export const MAIN_NAV: NavEntry[] = [
     items: [
       { label: "Filecoin", href: EXTERNAL.filecoin },
       { label: "Upcoming Events", href: "https://fil.org/events/" },
+      { label: "Roadmap", href: "/roadmap/" },
     ],
   },
   /*
