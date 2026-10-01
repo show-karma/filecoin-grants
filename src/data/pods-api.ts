@@ -72,7 +72,8 @@ export type PodPipelineStage = {
   stageKind: string | null;
   /** True where upstream folded several thin stages into one row. */
   isFolded: boolean;
-  entityCount: number;
+  /** Null where upstream publishes no count for the stage. */
+  entityCount: number | null;
   amountUsd: number | null;
   weightedUsd: number | null;
   pb: number | null;
@@ -82,9 +83,13 @@ export type PodPipeline = {
   /** `deal` carries value and probability; `partnership` carries neither. */
   entityKind: string;
   snapshotDate: string | null;
-  totalEntities: number;
-  openEntities: number;
-  closedLostEntities: number;
+  totalEntities: number | null;
+  openEntities: number | null;
+  /**
+   * Null where upstream states none. FOC's partnership tracker publishes no
+   * closed-lost figure, and that is not a claim that none were lost.
+   */
+  closedLostEntities: number | null;
   stages: PodPipelineStage[];
 };
 

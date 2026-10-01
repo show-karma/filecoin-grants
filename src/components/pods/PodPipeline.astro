@@ -22,8 +22,9 @@ const funnels = withPipeline.map((pod) => {
     open,
     weighted,
     hasValue: open !== null,
-    /* Widest stage sets the bar scale, so a funnel reads as a shape. */
-    widest: Math.max(1, ...pipeline.stages.map((s) => s.entityCount)),
+    /* Widest stage sets the bar scale, so a funnel reads as a shape. A stage
+     * upstream left uncounted sets nothing and draws no bar. */
+    widest: Math.max(1, ...pipeline.stages.map((s) => s.entityCount ?? 0)),
   };
 });
 ---
@@ -34,11 +35,20 @@ const funnels = withPipeline.map((pod) => {
       <section>
         <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-2">
           <h3 class="text-[0.95rem] font-semibold text-ink">
-            {pod.podDisplayName} — {pipeline.entityKind === "deal" ? "enterprise book" : "partnership funnel"}
+            {pod.podDisplayName} —{" "}
+            {pipeline.entityKind === "deal"
+              ? "enterprise book"
+              : "partnership funnel"}
           </h3>
           <p class="mono-meta">
-            {pipeline.totalEntities} tracked · {pipeline.openEntities} open
-            {pipeline.snapshotDate && ` · ${pipeline.snapshotDate}`}
+            {[
+              pipeline.totalEntities !== null &&
+                `${pipeline.totalEntities} tracked`,
+              pipeline.openEntities !== null && `${pipeline.openEntities} open`,
+              pipeline.snapshotDate,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         </div>
 
@@ -63,14 +73,21 @@ const funnels = withPipeline.map((pod) => {
                   <span class="mono-meta text-muted"> · folded</span>
                 )}
               </span>
-              <span class="w-10 shrink-0 text-right font-mono text-sm text-ink">
-                {stage.entityCount}
-              </span>
               <span
-                class="h-2 min-w-[2px] rounded-full bg-accent"
-                style={`width:${(stage.entityCount / widest) * 42}%`}
-                aria-hidden="true"
-              />
+                class:list={[
+                  "w-10 shrink-0 text-right font-mono text-sm",
+                  stage.entityCount === null ? "text-muted" : "text-ink",
+                ]}
+              >
+                {stage.entityCount ?? "—"}
+              </span>
+              {stage.entityCount !== null && (
+                <span
+                  class="h-2 min-w-[2px] rounded-full bg-accent"
+                  style={`width:${(stage.entityCount / widest) * 42}%`}
+                  aria-hidden="true"
+                />
+              )}
               {stage.amountUsd !== null && (
                 <span class="mono-meta">{formatUsd(stage.amountUsd)}</span>
               )}
