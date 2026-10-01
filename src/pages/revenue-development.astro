@@ -31,6 +31,18 @@ export const prerender = false;
  * criteria — and drops every live figure rather than showing a stale one.
  */
 const podsData = await loadPodsData();
+
+/*
+ * The editorial copy describes two product mandates; the funding agreements
+ * run to three pods, Large Data Onboarding carrying its own. So the recipient
+ * count comes from the agreements rather than from the copy, and the prose
+ * around it states no number of its own.
+ */
+const fundingFacts = REVDEV_FUNDING_FACTS.map((fact) =>
+  fact.label === "Recipients" && podsData
+    ? { ...fact, value: `${podsData.program.podsFunded} pods` }
+    : fact,
+);
 ---
 
 <BaseLayout
@@ -43,7 +55,7 @@ const podsData = await loadPodsData();
   <PageHero
     eyebrow="Revenue Development · Program overview"
     title="Turning capacity into paid usage."
-    intro="Filecoin's 2026 strategy shifts the question from how much data the network can hold to how much it is paid to store and serve. Revenue Development is the program behind that shift. It funds two pods directly: there is no open call and no public application."
+    intro="Filecoin's 2026 strategy shifts the question from how much data the network can hold to how much it is paid to store and serve. Revenue Development is the program behind that shift. It funds the pods directly: there is no open call and no public application."
   />
 
   <!-- Objective -->
@@ -53,10 +65,10 @@ const podsData = await loadPodsData();
     {/* Stacked, as in the design — the criteria card sits below the prose. */}
     <div class="mt-8 max-w-3xl space-y-5 text-[0.95rem] leading-relaxed">
       <p>
-        Revenue Development doesn't run an open call. It funds two pods, each
-        with a specific product and go-to-market mandate, each accountable for
-        revenue in its slice of the ecosystem. Capital follows their six-month
-        roadmaps and is released as milestones land.
+        Revenue Development doesn't run an open call. It funds pods, each with a
+        specific product and go-to-market mandate, each accountable for revenue
+        in its slice of the ecosystem. Capital follows their six-month roadmaps
+        and is released as milestones land.
       </p>
       <p>
         If you see something a pod's roadmap is missing, R&D is the program that
@@ -65,7 +77,7 @@ const podsData = await loadPodsData();
         roadmap later.
       </p>
       <p class="pt-1">
-        <Button href="#pods">Meet the two pods</Button>
+        <Button href="#pods">Meet the pods</Button>
       </p>
     </div>
 
@@ -82,7 +94,7 @@ const podsData = await loadPodsData();
   <Section id="pods" tint>
     <SectionHeader
       eyebrow="Pods"
-      title="Two pods set the roadmap"
+      title="The pods set the roadmap"
       intro="A pod is a small, mission-focused team with a specific product and go-to-market mandate. Pods own product and revenue for their slice of the ecosystem, and Revenue Development milestones are scoped against their six-month roadmaps."
     />
     <div class="mt-10 space-y-5">
@@ -149,7 +161,7 @@ const podsData = await loadPodsData();
       class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-4"
     >
       {
-        REVDEV_FUNDING_FACTS.map((fact) => (
+        fundingFacts.map((fact) => (
           <div class="bg-surface p-5">
             <dt class="mono-meta uppercase">{fact.label}</dt>
             <dd class="mt-1.5 text-lg font-semibold text-ink">{fact.value}</dd>
@@ -172,7 +184,7 @@ const podsData = await loadPodsData();
       <SectionHeader
         eyebrow="Get involved"
         title="Want to contribute?"
-        intro="Revenue Development funds the two pods directly, so there's nothing to apply for here. R&D is where outside teams can pick up work that supports them."
+        intro="Revenue Development funds the pods directly, so there's nothing to apply for here. R&D is where outside teams can pick up work that supports them."
         class="max-w-2xl"
       />
       <div class="flex shrink-0 flex-col items-start gap-3">

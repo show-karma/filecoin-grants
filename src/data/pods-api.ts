@@ -39,8 +39,13 @@ export type MetricDirection = "higher_better" | "lower_better";
 export type PodMetric = {
   metricKey: string;
   metricLabel: string;
-  /** Null where the pod committed no number for this one. */
+  /**
+   * In the same unit as the readings. Null where the pod committed no number,
+   * or where the figure its reviews still carry is a target it has retired.
+   */
   target: number | null;
+  /** How the agreement writes it: a 2560 TiB target signed as "2.5 PiB". */
+  targetLabel?: string | null;
   direction?: MetricDirection | null;
   /** "USD", "TiB", "minutes", … Absent where upstream states none. */
   unit?: string | null;
@@ -227,7 +232,9 @@ export async function loadPodsData(): Promise<PodsData | null> {
     return data;
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    console.warn(`[pods] live data unavailable, rendering without it: ${reason}`);
+    console.warn(
+      `[pods] live data unavailable, rendering without it: ${reason}`,
+    );
     return null;
   }
 }
