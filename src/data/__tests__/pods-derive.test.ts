@@ -4,6 +4,7 @@ import {
   changeOverWindow,
   formatUsd,
   openBookUsd,
+  progressBarPct,
   progressPct,
   weightedBookUsd,
   withinCeiling,
@@ -25,7 +26,9 @@ const metric = (overrides: Partial<PodMetric> = {}): PodMetric => ({
   ...overrides,
 });
 
-const stage = (overrides: Partial<PodPipelineStage> = {}): PodPipelineStage => ({
+const stage = (
+  overrides: Partial<PodPipelineStage> = {},
+): PodPipelineStage => ({
   stage: "Prospect",
   stageOrder: 1,
   stageKind: "open",
@@ -85,10 +88,34 @@ describe("progressPct", () => {
     expect(progressPct(metric({ direction: null }))).toBeNull();
   });
 
-  it("should_cap_at_100_once_the_target_is_passed", () => {
+  it("should_state_the_real_share_once_the_target_is_passed", () => {
+    // Beating a commitment is a result. LDO cleared its pool-capacity target
+    // outright, and reporting that as 100% would hide the one goal it beat.
     expect(
       progressPct(metric({ series: [{ date: "2026-09-09", value: 400_000 }] })),
+    ).toBe(160);
+  });
+});
+
+describe("progressBarPct", () => {
+  it("should_clamp_to_what_a_bar_can_draw", () => {
+    expect(
+      progressBarPct(
+        metric({ series: [{ date: "2026-09-09", value: 400_000 }] }),
+      ),
     ).toBe(100);
+  });
+
+  it("should_track_the_share_while_it_is_under_the_target", () => {
+    expect(
+      progressBarPct(
+        metric({ series: [{ date: "2026-09-09", value: 125_000 }] }),
+      ),
+    ).toBe(50);
+  });
+
+  it("should_stay_unscored_where_the_share_is", () => {
+    expect(progressBarPct(metric({ direction: null }))).toBeNull();
   });
 });
 
@@ -123,7 +150,9 @@ describe("changeOverWindow", () => {
 
   it("should_report_null_when_the_series_does_not_reach_back_that_far", () => {
     expect(
-      changeOverWindow(metric({ series: [{ date: "2026-09-09", value: 99_500 }] })),
+      changeOverWindow(
+        metric({ series: [{ date: "2026-09-09", value: 99_500 }] }),
+      ),
     ).toBeNull();
   });
 });
@@ -134,7 +163,11 @@ describe("openBookUsd", () => {
       openBookUsd(
         pipeline([
           stage(),
-          stage({ stage: "Closed/Dead", stageKind: "lost", amountUsd: 9_000_000 }),
+          stage({
+            stage: "Closed/Dead",
+            stageKind: "lost",
+            amountUsd: 9_000_000,
+          }),
         ]),
       ),
     ).toBe(12_700_000);

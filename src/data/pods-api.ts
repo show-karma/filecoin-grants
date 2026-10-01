@@ -167,16 +167,27 @@ export function changeOverWindow(metric: PodMetric): number | null {
 }
 
 /**
- * Share of the target reached, for the progress bars. Only a target the
- * reading is meant to climb toward has a share: against a ceiling the same
- * arithmetic reads backwards, scoring a pod worst when it is furthest under
- * the limit.
+ * Share of the target reached. Only a target the reading is meant to climb
+ * toward has a share: against a ceiling the same arithmetic reads backwards,
+ * scoring a pod worst when it is furthest under the limit.
+ *
+ * Uncapped, because clearing a target is a result worth stating. LDO's pool
+ * capacity sits at 148% of what it committed to and its commitment is signed
+ * off as "target cleared"; reporting that as 100% would hide the only goal the
+ * pod beat outright. The bar has nowhere to put the overshoot, so it clamps
+ * separately.
  */
 export function progressPct(metric: PodMetric): number | null {
   const latest = latestReading(metric);
   if (metric.direction !== "higher_better") return null;
   if (!latest || metric.target === null || metric.target === 0) return null;
-  return Math.max(0, Math.min(100, (latest.value / metric.target) * 100));
+  return Math.max(0, (latest.value / metric.target) * 100);
+}
+
+/** The same share, clamped to what a bar can draw. */
+export function progressBarPct(metric: PodMetric): number | null {
+  const pct = progressPct(metric);
+  return pct === null ? null : Math.min(100, pct);
 }
 
 /** True when the reading sits on the good side of a ceiling. */
