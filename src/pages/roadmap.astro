@@ -1075,9 +1075,33 @@ const WINDOWS = [
 
 <style>
   .roadmap {
+    --rm-blue: #0b57e0;
+    --rm-bar: #0a4ac2;
+    --rm-blue-mid: #5b93f0;
+    --rm-blue-soft: #c2d6f7;
+    --rm-card: #e9f0f7;
+    --rm-card-final: #e2ecff;
     color: var(--color-body);
   }
-  .roadmap a {
+  html.dark .roadmap .stat {
+    color: var(--color-accent);
+  }
+  html.dark .roadmap {
+    --rm-card: var(--color-tint);
+    --rm-card-final: color-mix(
+      in srgb,
+      var(--rm-blue) 18%,
+      var(--color-surface)
+    );
+  }
+  .roadmap a,
+  .roadmap .eyebrow,
+  .roadmap .text-accent {
+    color: var(--rm-blue);
+  }
+  html.dark .roadmap a,
+  html.dark .roadmap .eyebrow,
+  html.dark .roadmap .text-accent {
     color: var(--color-accent);
   }
   .roadmap a.toc-sub {
@@ -1143,7 +1167,7 @@ const WINDOWS = [
     display: inline-block;
     border: 1px solid var(--color-line);
     border-radius: 0.25rem;
-    background: var(--color-tint);
+    background: var(--rm-card);
     padding: 0.2rem 0.6rem;
     font-family: var(--font-mono);
     font-size: 0.75rem;
@@ -1188,14 +1212,14 @@ const WINDOWS = [
     width: 0.6rem;
     height: 0.6rem;
     border-radius: 9999px;
-    background: #1a5fd0;
+    background: var(--rm-blue);
   }
   .stat {
     margin-top: 0.25rem;
     font-size: 2.25rem;
     font-weight: 700;
     line-height: 1.1;
-    color: var(--color-accent);
+    color: var(--rm-blue);
   }
 
   /* Loop */
@@ -1213,7 +1237,7 @@ const WINDOWS = [
     display: block;
     border: 1px solid var(--color-line);
     border-radius: 0.5rem;
-    background: var(--color-tint);
+    background: var(--rm-card);
     padding: 1rem;
     color: var(--color-body);
     text-decoration: none;
@@ -1232,7 +1256,7 @@ const WINDOWS = [
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
-    background: #1a5fd0;
+    background: var(--rm-blue);
     font-family: var(--font-mono);
     font-size: 0.7rem;
     color: #ffffff;
@@ -1312,17 +1336,13 @@ const WINDOWS = [
     position: relative;
     border: 1px solid var(--color-line);
     border-radius: 0.5rem;
-    background: var(--color-tint);
+    background: var(--rm-card);
     padding: 0.875rem 1rem;
     text-align: center;
   }
   .steps li.final {
-    border-color: #1a5fd0;
-    background: color-mix(
-      in srgb,
-      var(--color-accent) 10%,
-      var(--color-surface)
-    );
+    border-color: var(--rm-blue);
+    background: var(--rm-card-final);
   }
   @media (min-width: 640px) {
     .steps {
@@ -1351,7 +1371,7 @@ const WINDOWS = [
   .hub-node {
     border: 1px solid var(--color-line);
     border-radius: 0.5rem;
-    background: var(--color-tint);
+    background: var(--rm-card);
     padding: 0.75rem 1rem;
     text-align: center;
   }
@@ -1361,7 +1381,7 @@ const WINDOWS = [
     align-items: center;
     justify-content: center;
     border-radius: 0.5rem;
-    background: #1a5fd0;
+    background: var(--rm-blue);
     padding: 1.5rem;
     color: #ffffff;
     text-align: center;
@@ -1405,7 +1425,7 @@ const WINDOWS = [
     top: 0;
     height: 100%;
     border-radius: 2px;
-    background: #1a5fd0;
+    background: var(--rm-bar);
   }
   .sla-dashed {
     position: absolute;
@@ -1413,7 +1433,7 @@ const WINDOWS = [
     height: 100%;
     background: repeating-linear-gradient(
       90deg,
-      #1a5fd0 0 6px,
+      var(--rm-blue-mid) 0 6px,
       transparent 6px 10px
     );
   }
@@ -1457,15 +1477,15 @@ const WINDOWS = [
     font-weight: 600;
   }
   .window-1 {
-    background: #1a5fd0;
+    background: var(--rm-blue);
     color: #ffffff;
   }
   .window-2 {
-    background: #5b8def;
+    background: var(--rm-blue-mid);
     color: #ffffff;
   }
   .window-3 {
-    background: #bcd4f9;
+    background: var(--rm-blue-soft);
     color: #0b0d10;
   }
   .month {
@@ -1488,7 +1508,7 @@ const WINDOWS = [
     width: 0.875rem;
     height: 0.875rem;
     border-radius: 9999px;
-    border: 2px solid #1a5fd0;
+    border: 2px solid var(--rm-blue);
     background: var(--color-surface);
   }
   .status {
@@ -1524,7 +1544,7 @@ const WINDOWS = [
   .button {
     display: inline-block;
     border-radius: 0.375rem;
-    background: #1a5fd0;
+    background: var(--rm-blue);
     padding: 0.7rem 1.25rem;
     font-weight: 600;
     color: #ffffff !important;
