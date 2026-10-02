@@ -11,11 +11,19 @@
  * Every number on the page comes from the API. Nothing here is a figure.
  */
 
+/**
+ * How a figure is written. A count of signups and a cash total cannot share
+ * one rule: "1,222" abbreviated to "1.2K" loses the precision the review
+ * stated, and "$601" hides that the pod has collected cents.
+ */
+export type PodMetricFormat = "usd" | "usd2" | "int" | "pct" | "min" | "tib";
+
 export type PodKpi = {
   /** Joins to `metricKey` on the API's metric entries. */
   metricKey: string;
   /** OSO's label, which reads better than the raw review wording. */
   label: string;
+  format: PodMetricFormat;
   note: string;
 };
 
@@ -48,16 +56,19 @@ export const POD_COPY: PodCopy[] = [
     kpis: [
       {
         metricKey: "filecoin_pay_arr",
+        format: "usd",
         label: "Onchain revenue (run rate)",
         note: "Annual run rate across every Filecoin Pay rail, read live off the contracts rather than extrapolated from settlements.",
       },
       {
         metricKey: "power_user_current",
+        format: "int",
         label: "Recurring power users",
         note: "Customers spending $500 or more a month, trailing 30 days. The test of whether anyone depends on the service, not just tries it.",
       },
       {
         metricKey: "dev_onboarding_time_minutes",
+        format: "min",
         label: "Developer onboarding",
         note: "Docs to first stored piece, measured end to end in every review. Lower is better, and it has been under the ceiling all year.",
       },
@@ -75,16 +86,19 @@ export const POD_COPY: PodCopy[] = [
     kpis: [
       {
         metricKey: "total_tib_onboarded",
+        format: "tib",
         label: "Data onboarded",
         note: "Against a 2.5 PiB commitment. The pool has the room — capacity cleared its own target — but clients have not filled it.",
       },
       {
         metricKey: "number_of_sps_participating",
+        format: "int",
         label: "Providers in the pool",
         note: "Storage providers actually taking pool data. Named the tightest constraint in almost every review.",
       },
       {
         metricKey: "of_successful_executions_of_paid_retrievals",
+        format: "pct",
         label: "Paid-retrieval success",
         note: "The product shipped and works. The rate stays at zero because no provider has adopted it yet, which is an adoption problem rather than a reliability one.",
       },
@@ -102,16 +116,19 @@ export const POD_COPY: PodCopy[] = [
     kpis: [
       {
         metricKey: "total_signups",
+        format: "int",
         label: "Signups",
         note: "Top of the self-serve funnel. Growing steadily, and the only part of the motion that clearly works.",
       },
       {
         metricKey: "paid_customers",
+        format: "int",
         label: "Paying customers",
         note: "Accounts that converted from a trial to a card. No numeric target was committed for this one.",
       },
       {
         metricKey: "revenue_collected_usd",
+        format: "usd2",
         label: "Revenue collected",
         note: "Cash actually collected to date — not a run rate. Set against a stated ambition of $2-4M 2026 ARR, this is the gap the enterprise pipeline at the foot of this page has to close.",
       },

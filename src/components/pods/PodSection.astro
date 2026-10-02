@@ -46,11 +46,11 @@ const strapline = [
 
 <section id={`pod-${pod.podSlug}`} class="scroll-mt-16">
   <p class="mono-meta uppercase">Pod · {pod.podDisplayName}</p>
-  <h3 class="mt-2 text-2xl font-semibold tracking-tight text-ink">
+  <h3 class="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
     {
       copy ? (
         <a
-          class="underline decoration-line-soft underline-offset-4 hover:decoration-accent"
+          class="decoration-line-soft underline-offset-[6px] hover:underline hover:decoration-accent"
           href={copy.href}
           target="_blank"
           rel="noopener noreferrer"
@@ -71,24 +71,28 @@ const strapline = [
   }
   <p class="mono-meta mt-3">{strapline}</p>
 
-  <div class="mt-8 grid gap-8 lg:grid-cols-[1fr_2fr]">
-    <div>
+  <div class="mt-8 grid items-start gap-6 lg:grid-cols-[2fr_3fr]">
+    <div class="rounded-lg border border-line bg-surface p-5">
       <h4 class="text-[0.95rem] font-semibold text-ink">Shipped</h4>
       <p class="mono-meta mt-1">commitments signed off as delivered</p>
-      <ul class="mt-4 space-y-3">
+      <ul class="mt-4 space-y-4">
         {
           shipped.map((commitment) => (
-            <li class="rounded-lg border border-line bg-surface p-4">
-              <div class="flex items-baseline justify-between gap-3">
+            <li class="border-b border-line-soft pb-4 last:border-0 last:pb-0">
+              <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <span
+                  class="mt-[0.4rem] h-1.5 w-1.5 shrink-0 self-start rounded-full bg-ok"
+                  aria-hidden="true"
+                />
                 <span class="text-sm font-medium text-ink">
                   {commitment.goalLabel}
                 </span>
-                <span class="mono-meta shrink-0 text-ok">
-                  {commitment.statusLabel ?? "Done"}
+                <span class="rounded-full bg-line-soft px-2 py-0.5 font-mono text-[0.65rem] uppercase tracking-wide text-ok">
+                  Done
                 </span>
               </div>
               {commitment.achievedNotePublic && (
-                <p class="mono-meta mt-2 leading-snug">
+                <p class="mono-meta mt-1.5 pl-4 leading-snug">
                   {commitment.achievedNotePublic}
                 </p>
               )}
@@ -107,7 +111,7 @@ const strapline = [
       }
     </div>
 
-    <div>
+    <div class="rounded-lg border border-line bg-surface p-5">
       <h4 class="text-[0.95rem] font-semibold text-ink">
         Key Impact / Success Metrics
       </h4>
@@ -118,10 +122,15 @@ const strapline = [
           }`
         }
       </p>
-      <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-5 space-y-5">
         {
           kpis.map(({ kpi, metric }) => (
-            <PodMetricCard metric={metric} label={kpi.label} note={kpi.note} />
+            <PodMetricCard
+              metric={metric}
+              label={kpi.label}
+              note={kpi.note}
+              format={kpi.format}
+            />
           ))
         }
       </div>

@@ -69,17 +69,15 @@ const tiles = [
 ---
 
 <dl
-  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-3"
+  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-5"
 >
   {
     tiles.map((tile) => (
       <div class="flex flex-col bg-surface p-5">
-        <dt class="order-2 mt-1.5 text-sm leading-snug text-body">
-          {tile.label}
-        </dt>
+        <dt class="mono-meta uppercase">{tile.label}</dt>
         <dd
           class:list={[
-            "order-1 font-mono text-2xl font-medium tracking-tight",
+            "mt-2 font-mono text-[1.75rem] font-medium leading-tight tracking-tight",
             tile.value === "—" ? "text-muted" : "text-ink",
           ]}
         >
@@ -87,8 +85,8 @@ const tiles = [
         </dd>
         <dd
           class:list={[
-            "order-3 mt-2 font-mono text-xs leading-snug",
-            tile.noteTone === "warn" ? "text-warn" : "text-muted",
+            "mt-2 text-sm leading-snug",
+            tile.noteTone === "warn" ? "text-warn" : "text-body",
           ]}
         >
           {tile.note}

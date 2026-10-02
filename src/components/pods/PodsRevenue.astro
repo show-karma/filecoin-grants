@@ -8,6 +8,7 @@ import {
   monthsBetween,
 } from "../../data/pods-api";
 import { REVENUE_BASIS, podCopy } from "../../data/pods-copy";
+import Sparkline from "./Sparkline.astro";
 
 type Props = { data: PodsData };
 const { data } = Astro.props;
@@ -107,15 +108,11 @@ const fill =
               card.lead ? "bg-surface-sunken" : "bg-surface",
             ]}
           >
-            <dt class="order-2 mt-1.5 text-sm leading-snug text-body">
-              {card.label}
-            </dt>
-            <dd class="order-1 font-mono text-2xl font-medium tracking-tight text-ink">
+            <dt class="mono-meta uppercase">{card.label}</dt>
+            <dd class="mt-2 font-mono text-[1.75rem] font-medium leading-tight tracking-tight text-ink">
               {card.value}
             </dd>
-            <dd class="order-3 mt-2 font-mono text-xs leading-snug text-muted">
-              {card.note}
-            </dd>
+            <dd class="mt-2 text-sm leading-snug text-body">{card.note}</dd>
           </div>
         ))}
       </dl>
@@ -128,8 +125,16 @@ const fill =
           biweekly, from the pod's own live read of the rails
         </p>
 
+        <div class="mt-5">
+          <Sparkline
+            values={headline.series.map((reading) => reading.value)}
+            tone="neutral"
+            class="h-24 w-full"
+          />
+        </div>
+
         {fill !== null && (
-          <div class="mt-5">
+          <div class="mt-3">
             <div
               class="h-2 overflow-hidden rounded-full bg-line-soft"
               aria-hidden="true"

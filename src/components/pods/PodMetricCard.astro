@@ -1,17 +1,23 @@
 ---
 import type { PodMetric } from "../../data/pods-api";
+import type { PodMetricFormat } from "../../data/pods-copy";
 import {
   changeOverWindow,
   DELTA_WINDOW_DAYS,
-  formatUsd,
   latestReading,
   progressBarPct,
   progressPct,
   withinCeiling,
 } from "../../data/pods-api";
+import Sparkline from "./Sparkline.astro";
 
-type Props = { metric: PodMetric; label?: string; note?: string };
-const { metric, label, note } = Astro.props;
+type Props = {
+  metric: PodMetric;
+  label?: string;
+  note?: string;
+  format?: PodMetricFormat;
+};
+const { metric, label, note, format = "int" } = Astro.props;
 
 const latest = latestReading(metric);
 const change = changeOverWindow(metric);
@@ -19,36 +25,37 @@ const pct = progressPct(metric);
 const barPct = progressBarPct(metric);
 const within = withinCeiling(metric);
 
+const group = (value: number, digits = 0) =>
+  value.toLocaleString("en-US", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
+
 /**
- * Formatted from the figure's own magnitude, with the unit appended only when
- * upstream states one — a count of storage providers and a revenue line cannot
- * share one rule, and neither can be given a currency it never claimed.
+ * Written the way the metric is reported, not by magnitude. A signup count
+ * reads "1,222" rather than "1.2K", and cash collected keeps its cents.
  */
-function format(value: number): string {
-  if (Math.abs(value) >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+function show(value: number): string {
+  switch (format) {
+    case "usd":
+      if (Math.abs(value) >= 1_000_000)
+        return `$${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+      if (Math.abs(value) >= 10_000) return `$${group(value / 1_000)}K`;
+      return `$${group(value)}`;
+    case "usd2":
+      return Math.abs(value) >= 10_000
+        ? `$${group(value / 1_000)}K`
+        : `$${group(value, 2)}`;
+    case "pct":
+      return `${group(value)}%`;
+    case "min":
+      return `${group(value, 2)} min`;
+    case "tib":
+      return `${group(value)} TiB`;
+    default:
+      return group(value);
   }
-  if (Math.abs(value) >= 1_000) {
-    return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  }
-  if (Number.isInteger(value)) return value.toLocaleString("en-US");
-  return value.toFixed(2).replace(/\.?0+$/, "");
 }
-
-/* Currency reads as a prefix; a symbol closes up to the figure; a word of unit
- * stands off it. "0 %" and "$1.69 min" both read as typos. */
-const isMoney = metric.unit === "USD";
-const SYMBOL_UNITS = new Set(["%"]);
-
-function suffix(): string {
-  if (!metric.unit || isMoney) return "";
-  return SYMBOL_UNITS.has(metric.unit) ? metric.unit : ` ${metric.unit}`;
-}
-
-/* Money goes through the shared formatter so a run rate reads the same here
- * as it does in the revenue section above. */
-const show = (value: number) =>
-  isMoney ? (formatUsd(value) ?? "$0") : `${format(value)}${suffix()}`;
 
 function buildTargetNote(): string {
   if (metric.target === null) return "no numeric target committed";
@@ -61,43 +68,76 @@ function buildTargetNote(): string {
   return `target · ${target}`;
 }
 
-const targetNote = buildTargetNote();
+/* Red short of the target, amber part-way, green near or past it — and for a
+ * ceiling, simply whether the reading sits under it. */
+const tone = (() => {
+  if (within !== null) return within ? "ok" : "bad";
+  if (pct === null) return "neutral";
+  if (pct >= 90) return "ok";
+  return pct >= 40 ? "warn" : "bad";
+})();
+
+const barColour = {
+  ok: "bg-ok",
+  warn: "bg-warn",
+  bad: "bg-bad",
+  neutral: "bg-accent",
+}[tone];
 
 const changeLabel =
   change === null || change === 0
     ? "flat"
     : `${change > 0 ? "↑" : "↓"} ${show(Math.abs(change))}`;
+
+/* Up is not always good: a falling onboarding time is the pod improving. */
+const changeTone =
+  change === null || change === 0
+    ? "text-muted"
+    : change > 0 === (metric.direction !== "lower_better")
+      ? "text-ok"
+      : "text-bad";
+
+const series = metric.series.map((reading) => reading.value);
 ---
 
-<div class="rounded-lg border border-line bg-surface p-5">
+<div class="border-b border-line-soft pb-5 last:border-0 last:pb-0">
   <p class="mono-meta uppercase">{label ?? metric.metricLabel}</p>
-  <p class="mt-1 font-mono text-2xl font-medium tracking-tight text-ink">
+  <p
+    class="mt-1 font-mono text-[1.75rem] font-medium leading-tight tracking-tight text-ink"
+  >
     {latest ? show(latest.value) : "—"}
   </p>
   <p
     class:list={[
-      "mono-meta mt-1.5",
+      "mono-meta mt-1",
       within === false ? "text-warn" : "",
       metric.target === null ? "text-muted" : "",
     ]}
   >
-    {targetNote}
+    {buildTargetNote()}
   </p>
 
   {
-    pct !== null && (
+    barPct !== null && (
       <div
-        class="mt-3 h-1 overflow-hidden rounded-full bg-line-soft"
+        class="mt-2.5 h-1 overflow-hidden rounded-full bg-line-soft"
         aria-hidden="true"
       >
-        <div class="h-full rounded-full bg-accent" style={`width:${barPct}%`} />
+        <div
+          class:list={["h-full rounded-full", barColour]}
+          style={`width:${barPct}%`}
+        />
       </div>
     )
   }
 
-  <p class="mono-meta mt-3">
-    {changeLabel} over {DELTA_WINDOW_DAYS / 7} wks
-  </p>
+  <div class="mt-3 flex items-end gap-3">
+    <Sparkline values={series} tone={tone} class="h-8 w-28 shrink-0" />
+    <p class="mono-meta uppercase">
+      <span class={changeTone}>{changeLabel}</span>
+      <span class="text-muted"> over {DELTA_WINDOW_DAYS / 7} wks</span>
+    </p>
+  </div>
 
   {note && <p class="mt-3 text-sm leading-snug text-body">{note}</p>}
 </div>
