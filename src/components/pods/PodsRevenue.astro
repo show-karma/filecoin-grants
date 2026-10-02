@@ -7,7 +7,7 @@ import {
   formatMonth,
   monthsBetween,
 } from "../../data/pods-api";
-import { REVENUE_BASIS, podCopy } from "../../data/pods-copy";
+import { REVENUE_BASIS, fillNote, podCopy } from "../../data/pods-copy";
 import Sparkline from "./Sparkline.astro";
 
 type Props = { data: PodsData };
@@ -19,6 +19,12 @@ const { data } = Astro.props;
  * added to it: a run rate, a cash total and no revenue line at all cannot be
  * summed into one number.
  */
+/** The metric each pod's revenue line is read from, mirroring the API. */
+const REVENUE_METRIC_KEY: Record<string, string> = {
+  foc: "filecoin_pay_arr",
+  web2: "revenue_collected_usd",
+};
+
 const headline =
   data.onchainRevenue.find((entry) => entry.commitmentUsd !== null) ?? null;
 const headlinePod = headline
@@ -205,6 +211,14 @@ const fill =
               const entry = data.onchainRevenue.find(
                 (candidate) => candidate.podSlug === pod.podSlug,
               );
+              /* The commitment behind this pod's revenue line carries the
+               * target the sentence quotes. */
+              const target =
+                pod.commitments.find(
+                  (commitment) =>
+                    commitment.metricKey ===
+                    (entry ? REVENUE_METRIC_KEY[pod.podSlug] : undefined),
+                )?.targetText ?? null;
               return (
                 <tr class="border-b border-line-soft last:border-0">
                   <td class="py-2.5 pr-4 font-medium text-ink">
@@ -216,7 +230,9 @@ const fill =
                   <td class="py-2.5 pr-4 text-right font-mono text-ink">
                     {entry ? (formatUsd(entry.reportedUsd) ?? "—") : "—"}
                   </td>
-                  <td class="py-2.5 text-body">{basis?.reading ?? ""}</td>
+                  <td class="py-2.5 text-body">
+                    {basis ? fillNote(basis.reading, target) : ""}
+                  </td>
                 </tr>
               );
             })}

@@ -1,7 +1,7 @@
 ---
 import type { PodEntry } from "../../data/pods-api";
 import { formatDay, formatMonth } from "../../data/pods-api";
-import { podCopy } from "../../data/pods-copy";
+import { fillNote, podCopy } from "../../data/pods-copy";
 import PodMetricCard from "./PodMetricCard.astro";
 
 type Props = { pod: PodEntry };
@@ -14,19 +14,19 @@ const copy = podCopy(pod.podSlug);
  * more series than that; the ones here are the ones its agreement is read
  * against, and the rest would crowd the card out.
  */
-const kpis = (copy?.kpis ?? [])
-  .map((kpi) => ({
-    kpi,
-    metric: pod.metrics.find((m) => m.metricKey === kpi.metricKey),
-  }))
-  .filter(
-    (
-      entry,
-    ): entry is {
-      kpi: (typeof entry)["kpi"];
-      metric: NonNullable<(typeof entry)["metric"]>;
-    } => Boolean(entry.metric),
-  );
+const kpis = (copy?.kpis ?? []).flatMap((kpi) => {
+  const metric = pod.metrics.find((m) => m.metricKey === kpi.metricKey);
+  if (!metric) return [];
+  /* The goal this metric measures, which is where its target is written. */
+  const commitment = pod.commitments.find((c) => c.metricKey === kpi.metricKey);
+  return [
+    {
+      kpi,
+      metric,
+      note: fillNote(kpi.note, commitment?.targetText ?? null),
+    },
+  ];
+});
 
 const shipped = pod.commitments.filter((c) => c.isDelivered);
 const open = pod.commitments.filter((c) => !c.isDelivered);
@@ -124,11 +124,11 @@ const strapline = [
       </p>
       <div class="mt-5 space-y-5">
         {
-          kpis.map(({ kpi, metric }) => (
+          kpis.map(({ kpi, metric, note }) => (
             <PodMetricCard
               metric={metric}
               label={kpi.label}
-              note={kpi.note}
+              note={note}
               format={kpi.format}
             />
           ))

@@ -24,8 +24,24 @@ export type PodKpi = {
   /** OSO's label, which reads better than the raw review wording. */
   label: string;
   format: PodMetricFormat;
+  /**
+   * `{target}` is filled from the commitment this metric measures, so a figure
+   * the pod renegotiates is not left stale in prose beside the live one. A
+   * sentence whose commitment states no target drops the clause rather than
+   * rendering the placeholder.
+   */
   note: string;
 };
+
+/** Replaces `{target}`, or removes the sentence that depends on it. */
+export function fillNote(note: string, target: string | null): string {
+  if (target) return note.replace(/\{target\}/g, target);
+  return note
+    .split(/(?<=\.)\s+/)
+    .filter((sentence) => !sentence.includes("{target}"))
+    .join(" ")
+    .trim();
+}
 
 export type PodCopy = {
   /** Joins to `podSlug` on the API's pod entries. */
@@ -64,6 +80,11 @@ export const POD_COPY: PodCopy[] = [
         metricKey: "power_user_current",
         format: "int",
         label: "Recurring power users",
+        /* The $500 is the metric's definition, not its target — it says what
+         * counts as a power user, and the target is the number of them. It
+         * lives upstream only inside the goal label, "Recurring power users
+         * ($500+/mo)", where pulling it out would read worse than writing it.
+         * A renegotiated target does not move it. */
         note: "Customers spending $500 or more a month, trailing 30 days. The test of whether anyone depends on the service, not just tries it.",
       },
       {
@@ -88,7 +109,7 @@ export const POD_COPY: PodCopy[] = [
         metricKey: "total_tib_onboarded",
         format: "tib",
         label: "Data onboarded",
-        note: "Against a 2.5 PiB commitment. The pool has the room — capacity cleared its own target — but clients have not filled it.",
+        note: "Against a {target} commitment. The pool has the room — capacity cleared its own target — but clients have not filled it.",
       },
       {
         metricKey: "number_of_sps_participating",
@@ -130,7 +151,7 @@ export const POD_COPY: PodCopy[] = [
         metricKey: "revenue_collected_usd",
         format: "usd2",
         label: "Revenue collected",
-        note: "Cash actually collected to date — not a run rate. Set against a stated ambition of $2-4M 2026 ARR, this is the gap the enterprise pipeline at the foot of this page has to close.",
+        note: "Cash actually collected to date — not a run rate. Set against a stated ambition of {target}, this is the gap the enterprise pipeline at the foot of this page has to close.",
       },
     ],
   },
@@ -146,7 +167,7 @@ export const REVENUE_BASIS: Record<
 > = {
   foc: {
     reports: "Filecoin Pay ARR (run rate)",
-    reading: "against a $250K commitment",
+    reading: "against a {target} commitment",
   },
   ldo: {
     reports: "no revenue line reported",
@@ -155,7 +176,6 @@ export const REVENUE_BASIS: Record<
   },
   web2: {
     reports: "cash collected to date",
-    reading:
-      "collected cash, not a run rate — stated ambition is $2-4M 2026 ARR",
+    reading: "collected cash, not a run rate — stated ambition is {target}",
   },
 };
