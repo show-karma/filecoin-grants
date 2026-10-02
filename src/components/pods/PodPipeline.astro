@@ -5,96 +5,221 @@ import { formatUsd, openBookUsd, weightedBookUsd } from "../../data/pods-api";
 type Props = { pods: PodEntry[] };
 const { pods } = Astro.props;
 
-const withPipeline = pods.filter((pod) => pod.pipeline !== null);
-
 /*
  * Never one funnel. A pod reporting deals carries a value and a win
  * probability; a pod reporting partnerships carries neither, so the two are
- * shown side by side and the counts are not added into a single number.
+ * shown side by side and the counts are never added together.
  */
-const funnels = withPipeline.map((pod) => {
-  const pipeline = pod.pipeline!;
-  const open = openBookUsd(pipeline);
-  const weighted = weightedBookUsd(pipeline);
-  return {
-    pod,
-    pipeline,
-    open,
-    weighted,
-    hasValue: open !== null,
-    /* Widest stage sets the bar scale, so a funnel reads as a shape. A stage
-     * upstream left uncounted sets nothing and draws no bar. */
-    widest: Math.max(1, ...pipeline.stages.map((s) => s.entityCount ?? 0)),
-  };
-});
+const funnels = pods
+  .filter((pod) => pod.pipeline !== null)
+  .map((pod) => {
+    const pipeline = pod.pipeline!;
+    const open = openBookUsd(pipeline);
+    return {
+      pod,
+      pipeline,
+      open,
+      weighted: weightedBookUsd(pipeline),
+      hasValue: open !== null,
+      capacity: pipeline.stages.reduce(
+        (total, stage) => total + (stage.pb ?? 0),
+        0,
+      ),
+      widest: Math.max(
+        1,
+        ...pipeline.stages.map(
+          (stage) => stage.amountUsd ?? stage.entityCount ?? 0,
+        ),
+      ),
+    };
+  });
+
+const deals = funnels.find((funnel) => funnel.hasValue);
+const counts = funnels.find((funnel) => !funnel.hasValue);
+
+const weightedShare =
+  deals && deals.open && deals.weighted
+    ? Math.round((deals.weighted / deals.open) * 100)
+    : null;
+
+type Card = { label: string; value: string; note: string };
+
+const cards: Card[] = [
+  deals && {
+    label: "Open enterprise book",
+    value: formatUsd(deals.open) ?? "—",
+    note: `${deals.pipeline.openEntities ?? deals.pipeline.totalEntities ?? 0} live opportunities on the ${deals.pod.podDisplayName} book · first-year value if every one closed`,
+  },
+  deals && {
+    label: "Weighted pipeline",
+    value: formatUsd(deals.weighted) ?? "—",
+    note: [
+      "each opportunity scaled by its own win probability",
+      weightedShare !== null && `${weightedShare}% of the book`,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  },
+  deals &&
+    deals.capacity > 0 && {
+      label: "Capacity behind it",
+      value: `${Math.round(deals.capacity).toLocaleString("en-US")} PB`,
+      note: "storage the open book would put on the network",
+    },
+  counts && {
+    label: "Partnerships tracked",
+    value: `${counts.pipeline.totalEntities ?? "—"}`,
+    note: [
+      `${counts.pod.podDisplayName}'s own funnel`,
+      counts.pipeline.dataActivityLabel &&
+        `${counts.pipeline.dataActivityLabel} already moving data`,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  },
+].filter((card): card is Card => Boolean(card));
 ---
 
 <div class="space-y-10">
   {
-    funnels.map(({ pod, pipeline, open, weighted, hasValue, widest }) => (
-      <section>
-        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line pb-2">
-          <h3 class="text-[0.95rem] font-semibold text-ink">
-            {pod.podDisplayName} —{" "}
-            {pipeline.entityKind === "deal"
-              ? "enterprise book"
-              : "partnership funnel"}
-          </h3>
-          <p class="mono-meta">
-            {[
-              pipeline.totalEntities !== null &&
-                `${pipeline.totalEntities} tracked`,
-              pipeline.openEntities !== null && `${pipeline.openEntities} open`,
-              pipeline.snapshotDate,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-        </div>
+    cards.length > 0 && (
+      <dl class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        {cards.map((card) => (
+          <div class="flex flex-col bg-surface p-5">
+            <dt class="order-2 mt-1.5 text-sm leading-snug text-body">
+              {card.label}
+            </dt>
+            <dd class="order-1 font-mono text-2xl font-medium tracking-tight text-ink">
+              {card.value}
+            </dd>
+            <dd class="order-3 mt-2 font-mono text-xs leading-snug text-muted">
+              {card.note}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
 
-        {hasValue && (
-          <p class="mono-meta mt-3">
-            {formatUsd(open)} open book · {formatUsd(weighted)} weighted by each
-            opportunity's own win probability
-          </p>
-        )}
-        {!hasValue && (
-          <p class="mono-meta mt-3">
-            counts only — this tracker holds no deal size and no win probability
-          </p>
-        )}
-
-        <ul class="mt-4 space-y-2">
-          {pipeline.stages.map((stage) => (
-            <li class="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <span class="w-40 shrink-0 text-sm text-ink">
-                {stage.stage}
-                {stage.isFolded && (
-                  <span class="mono-meta text-muted"> · folded</span>
-                )}
-              </span>
-              <span
-                class:list={[
-                  "w-10 shrink-0 text-right font-mono text-sm",
-                  stage.entityCount === null ? "text-muted" : "text-ink",
-                ]}
-              >
-                {stage.entityCount ?? "—"}
-              </span>
-              {stage.entityCount !== null && (
-                <span
-                  class="h-2 min-w-[2px] rounded-full bg-accent"
-                  style={`width:${(stage.entityCount / widest) * 42}%`}
-                  aria-hidden="true"
-                />
-              )}
-              {stage.amountUsd !== null && (
-                <span class="mono-meta">{formatUsd(stage.amountUsd)}</span>
-              )}
-            </li>
-          ))}
-        </ul>
+  {
+    deals && (
+      <section class="rounded-lg border border-line bg-surface p-5">
+        <h3 class="text-[0.95rem] font-semibold text-ink">
+          {deals.pod.podDisplayName} — enterprise stage funnel
+        </h3>
+        <p class="mono-meta mt-1">
+          open book by stage, lost opportunities excluded
+          {deals.pipeline.snapshotDate &&
+            ` · snapshot ${deals.pipeline.snapshotDate}`}
+        </p>
+        <table class="mt-4 w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-line">
+              <th class="mono-meta py-2 font-normal uppercase">Stage</th>
+              <th class="mono-meta py-2 text-right font-normal uppercase">
+                Opportunities
+              </th>
+              <th class="mono-meta py-2 text-right font-normal uppercase">
+                Book
+              </th>
+              <th class="w-1/4" />
+              <th class="mono-meta py-2 text-right font-normal uppercase">
+                Weighted
+              </th>
+              <th class="mono-meta py-2 text-right font-normal uppercase">
+                Capacity
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {deals.pipeline.stages.map((stage) => (
+              <tr class="border-b border-line-soft last:border-0">
+                <td class="py-2.5 pr-4 text-ink">
+                  {stage.stage}
+                  {stage.isFolded && <span class="text-muted"> †</span>}
+                </td>
+                <td class="py-2.5 pr-4 text-right font-mono text-ink">
+                  {stage.entityCount ?? "—"}
+                </td>
+                <td class="py-2.5 pr-4 text-right font-mono text-ink">
+                  {formatUsd(stage.amountUsd) ?? "—"}
+                </td>
+                <td class="py-2.5 pr-4">
+                  {stage.amountUsd !== null && (
+                    <span
+                      class="block h-1.5 min-w-[2px] rounded-full bg-accent"
+                      style={`width:${(stage.amountUsd / deals.widest) * 100}%`}
+                      aria-hidden="true"
+                    />
+                  )}
+                </td>
+                <td class="py-2.5 pr-4 text-right font-mono text-body">
+                  {formatUsd(stage.weightedUsd) ?? "—"}
+                </td>
+                <td class="py-2.5 text-right font-mono text-body">
+                  {stage.pb === null
+                    ? "—"
+                    : `${Math.round(stage.pb).toLocaleString("en-US")} PB`}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p class="mono-meta mt-4 leading-relaxed">
+          There is no Closed Won stage in this feed, so a signed contract cannot
+          be read from it. † Stages with fewer than three opportunities are
+          combined into one row, so that no single deal's value can be read off
+          the funnel. The totals above still count every open opportunity.
+        </p>
       </section>
-    ))
+    )
+  }
+
+  {
+    counts && (
+      <section class="rounded-lg border border-line bg-surface p-5">
+        <h3 class="text-[0.95rem] font-semibold text-ink">
+          {counts.pod.podDisplayName} — partnership funnel
+        </h3>
+        <p class="mono-meta mt-1">
+          counts, not value — this tracker holds no deal size and no win
+          probability
+        </p>
+        <table class="mt-4 w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-line">
+              <th class="mono-meta py-2 font-normal uppercase">Stage</th>
+              <th class="mono-meta py-2 text-right font-normal uppercase">
+                Partnerships
+              </th>
+              <th class="w-1/2" />
+            </tr>
+          </thead>
+          <tbody>
+            {counts.pipeline.stages.map((stage) => (
+              <tr class="border-b border-line-soft last:border-0">
+                <td class="py-2.5 pr-4 text-ink">{stage.stage}</td>
+                <td class="py-2.5 pr-4 text-right font-mono text-ink">
+                  {stage.entityCount ?? "—"}
+                </td>
+                <td class="py-2.5">
+                  {stage.entityCount !== null && (
+                    <span
+                      class="block h-1.5 min-w-[2px] rounded-full bg-accent"
+                      style={`width:${(stage.entityCount / counts.widest) * 100}%`}
+                      aria-hidden="true"
+                    />
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p class="mono-meta mt-4 leading-relaxed">
+          A partnership is not a deal: the two funnels are worth comparing, but
+          they cannot be added together.
+        </p>
+      </section>
+    )
   }
 </div>

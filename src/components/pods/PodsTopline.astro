@@ -1,56 +1,69 @@
 ---
 import type { PodsData } from "../../data/pods-api";
-import { formatUsd } from "../../data/pods-api";
+import { formatDay, formatUsd, spellOut } from "../../data/pods-api";
 
 type Props = { data: PodsData };
 const { data } = Astro.props;
-const { program } = data;
+const { program, pods } = data;
 
-const count = (n: number, one: string, many = `${one}s`) =>
-  `${n} ${n === 1 ? one : many}`;
-
-const committed = formatUsd(program.committedUsd);
-const paid = formatUsd(program.paidToDateUsd);
+const names = pods.map((pod) => pod.podDisplayName);
+const funded =
+  names.length > 1
+    ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+    : (names[0] ?? "");
 
 /*
  * A pod paid on rails the tracker does not cover contributes nothing to the
- * total, which makes the figure a floor rather than the sum. Saying so beside
- * it is the difference between a number and a misleading one.
+ * total, which makes the figure a floor rather than the sum. Naming those pods
+ * beside it is the difference between a number and a misleading one.
  */
-const untracked = program.podsFunded - program.podsWithTrackedPayments;
-const paidNote =
-  untracked === 0
-    ? `${Math.round((program.paidToDateUsd / program.committedUsd) * 100)}% of committed`
-    : `at least — ${count(untracked, "pod")} paid on rails the tracker does not cover`;
+const untracked = pods.filter((pod) => !pod.paidIsTracked);
+const share =
+  program.paidPctOfCommitted === null
+    ? null
+    : `${Math.round(program.paidPctOfCommitted)}% of committed`;
+const disbursedNote = [
+  "settled invoices in the pod payments tracker",
+  share,
+  untracked.length > 0 &&
+    `excludes ${untracked
+      .map((pod) => pod.podDisplayName)
+      .join(" and ")}, paid on rails the tracker does not cover`,
+]
+  .filter(Boolean)
+  .join(untracked.length > 0 ? ", " : ", ")
+  .replace(/, (excludes)/, " — $1");
+
+const latest = formatDay(program.latestReviewAt);
 
 const tiles = [
   {
     value: `${program.podsFunded}`,
     label: "Pods funded",
-    note: "Each carries its own funding commitment, roadmap and reporting line",
+    note: `${funded} — each a separate funding commitment, roadmap and reporting line`,
   },
   {
-    value: committed ?? "—",
+    value: formatUsd(program.committedUsd) ?? "—",
     label: "Committed",
-    note: "Signed funding commitments across the pods",
+    note: `signed funding commitments across the ${program.podsFunded === 1 ? "pod" : `${spellOut(program.podsFunded)} pods`}`,
   },
   {
-    value: paid ?? "—",
+    value: formatUsd(program.paidToDateUsd) ?? "—",
     label: "Disbursed",
-    note: paidNote,
-    noteTone: untracked > 0 ? "warn" : "muted",
+    note: disbursedNote,
+    noteTone: untracked.length > 0 ? "warn" : "muted",
   },
   {
     value: `${program.commitmentsDelivered} / ${program.commitmentsTotal}`,
     label: "Commitments delivered",
-    note: "Goals the pods signed up to that are demonstrably done",
+    note: "goals the pods signed up to that are demonstrably done",
   },
   {
-    value: `${program.reviewsRead}`,
-    label: "Reviews read",
-    note: program.latestReviewAt
-      ? `Every figure below traces to one · latest ${program.latestReviewAt}`
-      : "Every figure below traces to one",
+    value: `${program.reportsRead}`,
+    label: "Reports read",
+    note: latest
+      ? `every figure below traces to one · latest ${latest}`
+      : "every figure below traces to one",
   },
 ];
 ---

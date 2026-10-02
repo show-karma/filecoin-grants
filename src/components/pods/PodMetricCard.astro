@@ -3,14 +3,15 @@ import type { PodMetric } from "../../data/pods-api";
 import {
   changeOverWindow,
   DELTA_WINDOW_DAYS,
+  formatUsd,
   latestReading,
   progressBarPct,
   progressPct,
   withinCeiling,
 } from "../../data/pods-api";
 
-type Props = { metric: PodMetric };
-const { metric } = Astro.props;
+type Props = { metric: PodMetric; label?: string; note?: string };
+const { metric, label, note } = Astro.props;
 
 const latest = latestReading(metric);
 const change = changeOverWindow(metric);
@@ -44,8 +45,10 @@ function suffix(): string {
   return SYMBOL_UNITS.has(metric.unit) ? metric.unit : ` ${metric.unit}`;
 }
 
+/* Money goes through the shared formatter so a run rate reads the same here
+ * as it does in the revenue section above. */
 const show = (value: number) =>
-  isMoney ? `$${format(value)}` : `${format(value)}${suffix()}`;
+  isMoney ? (formatUsd(value) ?? "$0") : `${format(value)}${suffix()}`;
 
 function buildTargetNote(): string {
   if (metric.target === null) return "no numeric target committed";
@@ -67,7 +70,7 @@ const changeLabel =
 ---
 
 <div class="rounded-lg border border-line bg-surface p-5">
-  <p class="mono-meta uppercase">{metric.metricLabel}</p>
+  <p class="mono-meta uppercase">{label ?? metric.metricLabel}</p>
   <p class="mt-1 font-mono text-2xl font-medium tracking-tight text-ink">
     {latest ? show(latest.value) : "—"}
   </p>
@@ -95,4 +98,6 @@ const changeLabel =
   <p class="mono-meta mt-3">
     {changeLabel} over {DELTA_WINDOW_DAYS / 7} wks
   </p>
+
+  {note && <p class="mt-3 text-sm leading-snug text-body">{note}</p>}
 </div>

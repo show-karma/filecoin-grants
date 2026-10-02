@@ -46,6 +46,7 @@ const pipeline = (stages: PodPipelineStage[]): PodPipeline => ({
   totalEntities: 22,
   openEntities: 22,
   closedLostEntities: 0,
+  dataActivityLabel: null,
   stages,
 });
 

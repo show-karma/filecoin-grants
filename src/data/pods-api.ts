@@ -76,6 +76,7 @@ export type PodPipelineStage = {
   entityCount: number | null;
   amountUsd: number | null;
   weightedUsd: number | null;
+  /** Storage the stage would put on the network, in PB. */
   pb: number | null;
 };
 
@@ -90,6 +91,8 @@ export type PodPipeline = {
    * closed-lost figure, and that is not a claim that none were lost.
    */
   closedLostEntities: number | null;
+  /** How upstream describes activity it will not count exactly. */
+  dataActivityLabel: string | null;
   stages: PodPipelineStage[];
 };
 
@@ -114,6 +117,27 @@ export type PodEntry = {
   commitments: PodCommitment[];
   metrics: PodMetric[];
   pipeline: PodPipeline | null;
+  reportsRead: number;
+  resolvedItems: number;
+  reportsCounted: number;
+  firstReportAt: string | null;
+  latestReportAt: string | null;
+};
+
+export type PodOnchainRevenue = {
+  podSlug: string;
+  reportedUsd: number;
+  /**
+   * The same rails measured onchain. Where it differs from the reported
+   * figure the two are not measuring quite the same thing, and neither is
+   * asserted to be wrong.
+   */
+  onchainUsd: number | null;
+  commitmentUsd: number | null;
+  remainingUsd: number | null;
+  usdcOnlyUsd: number | null;
+  series: PodReading[];
+  firstReading: PodReading | null;
 };
 
 export type PodsProgramStats = {
@@ -124,18 +148,82 @@ export type PodsProgramStats = {
   podsWithTrackedPayments: number;
   commitmentsDelivered: number;
   commitmentsTotal: number;
-  reviewsRead: number;
+  /** Reviews published across the pods — one per pod per week. */
+  reportsRead: number;
   latestReviewAt: string | null;
+  paidPctOfCommitted: number | null;
 };
 
 export type PodsData = {
   program: PodsProgramStats;
   pods: PodEntry[];
+  onchainRevenue: PodOnchainRevenue[];
 };
 
 /* ------------------------------------------------------------------ */
 /* Derived helpers                                                      */
 /* ------------------------------------------------------------------ */
+
+/** "22 Sep 2026" — the form the pods' own reports use. */
+export function formatDay(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const date = new Date(`${iso}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return null;
+  /* Assembled rather than localised: en-GB renders September as "Sept" and
+   * en-US puts the month first. The reports write "22 Sep 2026". */
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const month = date.toLocaleDateString("en-US", {
+    month: "short",
+    timeZone: "UTC",
+  });
+  return `${day} ${month} ${date.getUTCFullYear()}`;
+}
+
+/** "February 2026", for the line naming a pod's first report. */
+export function formatMonth(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const date = new Date(`${iso}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+/** "three", up to the handful of pods this programme funds. */
+const WORDS = ["no", "one", "two", "three", "four", "five", "six"];
+
+export const spellOut = (count: number): string =>
+  WORDS[count] ?? count.toLocaleString("en-US");
+
+/** Whole months between two readings, for the growth-since line. */
+export function monthsBetween(
+  from: string | null | undefined,
+  to: string | null | undefined,
+): number | null {
+  if (!from || !to) return null;
+  const a = new Date(`${from}T00:00:00Z`);
+  const b = new Date(`${to}T00:00:00Z`);
+  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return null;
+  return Math.max(
+    0,
+    Math.round((b.getTime() - a.getTime()) / (30.44 * 86_400_000)),
+  );
+}
+
+/** Growth against the first reading, as "50×". Null when it cannot be read. */
+export function growthMultiple(entry: PodOnchainRevenue): number | null {
+  const first = entry.firstReading?.value;
+  if (!first || first <= 0) return null;
+  return entry.reportedUsd / first;
+}
+
+/** How far apart the reported and onchain measures are, as "4.6×". */
+export function measureGap(entry: PodOnchainRevenue): number | null {
+  if (!entry.onchainUsd || entry.onchainUsd <= 0) return null;
+  return entry.reportedUsd / entry.onchainUsd;
+}
 
 /** `$1.8M` / `$716K` / `$601`, null for nothing at all. */
 export function formatUsd(amount: number | null | undefined): string | null {
@@ -143,8 +231,12 @@ export function formatUsd(amount: number | null | undefined): string | null {
   if (Math.abs(amount) >= 1_000_000) {
     return `$${(amount / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   }
-  if (Math.abs(amount) >= 1_000) return `$${Math.round(amount / 1_000)}K`;
-  return `$${amount.toLocaleString("en-US")}`;
+  /* Abbreviated only from ten thousand, so a figure like $1,989 is still
+   * readable as itself rather than rounded away to "$2K". */
+  if (Math.abs(amount) >= 10_000) {
+    return `$${Math.round(amount / 1_000).toLocaleString("en-US")}K`;
+  }
+  return `$${Math.round(amount).toLocaleString("en-US")}`;
 }
 
 export const latestReading = (metric: PodMetric): PodReading | null =>

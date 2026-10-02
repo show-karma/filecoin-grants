@@ -1,0 +1,69 @@
+---
+import type { PodsData } from "../../data/pods-api";
+import { podCopy } from "../../data/pods-copy";
+
+type Props = { data: PodsData };
+const { data } = Astro.props;
+
+const rows = data.pods.map((pod) => ({
+  pod,
+  copy: podCopy(pod.podSlug),
+  delivered: pod.commitments.filter((commitment) => commitment.isDelivered)
+    .length,
+  total: pod.commitments.length,
+}));
+---
+
+<div class="overflow-hidden rounded-lg border border-line bg-surface">
+  <table class="w-full text-left text-sm">
+    <thead>
+      <tr class="border-b border-line">
+        <th class="mono-meta px-5 py-3 font-normal uppercase">Pod</th>
+        <th class="mono-meta px-5 py-3 font-normal uppercase">What it does</th>
+        <th class="mono-meta px-5 py-3 text-right font-normal uppercase"
+          >Delivered</th
+        >
+        <th class="px-5 py-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map(({ pod, copy, delivered, total }) => (
+          <tr class="border-b border-line-soft last:border-0 align-top">
+            <td class="px-5 py-4">
+              {copy ? (
+                <a
+                  class="font-medium text-ink underline decoration-line-soft underline-offset-4 hover:decoration-accent"
+                  href={copy.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {pod.podDisplayName}
+                </a>
+              ) : (
+                <span class="font-medium text-ink">{pod.podDisplayName}</span>
+              )}
+              <span class="mono-meta block">{pod.podFullName}</span>
+            </td>
+            <td class="px-5 py-4 leading-relaxed text-body">
+              {copy?.summary ?? pod.podFullName}
+            </td>
+            <td class="px-5 py-4 text-right font-mono text-ink">
+              {delivered} of {total}
+            </td>
+            <td class="px-5 py-4 text-right">
+              <a class="mono-meta hover:text-ink" href={`#pod-${pod.podSlug}`}>
+                Learn more →
+              </a>
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+<p class="mono-meta mt-4 leading-relaxed">
+  Delivered counts the commitments a pod signed up to that are demonstrably
+  done; everything else is shown in the pod's own section rather than averaged
+  away.
+</p>

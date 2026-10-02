@@ -15,9 +15,11 @@ import {
   REVDEV_ROADMAP_CRITERIA,
 } from "../data/programs";
 import PodsTopline from "../components/pods/PodsTopline.astro";
+import PodsRevenue from "../components/pods/PodsRevenue.astro";
+import PodsGlance from "../components/pods/PodsGlance.astro";
 import PodPipeline from "../components/pods/PodPipeline.astro";
 import PodSection from "../components/pods/PodSection.astro";
-import { loadPodsData } from "../data/pods-api";
+import { formatDay, loadPodsData } from "../data/pods-api";
 
 /*
  * Rendered on demand rather than at build so the pods' own figures refresh
@@ -38,6 +40,8 @@ const podsData = await loadPodsData();
  * count comes from the agreements rather than from the copy, and the prose
  * around it states no number of its own.
  */
+const evidenceTo = formatDay(podsData?.program.latestReviewAt);
+
 const fundingFacts = REVDEV_FUNDING_FACTS.map((fact) =>
   fact.label === "Recipients" && podsData
     ? { ...fact, value: `${podsData.program.podsFunded} pods` }
@@ -106,10 +110,15 @@ const fundingFacts = REVDEV_FUNDING_FACTS.map((fact) =>
     podsData && (
       <Section id="progress">
         <SectionHeader
-          eyebrow="Progress"
-          title="Where the pods stand"
-          intro="Rebuilt from the pods' own biweekly business reviews, so it moves when they do rather than freezing on a reporting date. Every figure traces to a review or to a signed funding agreement."
+          eyebrow="ProPGF · Revenue Development Track"
+          title="FOC, LDO, Fil One: pipeline, commitments and KPIs."
+          intro="Below is onchain revenue and the GTM pipelines, followed by each pod's progress against its funding agreement and targets."
         />
+        <p class="mono-meta mt-4">
+          {evidenceTo
+            ? `Evidence current to ${evidenceTo}. Rebuilt from the pods' biweekly reviews on every run.`
+            : "Rebuilt from the pods' biweekly reviews on every run."}
+        </p>
         <div class="mt-10">
           <PodsTopline data={podsData} />
         </div>
@@ -118,12 +127,27 @@ const fundingFacts = REVDEV_FUNDING_FACTS.map((fact) =>
   }
 
   {
-    podsData && podsData.pods.some((pod) => pod.pipeline) && (
-      <Section id="pipeline" tint>
+    podsData && podsData.onchainRevenue.length > 0 && (
+      <Section id="revenue" tint>
         <SectionHeader
-          eyebrow="Pipeline"
-          title="What is coming"
-          intro="One pod runs an enterprise sales book with a value and a win probability on every opportunity; the other runs a partnership tracker that records neither. They are reported separately and never combined. Figures are aggregate only — counterparties are not named here."
+          eyebrow="Revenue · What settles onchain"
+          title="Onchain revenue against the committed run rate"
+          intro="Filecoin Pay is where money that settles on Filecoin mainnet shows up, and this section reads the annual run rate straight off those rails rather than off a forecast."
+        />
+        <div class="mt-10">
+          <PodsRevenue data={podsData} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && podsData.pods.some((pod) => pod.pipeline) && (
+      <Section id="pipeline">
+        <SectionHeader
+          eyebrow="Pipeline · What is coming"
+          title="GTM pipelines: the enterprise book and the partnership funnel"
+          intro="One pod runs an enterprise sales book: each opportunity has a stage, a deal value and a win probability. The other runs a partnership tracker that records neither value nor probability. The two are reported separately below and are not combined. Figures are aggregate only; counterparties are not named on this page."
         />
         <div class="mt-10">
           <PodPipeline pods={podsData.pods} />
@@ -134,16 +158,69 @@ const fundingFacts = REVDEV_FUNDING_FACTS.map((fact) =>
 
   {
     podsData && (
+      <Section id="at-a-glance" tint>
+        <SectionHeader eyebrow="At a glance · The pods" title="The pods" />
+        <div class="mt-10">
+          <PodsGlance data={podsData} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && (
       <Section id="pod-detail">
-        <SectionHeader
-          eyebrow="By pod"
-          title="Each pod against its own agreement"
-          intro="What each pod committed to, what it has shipped, and the metrics it is judged on. A pod that did not state a number in a given review is shown as missing rather than as zero."
-        />
-        <div class="mt-10 space-y-16">
+        <div class="space-y-20">
           {podsData.pods.map((pod) => (
             <PodSection pod={pod} />
           ))}
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && (
+      <Section id="how-built" tint>
+        <SectionHeader eyebrow="Provenance" title="How this page is built" />
+        <div class="mt-8 max-w-3xl space-y-4 text-sm leading-relaxed text-body">
+          <p>
+            It is rebuilt from the pods' own biweekly business reviews every
+            time it runs, so it moves when they do rather than freezing on a
+            reporting date.
+          </p>
+          <p>
+            Metrics and shipped work come from the business-review ingestion —{" "}
+            {podsData.pods
+              .map(
+                (pod) =>
+                  `${pod.podDisplayName} to ${formatDay(pod.latestReportAt) ?? "—"} (${pod.reportsRead} reports)`,
+              )
+              .join(" · ")}
+            . Each pod's figures are read from its own report; where a pod did
+            not state a number in a given period it is shown as missing rather
+            than as zero.
+          </p>
+          <p>
+            Commitments and their status are a curated ledger reviewed against
+            the signed funding agreements, not a self-report. What each pod does
+            is the pod's own description, supplied by the Filecoin ProPGF team
+            and carried verbatim rather than authored here.
+          </p>
+          <p>
+            Pipeline figures are published as stage aggregates. Counterparty
+            names, deal values and notes are held back: stages with fewer than
+            three opportunities are combined, and money is rounded, so no single
+            deal can be isolated. Committed amounts are transcribed from signed
+            funding agreements that are not yet machine-readable.
+          </p>
+          <p>
+            Every figure on this page can be reproduced. It is built entirely
+            from the public <code>filecoin.filpgf_public</code> dataset, which
+            anyone with an OSO API key can query. Nothing is read from a private
+            table. This is a monitoring view published for transparency. It is
+            decision support, not a decision.
+          </p>
         </div>
       </Section>
     )
