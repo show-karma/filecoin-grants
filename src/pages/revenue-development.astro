@@ -14,6 +14,39 @@ import {
   REVDEV_FUNDING_FACTS,
   REVDEV_ROADMAP_CRITERIA,
 } from "../data/programs";
+import PodsTopline from "../components/pods/PodsTopline.astro";
+import PodsRevenue from "../components/pods/PodsRevenue.astro";
+import PodsGlance from "../components/pods/PodsGlance.astro";
+import PodPipeline from "../components/pods/PodPipeline.astro";
+import PodSection from "../components/pods/PodSection.astro";
+import { formatDay, loadPodsData } from "../data/pods-api";
+
+/*
+ * Rendered on demand rather than at build so the pods' own figures refresh
+ * without a deploy; Vercel ISR then caches the result.
+ */
+export const prerender = false;
+
+/*
+ * Null when the pods API could not be read for this render. The page then
+ * keeps only what is true without it — the programme's terms, the roadmap
+ * criteria — and drops every live figure rather than showing a stale one.
+ */
+const podsData = await loadPodsData();
+
+/*
+ * The editorial copy describes two product mandates; the funding agreements
+ * run to three pods, Large Data Onboarding carrying its own. So the recipient
+ * count comes from the agreements rather than from the copy, and the prose
+ * around it states no number of its own.
+ */
+const evidenceTo = formatDay(podsData?.program.latestReviewAt);
+
+const fundingFacts = REVDEV_FUNDING_FACTS.map((fact) =>
+  fact.label === "Recipients" && podsData
+    ? { ...fact, value: `${podsData.program.podsFunded} pods` }
+    : fact,
+);
 ---
 
 <BaseLayout
@@ -26,7 +59,7 @@ import {
   <PageHero
     eyebrow="Revenue Development · Program overview"
     title="Turning capacity into paid usage."
-    intro="Filecoin's 2026 strategy shifts the question from how much data the network can hold to how much it is paid to store and serve. Revenue Development is the program behind that shift. It funds two pods directly: there is no open call and no public application."
+    intro="Filecoin's 2026 strategy shifts the question from how much data the network can hold to how much it is paid to store and serve. Revenue Development is the program behind that shift. It funds the pods directly: there is no open call and no public application."
   />
 
   <!-- Objective -->
@@ -36,10 +69,10 @@ import {
     {/* Stacked, as in the design — the criteria card sits below the prose. */}
     <div class="mt-8 max-w-3xl space-y-5 text-[0.95rem] leading-relaxed">
       <p>
-        Revenue Development doesn't run an open call. It funds two pods, each
-        with a specific product and go-to-market mandate, each accountable for
-        revenue in its slice of the ecosystem. Capital follows their six-month
-        roadmaps and is released as milestones land.
+        Revenue Development doesn't run an open call. It funds pods, each with a
+        specific product and go-to-market mandate, each accountable for revenue
+        in its slice of the ecosystem. Capital follows their six-month roadmaps
+        and is released as milestones land.
       </p>
       <p>
         If you see something a pod's roadmap is missing, R&D is the program that
@@ -48,7 +81,7 @@ import {
         roadmap later.
       </p>
       <p class="pt-1">
-        <Button href="#pods">Meet the two pods</Button>
+        <Button href="#pods">Meet the pods</Button>
       </p>
     </div>
 
@@ -65,13 +98,133 @@ import {
   <Section id="pods" tint>
     <SectionHeader
       eyebrow="Pods"
-      title="Two pods set the roadmap"
+      title="The pods set the roadmap"
       intro="A pod is a small, mission-focused team with a specific product and go-to-market mandate. Pods own product and revenue for their slice of the ecosystem, and Revenue Development milestones are scoped against their six-month roadmaps."
     />
     <div class="mt-10 space-y-5">
       {PODS.map((pod) => <PodCard pod={pod} />)}
     </div>
   </Section>
+
+  {
+    podsData && (
+      <Section id="progress">
+        <SectionHeader
+          eyebrow="ProPGF · Revenue Development Track"
+          title="FOC, LDO, Fil One: pipeline, commitments and KPIs."
+          intro="Below is onchain revenue and the GTM pipelines, followed by each pod's progress against its funding agreement and targets."
+        />
+        <p class="mono-meta mt-4">
+          {evidenceTo
+            ? `Evidence current to ${evidenceTo}. Rebuilt from the pods' biweekly reviews on every run.`
+            : "Rebuilt from the pods' biweekly reviews on every run."}
+        </p>
+        <div class="mt-10">
+          <PodsTopline data={podsData} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && podsData.onchainRevenue.length > 0 && (
+      <Section id="revenue" tint>
+        <SectionHeader
+          eyebrow="Revenue · What settles onchain"
+          title="Onchain revenue against the committed run rate"
+          intro="Filecoin Pay is where money that settles on Filecoin mainnet shows up, and this section reads the annual run rate straight off those rails rather than off a forecast."
+        />
+        <div class="mt-10">
+          <PodsRevenue data={podsData} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && podsData.pods.some((pod) => pod.pipeline) && (
+      <Section id="pipeline">
+        <SectionHeader
+          eyebrow="Pipeline · What is coming"
+          title="GTM pipelines: the enterprise book and the partnership funnel"
+          intro="One pod runs an enterprise sales book: each opportunity has a stage, a deal value and a win probability. The other runs a partnership tracker that records neither value nor probability. The two are reported separately below and are not combined. Figures are aggregate only; counterparties are not named on this page."
+        />
+        <div class="mt-10">
+          <PodPipeline pods={podsData.pods} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && (
+      <Section id="at-a-glance" tint>
+        <SectionHeader eyebrow="At a glance · The pods" title="The pods" />
+        <div class="mt-10">
+          <PodsGlance data={podsData} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && (
+      <Section id="pod-detail">
+        <div class="space-y-20">
+          {podsData.pods.map((pod) => (
+            <PodSection pod={pod} />
+          ))}
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    podsData && (
+      <Section id="how-built" tint>
+        <SectionHeader eyebrow="Provenance" title="How this page is built" />
+        <div class="mt-8 max-w-3xl space-y-4 text-sm leading-relaxed text-body">
+          <p>
+            It is rebuilt from the pods' own biweekly business reviews every
+            time it runs, so it moves when they do rather than freezing on a
+            reporting date.
+          </p>
+          <p>
+            Metrics and shipped work come from the business-review ingestion —{" "}
+            {podsData.pods
+              .map(
+                (pod) =>
+                  `${pod.podDisplayName} to ${formatDay(pod.latestReportAt) ?? "—"} (${pod.reportsRead} reports)`,
+              )
+              .join(" · ")}
+            . Each pod's figures are read from its own report; where a pod did
+            not state a number in a given period it is shown as missing rather
+            than as zero.
+          </p>
+          <p>
+            Commitments and their status are a curated ledger reviewed against
+            the signed funding agreements, not a self-report. What each pod does
+            is the pod's own description, supplied by the Filecoin ProPGF team
+            and carried verbatim rather than authored here.
+          </p>
+          <p>
+            Pipeline figures are published as stage aggregates. Counterparty
+            names, deal values and notes are held back: stages with fewer than
+            three opportunities are combined, and money is rounded, so no single
+            deal can be isolated. Committed amounts are transcribed from signed
+            funding agreements that are not yet machine-readable.
+          </p>
+          <p>
+            Every figure on this page can be reproduced. It is built entirely
+            from the public <code>filecoin.filpgf_public</code> dataset, which
+            anyone with an OSO API key can query. Nothing is read from a private
+            table. This is a monitoring view published for transparency. It is
+            decision support, not a decision.
+          </p>
+        </div>
+      </Section>
+    )
+  }
 
   <!-- Funding -->
   <Section id="funding">
@@ -85,7 +238,7 @@ import {
       class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-4"
     >
       {
-        REVDEV_FUNDING_FACTS.map((fact) => (
+        fundingFacts.map((fact) => (
           <div class="bg-surface p-5">
             <dt class="mono-meta uppercase">{fact.label}</dt>
             <dd class="mt-1.5 text-lg font-semibold text-ink">{fact.value}</dd>
@@ -108,7 +261,7 @@ import {
       <SectionHeader
         eyebrow="Get involved"
         title="Want to contribute?"
-        intro="Revenue Development funds the two pods directly, so there's nothing to apply for here. R&D is where outside teams can pick up work that supports them."
+        intro="Revenue Development funds the pods directly, so there's nothing to apply for here. R&D is where outside teams can pick up work that supports them."
         class="max-w-2xl"
       />
       <div class="flex shrink-0 flex-col items-start gap-3">

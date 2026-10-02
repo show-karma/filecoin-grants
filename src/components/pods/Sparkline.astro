@@ -1,0 +1,65 @@
+---
+/**
+ * The shape of a series, not a chart to read values off. No axes and no
+ * labels: the figure above it is the reading, and this says whether it has
+ * been climbing, flat or falling to get there.
+ */
+type Props = {
+  values: number[];
+  tone?: "ok" | "warn" | "bad" | "neutral";
+  class?: string;
+};
+const { values, tone = "neutral", class: className = "" } = Astro.props;
+
+const W = 120;
+const H = 32;
+
+const points = (() => {
+  if (values.length < 2) return null;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  /* A flat series would divide by zero; it draws down the middle instead. */
+  const span = max - min || 1;
+  return values.map((value, index) => {
+    const x = (index / (values.length - 1)) * W;
+    const y = H - ((value - min) / span) * (H - 4) - 2;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+})();
+
+const line = points?.join(" ") ?? "";
+const area = points ? `0,${H} ${line} ${W},${H}` : "";
+const last = points?.[points.length - 1]?.split(",") ?? null;
+
+const stroke = {
+  ok: "text-ok",
+  warn: "text-warn",
+  bad: "text-bad",
+  neutral: "text-accent",
+}[tone];
+---
+
+{
+  points && (
+    <svg
+      class:list={["block", stroke, className]}
+      viewBox={`0 0 ${W} ${H}`}
+      width={W}
+      height={H}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <polygon points={area} fill="currentColor" opacity="0.12" />
+      <polyline
+        points={line}
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+        vector-effect="non-scaling-stroke"
+      />
+      {last && <circle cx={last[0]} cy={last[1]} r="1.8" fill="currentColor" />}
+    </svg>
+  )
+}

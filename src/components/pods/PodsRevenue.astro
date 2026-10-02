@@ -1,0 +1,249 @@
+---
+import type { PodsData } from "../../data/pods-api";
+import {
+  formatUsd,
+  growthMultiple,
+  measureGap,
+  formatMonth,
+  monthsBetween,
+} from "../../data/pods-api";
+import { REVENUE_BASIS, fillNote, podCopy } from "../../data/pods-copy";
+import Sparkline from "./Sparkline.astro";
+
+type Props = { data: PodsData };
+const { data } = Astro.props;
+
+/*
+ * The headline pod is the one measured against a committed run rate. The
+ * others report on a different basis and are listed beside it rather than
+ * added to it: a run rate, a cash total and no revenue line at all cannot be
+ * summed into one number.
+ */
+/** The metric each pod's revenue line is read from, mirroring the API. */
+const REVENUE_METRIC_KEY: Record<string, string> = {
+  foc: "filecoin_pay_arr",
+  web2: "revenue_collected_usd",
+};
+
+const headline =
+  data.onchainRevenue.find((entry) => entry.commitmentUsd !== null) ?? null;
+const headlinePod = headline
+  ? data.pods.find((pod) => pod.podSlug === headline.podSlug)
+  : undefined;
+const copy = headline ? podCopy(headline.podSlug) : undefined;
+
+const growth = headline ? growthMultiple(headline) : null;
+const gap = headline ? measureGap(headline) : null;
+const firstMonth = formatMonth(headline?.firstReading?.date);
+const span = monthsBetween(
+  headline?.firstReading?.date,
+  headline?.series[headline.series.length - 1]?.date,
+);
+
+const pctOfCommitment =
+  headline && headline.commitmentUsd
+    ? Math.round((headline.reportedUsd / headline.commitmentUsd) * 100)
+    : null;
+
+type Card = { label: string; value: string; note: string; lead?: boolean };
+
+const cards: Card[] = headline
+  ? [
+      {
+        label: `${headlinePod?.podDisplayName ?? "Pod"} onchain revenue`,
+        value: formatUsd(headline.reportedUsd) ?? "—",
+        note: [
+          "annual run rate across every Filecoin Pay rail",
+          pctOfCommitment !== null &&
+            `${pctOfCommitment}% of ${headlinePod?.podDisplayName ?? "the pod"}'s ${formatUsd(headline.commitmentUsd)} commitment`,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        lead: true,
+      },
+      headline.remainingUsd !== null && {
+        label: "Still to find",
+        value: formatUsd(headline.remainingUsd) ?? "—",
+        note: `the distance left to ${headlinePod?.podDisplayName ?? "the pod"}'s committed run rate`,
+      },
+      headline.usdcOnlyUsd !== null && {
+        label: "USDFC-only rails",
+        value: formatUsd(headline.usdcOnlyUsd) ?? "—",
+        note: "the stablecoin-native slice, reported separately in each biweekly review",
+      },
+      growth !== null &&
+        firstMonth && {
+          label: `Growth since ${firstMonth}`,
+          value: `${growth >= 10 ? Math.round(growth) : growth.toFixed(1)}×`,
+          note: [
+            span !== null && `about ${span} months`,
+            `from ${formatUsd(headline.firstReading!.value) ?? "—"} in ${firstMonth} to ${formatUsd(headline.reportedUsd)} now`,
+          ]
+            .filter(Boolean)
+            .join(" · "),
+        },
+    ].filter((card): card is Card => Boolean(card))
+  : [];
+
+/* The bar reads as a share of the commitment; the overshoot has nowhere to go. */
+const fill =
+  pctOfCommitment === null ? null : Math.max(0, Math.min(100, pctOfCommitment));
+---
+
+{
+  headline && (
+    <div class="space-y-8">
+      <div class="rounded-lg border-l-2 border-accent bg-surface-sunken p-5 text-sm leading-relaxed">
+        <strong class="font-semibold text-ink">
+          What this is, and what it is not.
+        </strong>{" "}
+        The series below is {headlinePod?.podDisplayName}'s alone. The{" "}
+        {formatUsd(headline.commitmentUsd)} is {headlinePod?.podDisplayName}'s
+        own commitment, taken from its{" "}
+        {headlinePod?.roadmapSource ?? "funding agreement"} — it is not a
+        network-wide revenue goal and not a target set for the pods together.
+        The pods also measure revenue differently, so their figures are shown
+        side by side below and are deliberately never added up.
+      </div>
+
+      <dl class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        {cards.map((card) => (
+          <div
+            class:list={[
+              "flex flex-col p-5",
+              card.lead ? "bg-surface-sunken" : "bg-surface",
+            ]}
+          >
+            <dt class="mono-meta uppercase">{card.label}</dt>
+            <dd class="mt-2 font-mono text-[1.75rem] font-medium leading-tight tracking-tight text-ink">
+              {card.value}
+            </dd>
+            <dd class="mt-2 text-sm leading-snug text-body">{card.note}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div class="rounded-lg border border-line bg-surface p-5">
+        <h3 class="text-[0.95rem] font-semibold text-ink">
+          {headlinePod?.podDisplayName} — run rate against its commitment
+        </h3>
+        <p class="mono-meta mt-1">
+          biweekly, from the pod's own live read of the rails
+        </p>
+
+        <div class="mt-5">
+          <Sparkline
+            values={headline.series.map((reading) => reading.value)}
+            tone="neutral"
+            class="h-24 w-full"
+          />
+        </div>
+
+        {fill !== null && (
+          <div class="mt-3">
+            <div
+              class="h-2 overflow-hidden rounded-full bg-line-soft"
+              aria-hidden="true"
+            >
+              <div
+                class="h-full rounded-full bg-accent"
+                style={`width:${fill}%`}
+              />
+            </div>
+            <div class="mono-meta mt-2 flex justify-between">
+              <span>{formatUsd(headline.reportedUsd)} now</span>
+              <span>{formatUsd(headline.commitmentUsd)} committed</span>
+            </div>
+          </div>
+        )}
+
+        <p class="mt-5 text-sm leading-relaxed text-body">
+          <strong class="font-semibold text-ink">Read it carefully.</strong>{" "}
+          {copy?.kpis[0]?.note} Run rate is what current rails would pay over a
+          year if nothing changed; it is not cash already collected.
+        </p>
+      </div>
+
+      {gap !== null && (
+        <div class="rounded-lg border-l-2 border-warn bg-surface-sunken p-5 text-sm leading-relaxed">
+          <strong class="font-semibold text-ink">
+            Two measures of these rails disagree, and this page shows the
+            larger.
+          </strong>{" "}
+          The {formatUsd(headline.reportedUsd)} above is the figure{" "}
+          {headlinePod?.podDisplayName} reports in its own business review. An
+          independent measure of Filecoin Pay taken from onchain activity,
+          published in the same publicly queryable dataset, puts the run rate at{" "}
+          {formatUsd(headline.onchainUsd)} — about {gap.toFixed(1)}× lower.
+          <br />
+          <br />
+          The two are not measuring quite the same thing: the reported figure
+          annualises contracted rails, the onchain figure annualises observed
+          payment volume. Neither is asserted to be wrong here. But the gap has
+          not been reconciled, and until it is, the number above should be read
+          as what the pod reports rather than as what the chain has settled.
+        </div>
+      )}
+
+      <div class="rounded-lg border border-line bg-surface p-5">
+        <h3 class="text-[0.95rem] font-semibold text-ink">
+          Revenue reported by each pod
+        </h3>
+        <p class="mono-meta mt-1">
+          three different measures · shown together for context, not summed
+        </p>
+        <table class="mt-4 w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-line">
+              <th class="mono-meta py-2 pr-4 font-normal uppercase">Pod</th>
+              <th class="mono-meta py-2 pr-4 font-normal uppercase">
+                What it reports
+              </th>
+              <th class="mono-meta py-2 pr-4 text-right font-normal uppercase">
+                Latest
+              </th>
+              <th class="mono-meta py-2 font-normal uppercase">Reading</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.pods.map((pod) => {
+              const basis = REVENUE_BASIS[pod.podSlug];
+              const entry = data.onchainRevenue.find(
+                (candidate) => candidate.podSlug === pod.podSlug,
+              );
+              /* The commitment behind this pod's revenue line carries the
+               * target the sentence quotes. */
+              const target =
+                pod.commitments.find(
+                  (commitment) =>
+                    commitment.metricKey ===
+                    (entry ? REVENUE_METRIC_KEY[pod.podSlug] : undefined),
+                )?.targetText ?? null;
+              return (
+                <tr class="border-b border-line-soft last:border-0">
+                  <td class="py-2.5 pr-4 font-medium text-ink">
+                    {pod.podDisplayName}
+                  </td>
+                  <td class="py-2.5 pr-4 text-body">
+                    {basis?.reports ?? "no revenue line reported"}
+                  </td>
+                  <td class="py-2.5 pr-4 text-right font-mono text-ink">
+                    {entry ? (formatUsd(entry.reportedUsd) ?? "—") : "—"}
+                  </td>
+                  <td class="py-2.5 text-body">
+                    {basis ? fillNote(basis.reading, target) : ""}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <p class="mt-4 text-sm leading-relaxed text-body">
+          A run rate, a cash total and no revenue line at all cannot be added
+          into one number. A single cross-pod revenue figure would need the pods
+          to report on the same basis first.
+        </p>
+      </div>
+    </div>
+  )
+}
