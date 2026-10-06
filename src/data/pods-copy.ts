@@ -33,14 +33,24 @@ export type PodKpi = {
   note: string;
 };
 
-/** Replaces `{target}`, or removes the sentence that depends on it. */
-export function fillNote(note: string, target: string | null): string {
+/**
+ * Fills `{target}` from the commitment. With no target the sentence that
+ * needed one is dropped — and where every sentence needed one, the caller's
+ * fallback is used rather than an empty string, which would silently blank a
+ * table cell.
+ */
+export function fillNote(
+  note: string,
+  target: string | null,
+  fallback = "",
+): string {
   if (target) return note.replace(/\{target\}/g, target);
-  return note
+  const kept = note
     .split(/(?<=\.)\s+/)
     .filter((sentence) => !sentence.includes("{target}"))
     .join(" ")
     .trim();
+  return kept || fallback;
 }
 
 export type PodCopy = {
@@ -163,19 +173,23 @@ export const podCopy = (slug: string): PodCopy | undefined =>
 /** How each pod's revenue line should be read, for the side-by-side table. */
 export const REVENUE_BASIS: Record<
   string,
-  { reports: string; reading: string }
+  { reports: string; reading: string; readingWithoutTarget: string }
 > = {
   foc: {
     reports: "Filecoin Pay ARR (run rate)",
     reading: "against a {target} commitment",
+    readingWithoutTarget: "against its own funding commitment",
   },
   ldo: {
     reports: "no revenue line reported",
     reading:
       "the pod carries capacity and retrieval targets, not a revenue target",
+    readingWithoutTarget:
+      "the pod carries capacity and retrieval targets, not a revenue target",
   },
   web2: {
     reports: "cash collected to date",
     reading: "collected cash, not a run rate — stated ambition is {target}",
+    readingWithoutTarget: "collected cash, not a run rate",
   },
 };

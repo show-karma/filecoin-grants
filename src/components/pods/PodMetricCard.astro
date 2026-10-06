@@ -4,6 +4,7 @@ import type { PodMetricFormat } from "../../data/pods-copy";
 import {
   changeOverWindow,
   DELTA_WINDOW_DAYS,
+  formatUsd,
   latestReading,
   progressBarPct,
   progressPct,
@@ -38,10 +39,7 @@ const group = (value: number, digits = 0) =>
 function show(value: number): string {
   switch (format) {
     case "usd":
-      if (Math.abs(value) >= 1_000_000)
-        return `$${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-      if (Math.abs(value) >= 10_000) return `$${group(value / 1_000)}K`;
-      return `$${group(value)}`;
+      return formatUsd(value) ?? "$0";
     case "usd2":
       return Math.abs(value) >= 10_000
         ? `$${group(value / 1_000)}K`
@@ -89,13 +87,16 @@ const changeLabel =
     ? "flat"
     : `${change > 0 ? "↑" : "↓"} ${show(Math.abs(change))}`;
 
-/* Up is not always good: a falling onboarding time is the pod improving. */
-const changeTone =
-  change === null || change === 0
-    ? "text-muted"
-    : change > 0 === (metric.direction !== "lower_better")
-      ? "text-ok"
-      : "text-bad";
+/* Up is not always good: a falling onboarding time is the pod improving. With
+ * no direction stated, movement is reported without calling it either way. */
+const changeTone = (() => {
+  if (change === null || change === 0 || metric.direction === null) {
+    return "text-muted";
+  }
+  const rose = change > 0;
+  const wanted = metric.direction !== "lower_better";
+  return rose === wanted ? "text-ok" : "text-bad";
+})();
 
 const series = metric.series.map((reading) => reading.value);
 ---
@@ -110,7 +111,7 @@ const series = metric.series.map((reading) => reading.value);
   <p
     class:list={[
       "mono-meta mt-1",
-      within === false ? "text-warn" : "",
+      within === false ? "text-bad" : "",
       metric.target === null ? "text-muted" : "",
     ]}
   >

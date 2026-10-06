@@ -126,6 +126,8 @@ export type PodEntry = {
 
 export type PodOnchainRevenue = {
   podSlug: string;
+  /** The metric this line is read from, so the page need not guess. */
+  metricKey: string;
   reportedUsd: number;
   /**
    * The same rails measured onchain. Where it differs from the reported
@@ -211,6 +213,10 @@ export function monthsBetween(
     Math.round((b.getTime() - a.getTime()) / (30.44 * 86_400_000)),
   );
 }
+
+/** The entry the revenue section leads with: the one read against a commitment. */
+export const headlineRevenue = (data: PodsData): PodOnchainRevenue | null =>
+  data.onchainRevenue.find((entry) => entry.commitmentUsd !== null) ?? null;
 
 /** Growth against the first reading, as "50×". Null when it cannot be read. */
 export function growthMultiple(entry: PodOnchainRevenue): number | null {

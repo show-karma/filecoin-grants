@@ -1,3 +1,4 @@
+import { fillNote } from "../pods-copy";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -186,5 +187,35 @@ describe("openBookUsd", () => {
 
   it("should_weight_the_open_book_by_its_own_probabilities", () => {
     expect(weightedBookUsd(pipeline([stage()]))).toBe(1_300_000);
+  });
+});
+
+describe("fillNote", () => {
+  it("should_fill_the_placeholder_from_the_commitment", () => {
+    expect(fillNote("against a {target} commitment", "$250K H2")).toBe(
+      "against a $250K H2 commitment",
+    );
+  });
+
+  it("should_drop_the_sentence_that_needed_a_target_it_does_not_have", () => {
+    expect(
+      fillNote("Against a {target} commitment. The pool has room.", null),
+    ).toBe("The pool has room.");
+  });
+
+  it("should_fall_back_rather_than_blank_a_note_that_is_all_target", () => {
+    // Every REVENUE_BASIS reading is a fragment with no sentence to keep, so
+    // without a fallback a renamed commitment would empty the table cell.
+    expect(
+      fillNote(
+        "against a {target} commitment",
+        null,
+        "against its own funding commitment",
+      ),
+    ).toBe("against its own funding commitment");
+  });
+
+  it("should_return_nothing_when_there_is_no_fallback_either", () => {
+    expect(fillNote("against a {target} commitment", null)).toBe("");
   });
 });

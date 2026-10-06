@@ -1,6 +1,11 @@
 ---
 import type { PodEntry } from "../../data/pods-api";
-import { formatUsd, openBookUsd, weightedBookUsd } from "../../data/pods-api";
+import {
+  formatDay,
+  formatUsd,
+  openBookUsd,
+  weightedBookUsd,
+} from "../../data/pods-api";
 
 type Props = { pods: PodEntry[] };
 const { pods } = Astro.props;
@@ -21,21 +26,28 @@ const funnels = pods
       open,
       weighted: weightedBookUsd(pipeline),
       hasValue: open !== null,
-      capacity: pipeline.stages.reduce(
-        (total, stage) => total + (stage.pb ?? 0),
-        0,
-      ),
-      widest: Math.max(
+      /* Open stages only, matching the open book reported beside it. */
+      capacity: pipeline.stages
+        .filter((stage) => stage.stageKind === "open")
+        .reduce((total, stage) => total + (stage.pb ?? 0), 0),
+      /* Money and counts scale separately: one shared maximum would size a bar
+       * drawn in dollars against a stage measured in opportunities. */
+      widestAmount: Math.max(
         1,
-        ...pipeline.stages.map(
-          (stage) => stage.amountUsd ?? stage.entityCount ?? 0,
-        ),
+        ...pipeline.stages.map((stage) => stage.amountUsd ?? 0),
+      ),
+      widestCount: Math.max(
+        1,
+        ...pipeline.stages.map((stage) => stage.entityCount ?? 0),
       ),
     };
   });
 
-const deals = funnels.find((funnel) => funnel.hasValue);
-const counts = funnels.find((funnel) => !funnel.hasValue);
+const valueFunnels = funnels.filter((funnel) => funnel.hasValue);
+const countFunnels = funnels.filter((funnel) => !funnel.hasValue);
+/* The cards summarise the first of each kind; the tables below show them all. */
+const deals = valueFunnels[0];
+const counts = countFunnels[0];
 
 const weightedShare =
   deals && deals.open && deals.weighted
@@ -48,7 +60,13 @@ const cards: Card[] = [
   deals && {
     label: "Open enterprise book",
     value: formatUsd(deals.open) ?? "—",
-    note: `${deals.pipeline.openEntities ?? deals.pipeline.totalEntities ?? 0} live opportunities on the ${deals.pod.podDisplayName} book · first-year value if every one closed`,
+    note: [
+      deals.pipeline.openEntities ?? deals.pipeline.totalEntities,
+      `live opportunities on the ${deals.pod.podDisplayName} book`,
+    ]
+      .filter((part) => part !== null)
+      .join(" ")
+      .concat(" · first-year value if every one closed"),
   },
   deals && {
     label: "Weighted pipeline",
@@ -110,7 +128,7 @@ const cards: Card[] = [
         <p class="mono-meta mt-1">
           open book by stage, lost opportunities excluded
           {deals.pipeline.snapshotDate &&
-            ` · snapshot ${deals.pipeline.snapshotDate}`}
+            ` · snapshot ${formatDay(deals.pipeline.snapshotDate)}`}
         </p>
         <table class="mt-4 w-full text-left text-sm">
           <thead>
@@ -148,7 +166,7 @@ const cards: Card[] = [
                   {stage.amountUsd !== null && (
                     <span
                       class="block h-1.5 min-w-[2px] rounded-full bg-accent"
-                      style={`width:${(stage.amountUsd / deals.widest) * 100}%`}
+                      style={`width:${(stage.amountUsd / deals.widestAmount) * 100}%`}
                       aria-hidden="true"
                     />
                   )}
@@ -206,7 +224,7 @@ const cards: Card[] = [
                   {stage.entityCount !== null && (
                     <span
                       class="block h-1.5 min-w-[2px] rounded-full bg-accent"
-                      style={`width:${(stage.entityCount / counts.widest) * 100}%`}
+                      style={`width:${(stage.entityCount / counts.widestCount) * 100}%`}
                       aria-hidden="true"
                     />
                   )}

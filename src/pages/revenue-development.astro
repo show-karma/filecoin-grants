@@ -19,7 +19,7 @@ import PodsRevenue from "../components/pods/PodsRevenue.astro";
 import PodsGlance from "../components/pods/PodsGlance.astro";
 import PodPipeline from "../components/pods/PodPipeline.astro";
 import PodSection from "../components/pods/PodSection.astro";
-import { formatDay, loadPodsData } from "../data/pods-api";
+import { formatDay, headlineRevenue, loadPodsData } from "../data/pods-api";
 
 /*
  * Rendered on demand rather than at build so the pods' own figures refresh
@@ -127,7 +127,7 @@ const fundingFacts = REVDEV_FUNDING_FACTS.map((fact) =>
   }
 
   {
-    podsData && podsData.onchainRevenue.length > 0 && (
+    podsData && headlineRevenue(podsData) !== null && (
       <Section id="revenue" tint>
         <SectionHeader
           eyebrow="Revenue · What settles onchain"
