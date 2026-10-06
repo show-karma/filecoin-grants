@@ -1,0 +1,97 @@
+---
+import type { PodsData } from "../../data/pods-api";
+import { formatDay, formatUsd, spellOut } from "../../data/pods-api";
+
+type Props = { data: PodsData };
+const { data } = Astro.props;
+const { program, pods } = data;
+
+const names = pods.map((pod) => pod.podDisplayName);
+const funded =
+  names.length > 1
+    ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+    : (names[0] ?? "");
+
+/*
+ * A pod paid on rails the tracker does not cover contributes nothing to the
+ * total, which makes the figure a floor rather than the sum. Naming those pods
+ * beside it is the difference between a number and a misleading one.
+ */
+const untracked = pods.filter((pod) => !pod.paidIsTracked);
+const share =
+  program.paidPctOfCommitted === null
+    ? null
+    : `${Math.round(program.paidPctOfCommitted)}% of committed`;
+const disbursedNote = [
+  "settled invoices in the pod payments tracker",
+  share,
+  untracked.length > 0 &&
+    `excludes ${untracked
+      .map((pod) => pod.podDisplayName)
+      .join(" and ")}, paid on rails the tracker does not cover`,
+]
+  .filter(Boolean)
+  .join(untracked.length > 0 ? ", " : ", ")
+  .replace(/, (excludes)/, " — $1");
+
+const latest = formatDay(program.latestReviewAt);
+
+const tiles = [
+  {
+    value: `${program.podsFunded}`,
+    label: "Pods funded",
+    note: `${funded} — each a separate funding commitment, roadmap and reporting line`,
+  },
+  {
+    value: formatUsd(program.committedUsd) ?? "—",
+    label: "Committed",
+    note: `signed funding commitments across the ${program.podsFunded === 1 ? "pod" : `${spellOut(program.podsFunded)} pods`}`,
+  },
+  {
+    value: formatUsd(program.paidToDateUsd) ?? "—",
+    label: "Disbursed",
+    note: disbursedNote,
+    noteTone: untracked.length > 0 ? "warn" : "muted",
+  },
+  {
+    value: `${program.commitmentsDelivered} / ${program.commitmentsTotal}`,
+    label: "Commitments delivered",
+    note: "goals the pods signed up to that are demonstrably done",
+  },
+  {
+    value: `${program.reportsRead}`,
+    label: "Reports read",
+    note: latest
+      ? `every figure below traces to one · latest ${latest}`
+      : "every figure below traces to one",
+  },
+];
+---
+
+<dl
+  class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-5"
+>
+  {
+    tiles.map((tile) => (
+      <div class="flex flex-col bg-surface p-5">
+        <dt class="mono-meta uppercase">{tile.label}</dt>
+        <dd
+          class:list={[
+            "mt-2 font-mono text-[1.75rem] font-medium leading-tight tracking-tight",
+            tile.value === "—" ? "text-muted" : "text-ink",
+          ]}
+        >
+          {tile.value}
+        </dd>
+        <dd
+          class:list={[
+            "mt-2 text-sm leading-snug",
+            tile.noteTone === "warn" ? "text-warn" : "text-body",
+          ]}
+        >
+          {tile.note}
+        </dd>
+      </div>
+    ))
+  }
+</dl>
