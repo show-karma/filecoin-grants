@@ -3,12 +3,13 @@ import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
+import markdownNegotiation from "./src/integrations/markdown-negotiation";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://www.filpgf.io",
   trailingSlash: "ignore",
-  integrations: [sitemap()],
+  integrations: [sitemap(), markdownNegotiation()],
   /*
    * Static by default: every page is prerendered unless it opts out with
    * `export const prerender = false`. Only /kernel and / do, because only they

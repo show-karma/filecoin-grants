@@ -43,6 +43,7 @@ const accentStyle = ACCENTS[accent]
   : undefined;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const shareImage = new URL("/apple-touch-icon.png", Astro.site).href;
 const fullTitle = title === SITE.title ? title : `${title} · ${SITE.title}`;
 ---
 
@@ -100,8 +101,14 @@ const fullTitle = title === SITE.title ? title : `${title} · ${SITE.title}`;
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content={SITE.title} />
     {
-      /* No share image ships yet — upgrade to summary_large_image once one does. */
+      /*
+      No share image ships yet, so the touch icon stands in: square, which
+      suits the small "summary" card. Swap both and upgrade the card to
+      summary_large_image once a real share image does.
+    */
     }
+    <meta property="og:image" content={shareImage} />
+    <meta property="og:image:alt" content={SITE.title} />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />

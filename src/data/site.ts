@@ -22,7 +22,10 @@ export const EXTERNAL = {
   twitter: "https://twitter.com/Filecoin",
   discord: "https://discord.gg/yeQ2hcd2TD",
   github: "https://github.com/filecoin-project",
+  /** Karma's general agent skills: applying, posting milestones, reviewing. */
   skills: "https://github.com/show-karma/skills",
+  /** This repo; its `skills/` folder is the FilPGF agent toolkit. */
+  repo: "https://github.com/show-karma/filecoin-grants",
   slack: "https://filecoin.io/slack",
 } as const;
 

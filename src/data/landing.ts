@@ -374,3 +374,35 @@ export const REPORT_CADENCES: ReportCadence[] = [
     linkText: "Coming soon",
   },
 ];
+
+/**
+ * Homepage headings and section intros. Kept here rather than inline in
+ * index.astro because /index.md renders the same copy for agents.
+ */
+export const HOME_COPY = {
+  heading: "The work behind the network, in the open.",
+  objectives: {
+    eyebrow: "Objectives",
+    title: "Three objectives everything ladders up to",
+    intro:
+      "Three programs fund this work — Kernel for what the network can't run without, Revenue Development for growth, R&D for early work that graduates into the other two. Each objective maps to one, and each program sets its own terms, timeline, and measure of success.",
+  },
+  reporting: {
+    eyebrow: "Tracking",
+    title: "How we report",
+    intro:
+      "Progress is published on a fixed cadence, so anyone can see what's moving. Reports cover delivery against milestones, health metrics for each funded function, and the network-level impact the work is meant to produce.",
+  },
+  blog: {
+    eyebrow: "From the blog",
+    title: "Follow along",
+    intro:
+      "Track program updates and spotlighted projects. New rounds, selection committees, and open calls get posted here first.",
+  },
+  funding: {
+    eyebrow: "Get funded",
+    title: "Where your work fits",
+    intro:
+      "If your work belongs on the ledger, start by identifying which objective it serves — the application, the evaluation, and the payout schedule all follow from that.",
+  },
+} as const;
