@@ -24,10 +24,25 @@ src/
   components/    Presentational components; kernel/ and revdev/ hold page-specific ones
   layouts/       BaseLayout — head tags, header, footer, program accent
   pages/         Routes: /, /kernel, /rnd, /revenue-development, /blog
-  content/blog/  Blog posts as Markdown
+  sanity/        Sanity schema (the blog post document type)
   styles/        global.css — design tokens and shared utilities
 public/          Static assets served as-is (favicons, robots.txt, CNAME)
+sanity.config.ts Sanity Studio, served at /studio
 ```
+
+## Blog
+
+Posts live in Sanity, not in the repo. Editors sign in at `/studio` with the
+account they were invited with (sanity.io/manage → Members) and publish from
+there; publishing triggers a Vercel deploy hook, so the site rebuilds on its own.
+
+The build reads published posts through the `blog` content collection
+(`src/lib/sanity-blog.ts`). It needs `PUBLIC_SANITY_PROJECT_ID` and
+`PUBLIC_SANITY_DATASET` (see `.env.example`). Drafts never reach the build:
+Sanity only returns published documents.
+
+`scripts/migrate-blog-to-sanity.ts` is the one-off that moved the original
+Markdown posts across; it needs an editor token in `SANITY_WRITE_TOKEN`.
 
 ## Live data
 
