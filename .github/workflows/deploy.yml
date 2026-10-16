@@ -37,8 +37,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # `pnpm build` runs `astro check` first, so type errors fail the PR.
+      # The blog collection reads from Sanity at build time, so the project
+      # must be set as a repository variable (Settings → Secrets and variables).
       - name: Build
         run: pnpm run build
+        env:
+          PUBLIC_SANITY_PROJECT_ID: ${{ vars.PUBLIC_SANITY_PROJECT_ID }}
+          PUBLIC_SANITY_DATASET: ${{ vars.PUBLIC_SANITY_DATASET || 'production' }}
 
       - name: Upload build for review
         uses: actions/upload-artifact@v4
