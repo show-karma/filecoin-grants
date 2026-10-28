@@ -1,0 +1,32 @@
+---
+import CriteriaList from "../CriteriaList.astro";
+import type { Rfp } from "../../data/programs";
+
+type Props = { rfp: Rfp; index: number };
+const { rfp, index } = Astro.props;
+const number = String(index + 1).padStart(2, "0");
+---
+
+<article class="rounded-lg border border-line bg-surface p-6 sm:p-7">
+  <p class="eyebrow">RFP / {number}</p>
+  <h3 class="mt-2.5 text-xl">{rfp.title}</h3>
+  <p class="mt-3 text-[0.95rem] leading-relaxed">
+    <span class="font-medium">Objective:</span>
+    {rfp.objective}
+  </p>
+
+  <div class="mt-6 border-t border-line-soft pt-6">
+    <p class="mono-meta uppercase">Problem</p>
+    <p class="mt-3 text-[0.95rem] leading-relaxed">{rfp.problem}</p>
+  </div>
+
+  <div class="mt-6 space-y-6 border-t border-line-soft pt-6">
+    <CriteriaList label="In scope" items={rfp.inScope} tone="in" />
+    <CriteriaList label="Out of scope" items={rfp.notInScope} tone="out" />
+  </div>
+
+  <div class="mt-6 border-t border-line-soft pt-6">
+    <p class="mono-meta uppercase">Who should apply</p>
+    <p class="mt-3 text-[0.95rem] leading-relaxed">{rfp.whoShouldApply}</p>
+  </div>
+</article>

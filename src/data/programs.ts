@@ -105,82 +105,74 @@ export const RND_NOT_IN_SCOPE = [
   "Work that duplicates what a pod or an existing Kernel function already covers",
 ];
 
-export const RND_OPEN_RFPS = {
-  eyebrow: "Coming soon",
-  title: "R&D RFPs Opening Soon",
-  description:
-    "Focus areas listed below will regularly be updated to ensure the focus areas remain targeted to ecosystem priorities. Will be accepting applications soon!",
-};
-
-export type FocusArea = {
+export type Rfp = {
   title: string;
-  /** A condition every proposal in the area must meet, shown under the title. */
-  note?: string;
+  objective: string;
+  problem: string;
   inScope: string[];
   notInScope: string[];
+  whoShouldApply: string;
 };
 
-export const RND_FOCUS_AREAS: FocusArea[] = [
+export const RND_RFPS: Rfp[] = [
   {
-    title: "Customer-facing products built on Filecoin",
+    title: "Filecoin Paid Retrieval Prototype",
+    objective:
+      "Produce a design recommendation and a working proof-of-concept that lets providers get paid for services, so e.g. retrieval becomes a revenue line alongside storage.",
+    problem:
+      "Storage providers earn on storage, but serving data back is virtually always unpaid. That weakens the incentive to retrieve fast and reliably, and it is a gap in the network\u2019s long-term economics. Several designs have been proposed over the years across Filecoin, IPFS and libp2p, but no functional prototype exists today.",
     inScope: [
-      "Products for AI workloads, such as agent memory, tamper-evident audit logs, and training-data provenance",
-      "Products for creative, media, and archival data storage, for studios and cultural institutions",
-      "Products for compliance and regulated data, with write-once retention and audit trails",
-      "Products for real-world-asset and onchain-data teams with near-to-medium term potential to convert to ARR",
+      "A survey of prior art: past Filecoin retrieval-market designs, payment-channel approaches and any live paid-retrieval services",
+      "A comparison of protocol-level versus application-level approaches, with trade-offs on latency, trust, cost per request and SP integration effort",
+      "A prototype of one recommended approach. Suggested starting point: a voucher system using MPP for Filecoin Onchain Cloud (FOC) paid retrieval",
+      "An end-to-end demo: client pays, SP serves, SP settles",
     ],
     notInScope: [
-      "Platform extensions (SDKs, adapters, gateways)",
-      "Unvalidated MVPs or demos",
-      "Acquisitions, channel business development, and marketing",
-      "Research-only projects",
+      "Production deployment or mainnet launch",
+      "Changes to Filecoin consensus or FIPs (a FIP draft can be a recommendation, not a deliverable)",
+      "Building a new client or gateway beyond what the demo needs",
     ],
+    whoShouldApply:
+      "Teams with hands-on experience in Filecoin retrieval, payment channels or micropayments, and libp2p. Prior published research is a plus.",
   },
   {
-    title: "Storage provider economics and growth",
+    title: "Complementary Security Testing of Filecoin EVM Deployments",
+    objective:
+      "Add an independent layer of security testing for high-value FEVM contracts, complementing (not duplicating) FF Security\u2019s existing test harnesses.",
+    problem:
+      "Filecoin Solstice and USDFC hold real user value on FEVM, and Filecoin Pay contracts are becoming core infrastructure for Filecoin Onchain Cloud. FF Security already runs test harnesses for Solstice and USDFC, but one team\u2019s view leaves blind spots. FEVM also differs from Ethereum (actor model, gas, precompiles), so standard EVM tooling can miss Filecoin-specific issues.",
     inScope: [
-      "Recruitment programs targeting adjacent differentiated supply, such as colocation operators and regional cloud providers",
-      "Retention infrastructure for the existing provider base",
-      "Rigorous economic modeling for storage providers, published as an ongoing public resource",
-      "Financial products that reduce capital risk, such as equipment financing and revenue-sharing arrangements",
+      "Review of FF Security\u2019s current harnesses to identify coverage gaps",
+      "New tests in the gaps: invariant/property-based fuzzing (Foundry, Echidna, Medusa), formal or symbolic checks on critical paths, and FEVM-specific edge cases",
+      "Targets: Solstice, USDFC, and Filecoin Pay contracts (v1, and v2 if stable)",
+      "Responsible disclosure of any findings before public reporting",
     ],
     notInScope: [
-      "New mining-hardware ventures",
-      "Marketing campaigns without economic modeling",
-      "One-off incentive programs",
+      "A full traditional audit of each codebase from scratch",
+      "Fixing the contracts (findings go to maintainers)",
+      "Off-chain infrastructure and front ends",
     ],
+    whoShouldApply:
+      "Smart-contract security teams or independent researchers with public audit or fuzzing work, ideally with experience in stablecoin/CDP systems (Liquity-style troves) and payment-rail contracts. FEVM experience is a strong plus.",
   },
   {
-    title: "AI infrastructure products on Filecoin",
+    title: "Programmable PoRep Proving Pipeline via FEVM",
+    objective:
+      "Expose Filecoin\u2019s existing PoRep, PoSt and related proof verifiers to FEVM so that a Solidity contract can run a full PoRep / PoSt / prove-update cycle, enabling a PoRep+PDP-style system built entirely in FEVM.",
+    problem:
+      "Today, Filecoin\u2019s sealing proofs (PoRep, Window/WinningPoSt, ProveReplicaUpdates) can only be verified by built-in actors. Builders can use PDP from Solidity, but cannot plug into the stronger PoRep guarantees. The verifier logic already exists in the VM; it just isn\u2019t reachable from FEVM. Exposing it would let anyone build custom storage markets and proof systems as smart contracts.",
     inScope: [
-      "Verifiable-compute and audit services: productized services pairing Filecoin storage with verifiable execution",
-      "Training-data provenance products: commercial offerings that solve audit and licensing-provenance problems",
-      "Cross-stack verifiable-AI infrastructure, with owned products and customers",
-      "Machine-readable ecosystem knowledge: services that create and maintain technical documentation",
+      "Identifying the exact set of existing VM verification methods required",
+      "Exposing them to FEVM (e.g. as precompiles or callable actor methods) with no new cryptography or proof code",
+      "A reference Solidity contract that completes a full PoRep \u2192 PoSt \u2192 prove-update cycle on a devnet/calibnet",
+      "Gas benchmarks for each exposed call",
     ],
     notInScope: [
-      "General-purpose AI products that use Filecoin incidentally",
-      "Research-only projects",
-      "Open-source contributions without customer-facing products",
+      "New proof systems or changes to proof parameters",
+      "A production storage market built on top (that can be a follow-on RFP)",
     ],
-  },
-  {
-    title: "FIL value accrual: burn and lock mechanisms",
-    note: "Proposals must include a credible path to mainnet within the grant horizon.",
-    inScope: [
-      "Fee-and-burn mechanisms on stablecoin payment rails, routing payments through swap-to-FIL-and-burn",
-      "Protocol-level fee burns tied to network activity",
-      "FIL-locking primitives for storage providers and customers, through staking, escrow, or collateral",
-      "FIL-locking primitives for ecosystem participants, with lock-and-earn mechanisms",
-      "Measurement, dashboards, and verification for burn rates and locked supply",
-    ],
-    notInScope: [
-      "Research papers without implementation plans",
-      "Mechanisms without mainnet viability",
-      "Speculative tokenomics requiring broad consensus changes",
-      "One-off \u201cbuy and burn\u201d marketing",
-      "Designs dependent on a single counterparty",
-    ],
+    whoShouldApply:
+      "Engineers familiar with ref-fvm, builtin-actors and Filecoin proofs (rust-fil-proofs), with prior contributions to Filecoin core repos.",
   },
 ];
 
@@ -191,5 +183,8 @@ export const RND_EVALUATION: { label: string; value: string }[] = [
       "Three phases: AI-assisted shortlist, committee vetting, final allocation",
   },
   { label: "Assessed", value: "Against Filecoin's 2026 network objectives" },
-  { label: "Strongest", value: "Shipped products with named paying customers within six months" },
+  {
+    label: "Strongest",
+    value: "Shipped products with named paying customers within six months",
+  },
 ];
