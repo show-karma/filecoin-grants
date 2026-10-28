@@ -116,60 +116,60 @@ export type Rfp = {
 
 export const RND_RFPS: Rfp[] = [
   {
-    title: "Filecoin Paid Retrieval Prototype",
+    title: "RFP 1: Filecoin Paid Retrieval Prototype",
     objective:
-      "Produce a design recommendation and a working proof-of-concept that lets providers get paid for services, so e.g. retrieval becomes a revenue line alongside storage.",
+      "produce a design recommendation and a working proof-of-concept that lets providers get paid for services, so e.g. retrieval becomes a revenue line alongside storage.",
     problem:
-      "Storage providers earn on storage, but serving data back is virtually always unpaid. That weakens the incentive to retrieve fast and reliably, and it is a gap in the network\u2019s long-term economics. Several designs have been proposed over the years across Filecoin, IPFS and libp2p, but no functional prototype exists today.",
+      "Storage providers earn on storage, but serving data back is virtually always unpaid. That weakens the incentive to retrieve fast and reliably, and it is a gap in the network's long-term economics. Several designs have been proposed over the years across Filecoin, IPFS and libp2p, but no functional prototype exists today.",
     inScope: [
-      "A survey of prior art: past Filecoin retrieval-market designs, payment-channel approaches and any live paid-retrieval services",
-      "A comparison of protocol-level versus application-level approaches, with trade-offs on latency, trust, cost per request and SP integration effort",
-      "A prototype of one recommended approach. Suggested starting point: a voucher system using MPP for Filecoin Onchain Cloud (FOC) paid retrieval",
-      "An end-to-end demo: client pays, SP serves, SP settles",
+      "A survey of prior art: past Filecoin retrieval-market designs, payment-channel approaches and any live paid-retrieval services.",
+      "A comparison of protocol-level versus application-level approaches, with trade-offs on latency, trust, cost per request and SP integration effort.",
+      "A prototype of one recommended approach. Suggested starting point: a voucher system using MPP for Filecoin Onchain Cloud (FOC) paid retrieval.",
+      "An end-to-end demo: client pays, SP serves, SP settles.",
     ],
     notInScope: [
-      "Production deployment or mainnet launch",
-      "Changes to Filecoin consensus or FIPs (a FIP draft can be a recommendation, not a deliverable)",
-      "Building a new client or gateway beyond what the demo needs",
+      "Production deployment or mainnet launch.",
+      "Changes to Filecoin consensus or FIPs (a FIP draft can be a recommendation, not a deliverable).",
+      "Building a new client or gateway beyond what the demo needs.",
     ],
     whoShouldApply:
       "Teams with hands-on experience in Filecoin retrieval, payment channels or micropayments, and libp2p. Prior published research is a plus.",
   },
   {
-    title: "Complementary Security Testing of Filecoin EVM Deployments",
+    title: "RFP 2: Complementary Security Testing of Filecoin EVM Deployments",
     objective:
-      "Add an independent layer of security testing for high-value FEVM contracts, complementing (not duplicating) FF Security\u2019s existing test harnesses.",
+      "add an independent layer of security testing for high-value FEVM contracts, complementing (not duplicating) FF Security's existing test harnesses.",
     problem:
-      "Filecoin Solstice and USDFC hold real user value on FEVM, and Filecoin Pay contracts are becoming core infrastructure for Filecoin Onchain Cloud. FF Security already runs test harnesses for Solstice and USDFC, but one team\u2019s view leaves blind spots. FEVM also differs from Ethereum (actor model, gas, precompiles), so standard EVM tooling can miss Filecoin-specific issues.",
+      "Filecoin Solstice and USDFC hold real user value on FEVM, and Filecoin Pay contracts are becoming core infrastructure for Filecoin Onchain Cloud. FF Security already runs test harnesses for Solstice and USDFC, but one team's view leaves blind spots. FEVM also differs from Ethereum (actor model, gas, precompiles), so standard EVM tooling can miss Filecoin-specific issues.",
     inScope: [
-      "Review of FF Security\u2019s current harnesses to identify coverage gaps",
-      "New tests in the gaps: invariant/property-based fuzzing (Foundry, Echidna, Medusa), formal or symbolic checks on critical paths, and FEVM-specific edge cases",
-      "Targets: Solstice, USDFC, and Filecoin Pay contracts (v1, and v2 if stable)",
-      "Responsible disclosure of any findings before public reporting",
+      "Review of FF Security's current harnesses to identify coverage gaps.",
+      "New tests in the gaps: invariant/property-based fuzzing (Foundry, Echidna, Medusa), formal or symbolic checks on critical paths, and FEVM-specific edge cases.",
+      "Targets: Solstice, USDFC, and Filecoin Pay contracts (v1, and v2 if stable).",
+      "Responsible disclosure of any findings before public reporting.",
     ],
     notInScope: [
-      "A full traditional audit of each codebase from scratch",
-      "Fixing the contracts (findings go to maintainers)",
-      "Off-chain infrastructure and front ends",
+      "A full traditional audit of each codebase from scratch.",
+      "Fixing the contracts (findings go to maintainers).",
+      "Off-chain infrastructure and front ends.",
     ],
     whoShouldApply:
       "Smart-contract security teams or independent researchers with public audit or fuzzing work, ideally with experience in stablecoin/CDP systems (Liquity-style troves) and payment-rail contracts. FEVM experience is a strong plus.",
   },
   {
-    title: "Programmable PoRep Proving Pipeline via FEVM",
+    title: "RFP 3: Programmable PoRep Proving Pipeline via FEVM",
     objective:
-      "Expose Filecoin\u2019s existing PoRep, PoSt and related proof verifiers to FEVM so that a Solidity contract can run a full PoRep / PoSt / prove-update cycle, enabling a PoRep+PDP-style system built entirely in FEVM.",
+      "expose Filecoin's existing PoRep, PoSt and related proof verifiers to FEVM so that a Solidity contract can run a full PoRep / PoSt / prove-update cycle, enabling a PoRep+PDP-style system built entirely in FEVM.",
     problem:
-      "Today, Filecoin\u2019s sealing proofs (PoRep, Window/WinningPoSt, ProveReplicaUpdates) can only be verified by built-in actors. Builders can use PDP from Solidity, but cannot plug into the stronger PoRep guarantees. The verifier logic already exists in the VM; it just isn\u2019t reachable from FEVM. Exposing it would let anyone build custom storage markets and proof systems as smart contracts.",
+      "Today, Filecoin's sealing proofs (PoRep, Window/WinningPoSt, ProveReplicaUpdates) can only be verified by built-in actors. Builders can use PDP from Solidity, but cannot plug into the stronger PoRep guarantees. The verifier logic already exists in the VM; it just isn't reachable from FEVM. Exposing it would let anyone build custom storage markets and proof systems as smart contracts.",
     inScope: [
-      "Identifying the exact set of existing VM verification methods required",
-      "Exposing them to FEVM (e.g. as precompiles or callable actor methods) with no new cryptography or proof code",
-      "A reference Solidity contract that completes a full PoRep \u2192 PoSt \u2192 prove-update cycle on a devnet/calibnet",
-      "Gas benchmarks for each exposed call",
+      "Identifying the exact set of existing VM verification methods required.",
+      "Exposing them to FEVM (e.g. as precompiles or callable actor methods) with <strong>no new cryptography or proof code</strong>.",
+      "A reference Solidity contract that completes a full PoRep \u2192 PoSt \u2192 prove-update cycle on a devnet/calibnet.",
+      "Gas benchmarks for each exposed call.",
     ],
     notInScope: [
-      "New proof systems or changes to proof parameters",
-      "A production storage market built on top (that can be a follow-on RFP)",
+      "New proof systems or changes to proof parameters.",
+      "A production storage market built on top (that can be a follow-on RFP).",
     ],
     whoShouldApply:
       "Engineers familiar with ref-fvm, builtin-actors and Filecoin proofs (rust-fil-proofs), with prior contributions to Filecoin core repos.",

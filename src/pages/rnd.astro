@@ -77,8 +77,9 @@ import {
       intro="R&D is request-driven — the usual way in is a response to a published RFP rather than an unsolicited proposal."
     />
 
-    <div class="mt-8 space-y-6">
-      {RND_RFPS.map((rfp, index) => <RfpCard rfp={rfp} index={index} />)}
+    <h3 class="mt-10 text-2xl">Active RFPs</h3>
+    <div class="mt-6 space-y-6">
+      {RND_RFPS.map((rfp) => <RfpCard rfp={rfp} />)}
     </div>
 
     <div
