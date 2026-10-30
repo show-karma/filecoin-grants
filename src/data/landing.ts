@@ -244,7 +244,7 @@ export const OBJECTIVES: Objective[] = [
     index: "03",
     title: "Make sure there's a next",
     description:
-      "Exploratory work funded in stages, so promising directions can be backed early. What proves out becomes Kernel infrastructure or Revenue Development work.",
+      "Exploratory work funded in stages, so promising directions can be backed early. This is important for the network growth.",
     program: "R&D",
     programQualifier: "optionality",
     href: "/rnd/",
