@@ -155,7 +155,7 @@ export const buildHeadlineStats = (
 ): Stat[] => [
   {
     value: asMillions(committedToDate(metrics)),
-    label: "Committed to date",
+    label: "Committed so far",
     linkText: "Funded Projects",
     href: PROGRAM_PROJECTS_URL,
   },
