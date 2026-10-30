@@ -174,7 +174,7 @@ export const buildHeadlineStats = (
     // Editorial, not an API figure: the three programmes the site is organised
     // around. It changes when the programme structure changes, not on a build.
     value: "3",
-    label: "Funding Initiatives",
+    label: "Programs funded",
     linkText: "Kernel · Revenue Dev · R&D",
     href: "#objectives",
   },
