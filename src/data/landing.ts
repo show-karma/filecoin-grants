@@ -166,7 +166,7 @@ export const buildHeadlineStats = (
       metrics.distinctProjects ??
         (counts.projects > 0 ? counts.projects : FALLBACK_COUNTS.projects),
     ),
-    label: "Total Projects",
+    label: "Projects funded",
     linkText: "Funding Reports",
     href: PROGRAM_REPORTS_URL,
   },
