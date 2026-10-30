@@ -254,6 +254,20 @@ export const OBJECTIVES: Objective[] = [
     initiatives: 7,
     amount: "$1.4M",
   },
+  {
+    index: "04",
+    title: "Make sure there's a next",
+    description:
+      "Exploratory work funded in stages, so promising directions can be backed early. What proves out becomes Kernel infrastructure or Revenue Development work.",
+    program: "R&D",
+    programQualifier: "optionality",
+    href: "/rnd/",
+    model: "RFPs with rolling review, funded as staged bets",
+    measured:
+      "What matures into, or integrates with, Kernel and Revenue Development work",
+    initiatives: 7,
+    amount: "$1.4M",
+  },
 ];
 
 /**
