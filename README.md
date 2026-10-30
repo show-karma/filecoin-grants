@@ -142,3 +142,153 @@ used, which is what production wants.
 The CSP, cache headers, and the 301s from the retired Hugo URLs (`/propgf/*`,
 `/batches/*`) still need porting to Vercel; the `netlify.toml` that declared
 them was dead config and has been removed.
+
+## Site editor
+
+`/edit` lets the programme team change the site without a developer. They
+describe a change in a chat, watch it appear in a live preview of the real
+site, and press Publish. It is a coding agent working on this repository, so
+anything the code can do is in reach: copy, layout, new sections, new pages.
+
+### What it feels like
+
+- **Point and ask.** Hover the preview and elements light up with what they
+  are (Heading, Text, Image…). Click one and ask for a change right there, or
+  pick a quick action (Edit text, Shorter, Rewrite, Replace image, Remove).
+  Shift-click selects several. The request carries the element's exact source
+  file and line, so the agent goes straight to it.
+- **Type over text.** Double-click any text, type, press Enter. The page
+  shows it at once and it is written into the source and saved in the
+  background, with no AI involved, so the next edit can start straight away.
+  Text with a link or bold words in it is matched piece by piece. When the
+  words can't be matched safely (they appear twice, or need escaping) it hands
+  the change to the agent instead.
+- **Quick wording changes.** A request that only changes words ("make this
+  punchier", "rename Programs funded to Active programs") goes first to a fast
+  model (Claude Haiku, `EDITOR_FAST_MODEL`), which reads the text on the page
+  and returns new text for the pieces it changes: about 2 seconds instead of
+  a full agent turn. The model never sees or writes code; its text goes
+  through the same exact-match edit as typing over the page, and anything it
+  can't do that way (styling, layout, images, new elements) goes to the agent.
+- **Watch it happen.** The area being changed shimmers while the agent works;
+  progress reads as plain steps; when the change lands it flashes, and the
+  preview moves to the page it is on.
+- **Change cards.** Every saved change becomes a card with a before/after
+  screenshot slider, the words that changed, **Show me** and **Undo**.
+- **Richer input.** Drop a photo on an image to replace it, paste or attach
+  screenshots for reference, dictate with the mic, or paste a Google Doc
+  (headings and lists are kept).
+- **Studio polish.** Full-width preview with desktop, tablet and phone frames;
+  the assistant floats beside it (⌘J); ⌘K opens every command, page and
+  action; quick requests use low reasoning effort and structural ones high.
+
+### How it works
+
+```
+/edit (browser) ──► /api/editor/* (Vercel) ──► Boat sandbox ──► agent edits ~/site
+     ▲                       │                     │            astro dev :4321
+     └──── preview iframe ◄──┼──── https://<id>-4321.on.boat.dev (hot reload)
+                             └──► GitHub: editor/draft branch ──► PR ──► squash-merge to main ──► Vercel
+```
+
+1. **Start.** Opening `/edit` starts a [Boat](https://docs.boat.dev) sandbox
+   from a saved template (repo cloned, packages installed). It checks out the
+   draft branch if there is one, else `main`, and starts `astro dev`. The
+   preview appears in about 15–30 seconds.
+2. **Edit.** Each chat message goes to the agent inside the sandbox (Claude Code
+   by default). Its file changes show in the preview within a second. Its
+   house rules are in `src/lib/editor/agent-rules.md`.
+3. **Save.** After every reply the server copies the changed files into one
+   commit on the `editor/draft` branch through the GitHub API. Closing the tab
+   loses nothing; the next session resumes the draft.
+4. **Publish.** Runs `pnpm run build` (astro check + build) in the sandbox on
+   the exact draft. If it passes, the server opens a pull request from
+   `editor/draft`, squash-merges it into `main`, deletes the branch and the
+   sandbox. Vercel deploys `main` as usual. A failed check publishes nothing
+   and offers to have the agent fix it. With `EDITOR_PUBLISH_MODE=review`,
+   the pull request is left open for a developer instead.
+
+The preview's in-page layer lives only in the sandbox: the session writes
+`src/lib/editor/sandbox/*` to `site/.editor/`, which `.git/info/exclude` hides
+from git, and runs `astro dev` with `.editor/editor.config.mjs` (the site's
+config plus an injected script). Astro's dev mode tags every element with
+`data-astro-source-file`/`-loc`, which is what turns a click into a line of
+code. Screenshots come from the sandbox's Chrome over the DevTools protocol;
+change cards are a JSON-lines log in the sandbox.
+
+Nothing is stored on our side: the live sandbox is found by name on Boat, and
+the draft is a branch on GitHub. One workspace runs at a time; a second person
+opening `/edit` joins it.
+
+### Safety
+
+- The sandbox holds **no GitHub credentials**. It clones the public repo
+  anonymously; only the server's `GITHUB_TOKEN` writes to GitHub.
+- The editor never commits CI config, env files (at any depth), build and
+  server code (`package.json`, the lockfile, `astro.config.mjs`,
+  `vercel.json`, `tsconfig.json`, `scripts/`, `src/pages/api/`, middleware)
+  or its own code. Publish refuses while such changes are pending, so the
+  check always builds what gets merged. Symlinks are refused. The lists are in
+  `src/lib/editor/sandbox-scripts.ts`.
+- Publish merges only the exact tree the check built (it compares git tree
+  ids), and only when the agent is idle.
+- **Trust model.** Pages and components run during the Vercel build, where the
+  project's environment variables are readable, and the editor exists to let
+  the agent change them. Anyone with the editor password can therefore change
+  code that runs at build time. Treat the password like commit access: long
+  and random (12 characters minimum is enforced), shared only with the team,
+  and rotated when someone leaves (changing it signs everyone out). Add a
+  Vercel Firewall rate-limit rule on `/api/editor/login`. Set
+  `EDITOR_PUBLISH_MODE=review` to have Publish open a pull request for a
+  developer instead of merging.
+- No text from the chat is ever pasted into a shell command; commands are
+  constants, and only validated git ids are spliced in.
+- Sign-in is one shared password plus the person's name (used as the commit
+  author), in a signed `HttpOnly`, `SameSite=Strict` cookie. Writes also
+  check the `Origin` header.
+- The preview URL is public but unguessable, so it can load in an iframe. It
+  shows the unpublished draft of a public site.
+- `/edit` and `/api/editor/*` are excluded from ISR (`astro.config.mjs`), so
+  nothing personal is cached at the edge.
+
+### Setup (once)
+
+1. **Boat.** Create an API key (dashboard → API keys). Under **Agents &
+   Proxying**, connect the agent: an Anthropic API key with a spend limit is
+   the simplest.
+2. **Template.** With `BOAT_API_KEY` in `.env.local`:
+   `node scripts/editor/build-template.ts`. It creates the `filpgf-editor`
+   environment and the `filpgf-editor` template (about 5 minutes). Rerun it
+   after big dependency changes. Sessions still work with a stale template;
+   they just spend longer installing.
+   - By default the sandbox receives the AI key itself and nothing else, so an
+     agent told to could read it. Use a dedicated key with a spend limit. With
+     `--proxy`, Boat keeps the key and the sandbox gets a placeholder, so even
+     someone with the editor password cannot read it. Recommended; the proxy
+     costs about $1/day plus $1 per 1,000 AI requests on Boat.
+3. **GitHub token.** A fine-grained token for `show-karma/filecoin-grants`
+   only, with Contents and Pull requests set to read & write.
+4. **Vercel.** Add `BOAT_API_KEY`, `GITHUB_TOKEN`, `EDITOR_PASSWORD` (12+
+   characters, random) and `EDITOR_SESSION_SECRET` (`openssl rand -base64
+   32`) as Production variables. Optional ones are listed in `.env.example`.
+   For local runs, `BOAT_API_BASE` and `GITHUB_API_BASE` point the editor at
+   stand-ins.
+
+### Costs
+
+About $0.02 per 30-minute session on Boat's default machine ($0.036/hour,
+billed per second, deleted after publish or after an hour idle). The AI agent's
+usage is the larger cost and depends on the model chosen on Boat.
+
+### Limits
+
+- Pages that read the Karma API (`/`, `/kernel`) call it on every request in
+  the preview, so they load in about 1–6 seconds there.
+- Blog posts stay in Sanity (`/studio`); the agent points people there.
+- Files over 5 MB are refused; photos are shrunk in the browser before
+  upload. Without the key's `file.write` permission, uploads travel in ~100 KB
+  pieces (a 300 KB photo takes about 3 seconds).
+- Change cards, Undo and screenshots belong to one session; a new session
+  shows earlier unpublished work as part of the draft, not as cards.
+- If `main` moved in a way that conflicts with the draft, Publish leaves the
+  pull request open for a developer instead of merging.

@@ -1,0 +1,37 @@
+---
+/*
+ * The site editor: chat on the left, a live preview of the draft on the
+ * right, Publish at the top. Rendered on demand (it depends on the sign-in
+ * cookie) and kept out of search engines.
+ */
+import "@fontsource-variable/inter";
+import EditorApp from "../components/editor/EditorApp.tsx";
+import { currentEditor } from "../lib/editor/http.ts";
+import { missingSettings } from "../lib/editor/config.ts";
+
+export const prerender = false;
+
+const editor = currentEditor(Astro);
+const missing = missingSettings();
+
+Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Site editor · filpgf.io</title>
+    <link rel="icon" href="/favicon.png" />
+  </head>
+  <body>
+    <EditorApp
+      client:only="react"
+      signedInAs={editor?.name ?? null}
+      missing={missing}
+    />
+  </body>
+</html>
