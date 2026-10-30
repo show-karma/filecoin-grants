@@ -180,7 +180,7 @@ export const buildHeadlineStats = (
   },
   {
     value: `${checkpointsCleared(metrics)}%`,
-    label: "Milestones met across active projects",
+    label: "Checkpoints cleared across active projects",
     linkText: "Bi-weekly progress report",
     href: programReportUrl("biweeklyProgress"),
   },
