@@ -146,6 +146,6 @@ export const SITE = {
   name: "filpgf.io",
   title: "Filecoin Public Goods Funding",
   description:
-    "Filecoin's public goods funding puts capital behind the infrastructure, growth work, and research the network depends on. This is where that work is tracked — objective by objective, milestone by milestone.",
+    "Capital behind Filecoin's infrastructure, growth, and research — tracked milestone by milestone.",
   administeredBy: "administered by the Blueshift Foundation",
 } as const;
