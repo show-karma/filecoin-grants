@@ -256,7 +256,7 @@ export const OBJECTIVES: Objective[] = [
   },
   {
     index: "04",
-    title: "Make sure there's a next",
+    title: "Hello world here objective 4 goes",
     description:
       "Exploratory work funded in stages, so promising directions can be backed early. What proves out becomes Kernel infrastructure or Revenue Development work.",
     program: "R&D",
