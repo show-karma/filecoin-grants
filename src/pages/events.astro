@@ -1,0 +1,46 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/Section.astro";
+import PageHero from "../components/PageHero.astro";
+import { UPCOMING_EVENTS } from "../data/events";
+---
+
+<BaseLayout
+  title="Events"
+  description="Upcoming events from the Filecoin Public Goods Funding team."
+  breadcrumb="Events"
+>
+  <PageHero
+    eyebrow="Events"
+    title="Events"
+    intro="Where to find us next — talks, community calls and meetups from the Filecoin Public Goods Funding team."
+  />
+
+  <Section id="upcoming">
+    {
+      UPCOMING_EVENTS.length > 0 ? (
+        <ul class="divide-y divide-line border-y border-line">
+          {UPCOMING_EVENTS.map((event) => (
+            <li class="flex flex-col gap-1 py-5 sm:flex-row sm:items-baseline sm:gap-6">
+              <span class="mono-meta shrink-0 sm:w-40">{event.date}</span>
+              <a
+                href={event.href}
+                class="text-lg font-medium text-ink hover:underline"
+                target={event.href.startsWith("http") ? "_blank" : undefined}
+                rel={
+                  event.href.startsWith("http")
+                    ? "noopener noreferrer"
+                    : undefined
+                }
+              >
+                {event.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-body">Event details coming soon.</p>
+      )
+    }
+  </Section>
+</BaseLayout>
