@@ -35,11 +35,27 @@ export function currentEditor(
 }
 
 /** Writes must come from this site's own pages. SameSite=Strict covers most of it; this is belt and braces. */
+/**
+ * A write must come from a page of this site. Behind Vercel's proxy the
+ * request URL names the function, not the site, so the host the visitor
+ * used is the forwarded one.
+ */
 function sameOrigin(request: Request): boolean {
   if (request.method === "GET" || request.method === "HEAD") return true;
   const origin = request.headers.get("origin");
   if (!origin) return false;
-  return origin === new URL(request.url).origin;
+  let originHost: string;
+  try {
+    originHost = new URL(origin).host;
+  } catch {
+    return false;
+  }
+  const hosts = [
+    request.headers.get("x-forwarded-host"),
+    request.headers.get("host"),
+    new URL(request.url).host,
+  ];
+  return hosts.some((h) => h && h.split(",")[0].trim() === originHost);
 }
 
 const BOAT_MESSAGES: Record<string, string> = {
