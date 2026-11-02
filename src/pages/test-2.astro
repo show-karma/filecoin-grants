@@ -1,0 +1,21 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/Section.astro";
+import PageHero from "../components/PageHero.astro";
+---
+
+<BaseLayout
+  title="Test#2"
+  description="A test page."
+  breadcrumb="Test#2"
+>
+  <PageHero
+    eyebrow="Test"
+    title="Test#2"
+    intro="This is a placeholder page. Tell me what content you'd like here and I'll add it."
+  />
+
+  <Section id="content">
+    <p class="text-body">Placeholder content — let me know what should go here.</p>
+  </Section>
+</BaseLayout>

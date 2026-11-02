@@ -101,6 +101,7 @@ export const MAIN_NAV: NavEntry[] = [
     ],
   },
   { label: "Blog", href: "/blog/" },
+  { label: "Test#2", href: "/test-2/" },
 ];
 
 export const FOOTER_NAV: NavLink[] = [
