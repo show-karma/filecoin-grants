@@ -18,7 +18,7 @@ import { UPCOMING_EVENTS } from "../data/events";
 
   <Section id="upcoming">
     {
-      UPCOMING_EVENTS.length > 0 ? (
+      UPCOMING_EVENTS.length > 0 && (
         <ul class="divide-y divide-line border-y border-line">
           {UPCOMING_EVENTS.map((event) => (
             <li class="flex flex-col gap-1 py-5 sm:flex-row sm:items-baseline sm:gap-6">
@@ -38,23 +38,25 @@ import { UPCOMING_EVENTS } from "../data/events";
             </li>
           ))}
         </ul>
-      ) : (
-        <p class="text-body">Event details coming soon.</p>
       )
     }
-  </Section>
 
-  <Section id="usd-brl" tint>
-    <h2 class="text-2xl sm:text-3xl">USD/BRL</h2>
-    <p class="mt-2 text-sm text-body">
-      Live exchange rate, refreshed every 5 seconds.
-    </p>
-    <div
-      data-usdbrl-rate
-      class="mt-6 rounded-lg border border-line bg-surface p-6 sm:p-7"
-    >
-      <p class="text-body">Loading…</p>
+    <div class="mt-10 rounded-lg border border-line bg-tint p-6 sm:p-7">
+      <h2 class="text-2xl sm:text-3xl">USD/BRL</h2>
+      <p class="mt-2 text-sm text-body">
+        Live exchange rate, refreshed every 5 seconds.
+      </p>
+      <div
+        data-usdbrl-rate
+        class="mt-6 rounded-lg border border-line bg-surface p-6 sm:p-7"
+      >
+        <p class="text-body">Loading…</p>
+      </div>
     </div>
+
+    {UPCOMING_EVENTS.length === 0 && (
+      <p class="mt-10 text-body">Event details coming soon.</p>
+    )}
   </Section>
 </BaseLayout>
 
