@@ -289,6 +289,7 @@ function Editor({
       sandboxId={session.sandboxId}
       previewUrl={session.previewUrl}
       draftAtStart={session.draft.exists}
+      publishMode={session.publishMode}
       onSignOut={signOut}
       onAuthLost={onSignedOut}
       onClosed={setClosed}

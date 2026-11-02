@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import type { Card } from "./api.ts";
-import { humanize, pageLabel, timeAgo, wordDiff } from "./util.ts";
+import {
+  humanize,
+  pageLabel,
+  timeAgo,
+  wordDiff,
+  type PageInfo,
+} from "./util.ts";
 
 /*
  * One saved change: what it was, where, before/after, and the two things you
@@ -8,12 +14,14 @@ import { humanize, pageLabel, timeAgo, wordDiff } from "./util.ts";
  */
 export function ChangeCard({
   card,
+  pages,
   sandboxId,
   busy,
   onShow,
   onUndo,
 }: {
   card: Card;
+  pages?: PageInfo[];
   sandboxId: string;
   busy: boolean;
   onShow: (card: Card) => void;
@@ -38,7 +46,7 @@ export function ChangeCard({
           <strong>{card.title}</strong>
           <span className="ed-card-meta">
             {card.page
-              ? pageLabel(card.page)
+              ? pageLabel(card.page, pages)
               : `${card.files.length} file${card.files.length === 1 ? "" : "s"}`}{" "}
             · {timeAgo(card.at)}
             {card.undone ? " · undone" : ""}

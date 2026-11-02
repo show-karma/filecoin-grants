@@ -10,12 +10,49 @@ export const PAGES = [
   { path: "/blog", label: "Blog" },
 ];
 
-export function pageLabel(path: string | null | undefined): string {
+export type PageInfo = { path: string; label: string };
+
+export function pageLabel(
+  path: string | null | undefined,
+  pages: PageInfo[] = PAGES,
+): string {
   if (!path) return "";
-  const known = PAGES.find((p) => p.path === path);
+  const known = pages.find((p) => p.path === path);
   if (known) return known.label;
   if (path.startsWith("/blog/")) return "Blog post";
   return path;
+}
+
+/**
+ * The page list for the picker: the site's fixed pages first, in their usual
+ * order and under their usual names, then whatever else the workspace has,
+ * such as a page the assistant just created.
+ */
+export function mergePages(found: PageInfo[]): PageInfo[] {
+  const extra = found
+    .filter((f) => !PAGES.some((p) => p.path === f.path))
+    .sort((a, b) => a.path.localeCompare(b.path));
+  return [...PAGES, ...extra];
+}
+
+/** A page name as typed, to the address it gets: "Upcoming Events" → "/upcoming-events". */
+export function pagePath(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `/${slug || "new-page"}`;
+}
+
+/** What the composer is filled with when "New page" is picked, for the person to finish. */
+export function newPagePrompt(name: string): string {
+  const title = name.trim().replace(/"/g, "");
+  return (
+    `Create a new page at ${pagePath(title)} titled "${title}", with the same header and footer as the other pages, ` +
+    "and add it to the header menu. It should contain: "
+  );
 }
 
 /** An element picked in the preview, as the overlay describes it. */

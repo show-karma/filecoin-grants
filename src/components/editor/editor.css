@@ -1184,3 +1184,8 @@ kbd {
     transition: none !important;
   }
 }
+
+.ed-earlier li {
+  background: transparent;
+  border: 1px dashed var(--ed-line);
+}

@@ -51,6 +51,7 @@ export type SessionView = {
   error?: string;
   log?: string;
   draft: { exists: boolean };
+  publishMode: "merge" | "review";
 };
 
 export type EventsResponse = {
@@ -87,6 +88,15 @@ export type QuickEditResult =
   | { ok: false; reason: string };
 
 export type UploadResult = { path: string; url: string | null };
+
+/** A draft commit saved in an earlier session. */
+export type DraftCommit = {
+  sha: string;
+  author: string;
+  /** Unix seconds. */
+  at: number;
+  title: string;
+};
 
 export type BuildStatus = {
   running: boolean;

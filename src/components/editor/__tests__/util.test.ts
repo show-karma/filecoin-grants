@@ -107,3 +107,31 @@ describe("htmlToMarkdown", () => {
     );
   });
 });
+
+describe("pages", () => {
+  it("keeps the fixed pages first and adds what the workspace found", async () => {
+    const { mergePages, pageLabel, PAGES } = await import("../util");
+    const merged = mergePages([
+      { path: "/roadmap", label: "The filpgf.io roadmap" },
+      { path: "/events", label: "Events" },
+      { path: "/about", label: "About" },
+    ]);
+    expect(merged.slice(0, PAGES.length)).toEqual(PAGES);
+    expect(merged.slice(PAGES.length)).toEqual([
+      { path: "/about", label: "About" },
+      { path: "/events", label: "Events" },
+    ]);
+    expect(pageLabel("/events", merged)).toBe("Events");
+    expect(pageLabel("/events")).toBe("/events");
+  });
+
+  it("turns a page name into an address and a request", async () => {
+    const { pagePath, newPagePrompt } = await import("../util");
+    expect(pagePath("Upcoming Events")).toBe("/upcoming-events");
+    expect(pagePath("Café & Bar!")).toBe("/cafe-bar");
+    expect(pagePath("   ")).toBe("/new-page");
+    expect(newPagePrompt(' Events "2026" ')).toMatch(
+      /^Create a new page at \/events-2026 titled "Events 2026"/,
+    );
+  });
+});

@@ -38,6 +38,8 @@ import {
   TOOLS_DIR,
   CARDS_FILE,
   DIFF_FILE,
+  PAGES_COMMAND,
+  DRAFT_LOG_COMMAND,
   isProtected,
   markSavedScript,
   appendCardCommand,
@@ -66,6 +68,7 @@ import editorConfigMjs from "./sandbox/editor.config.mjs?raw";
 import textEditMjs from "./sandbox/text-edit.mjs?raw";
 import quickEditMjs from "./sandbox/quick-edit.mjs?raw";
 import shotMjs from "./sandbox/shot.mjs?raw";
+import pagesMjs from "./sandbox/pages.mjs?raw";
 
 /** A session sandbox stops by itself after this long without a prompt. */
 const IDLE_SECONDS = 60 * 60;
@@ -91,6 +94,19 @@ export type SessionView = {
   /** End of the setup log when setup failed, for whoever debugs it. */
   log?: string;
   draft: { exists: boolean };
+  /** What Publish ends in: a merge to the live site, or a pull request. */
+  publishMode: "merge" | "review";
+};
+
+export type PageInfo = { path: string; label: string };
+
+/** A draft commit saved in an earlier session. */
+export type DraftCommit = {
+  sha: string;
+  author: string;
+  /** Unix seconds. */
+  at: number;
+  title: string;
 };
 
 export type SaveResult = {
@@ -164,6 +180,36 @@ export function cleanEdits(value: unknown): TextEdit[] | null {
 }
 
 /** Text blocks from the preview, checked. */
+/** The page list from the sandbox, checked. */
+export function cleanPages(value: unknown): PageInfo[] {
+  if (!Array.isArray(value)) return [];
+  const pages: PageInfo[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue;
+    const { path, label } = item as Record<string, unknown>;
+    if (typeof path !== "string" || !/^\/[a-z0-9\-\/]*$/i.test(path)) continue;
+    if (typeof label !== "string" || !label.trim()) continue;
+    pages.push({ path, label: label.trim().slice(0, 80) });
+  }
+  return pages;
+}
+
+/** `git log --format='%H%x1f%an%x1f%at%x1f%s'`, oldest first. */
+export function parseDraftLog(output: string): DraftCommit[] {
+  const commits: DraftCommit[] = [];
+  for (const line of output.split("\n")) {
+    const [sha, author, at, ...rest] = line.split("\x1f");
+    if (!sha || !isSha(sha)) continue;
+    commits.push({
+      sha,
+      author: author ?? "",
+      at: Number(at) || 0,
+      title: rest.join("\x1f").trim() || "Site edit",
+    });
+  }
+  return commits;
+}
+
 export function cleanBlocks(value: unknown): TextBlock[] {
   if (!Array.isArray(value)) return [];
   const out: TextBlock[] = [];
@@ -284,7 +330,8 @@ export class Workspace {
       this.github.branchHead(DRAFT_BRANCH),
     ]);
     const draft = { exists: draftHead !== null };
-    if (!sandbox) return { state: "none", draft };
+    const publishMode = this.config.publishMode;
+    if (!sandbox) return { state: "none", draft, publishMode };
     return this.view(sandbox, draft);
   }
 
@@ -292,7 +339,11 @@ export class Workspace {
     sandbox: Sandbox,
     draft: { exists: boolean },
   ): Promise<SessionView> {
-    const base = { sandboxId: sandbox.id, draft };
+    const base = {
+      sandboxId: sandbox.id,
+      draft,
+      publishMode: this.config.publishMode,
+    };
     if (sandbox.state === "error") {
       return {
         ...base,
@@ -381,6 +432,7 @@ export class Workspace {
             { path: `${TOOLS_DIR}/text-edit.mjs`, content: textEditMjs },
             { path: `${TOOLS_DIR}/quick-edit.mjs`, content: quickEditMjs },
             { path: `${TOOLS_DIR}/shot.mjs`, content: shotMjs },
+            { path: `${TOOLS_DIR}/pages.mjs`, content: pagesMjs },
             // Who may frame the preview: this editor, and the live site's.
             {
               path: `${TOOLS_DIR}/frame-ancestors.txt`,
@@ -408,6 +460,7 @@ export class Workspace {
           state: "starting",
           detail: "Starting a workspace…",
           draft: { exists: false },
+          publishMode: this.config.publishMode,
         };
       }
       throw e;
@@ -710,6 +763,27 @@ export class Workspace {
       .readFileBase64(sandbox.id, CARDS_FILE)
       .catch(() => "");
     return foldCards(Buffer.from(raw, "base64").toString("utf8"));
+  }
+
+  /** The site's pages as the checkout has them now. */
+  async pages(sandbox: Sandbox): Promise<PageInfo[]> {
+    const res = await this.boat
+      .exec(sandbox.id, PAGES_COMMAND)
+      .catch(() => null);
+    if (!res || res.exitCode !== 0) return [];
+    try {
+      return cleanPages(JSON.parse(res.stdout));
+    } catch {
+      return [];
+    }
+  }
+
+  /** Draft commits from earlier sessions: a publish from this one carries them too. */
+  async earlierChanges(sandbox: Sandbox): Promise<DraftCommit[]> {
+    const res = await this.boat
+      .exec(sandbox.id, DRAFT_LOG_COMMAND)
+      .catch(() => null);
+    return res ? parseDraftLog(res.stdout) : [];
   }
 
   /** Puts the change detection's position on a card, for "Show me". */
@@ -1121,6 +1195,7 @@ export class Workspace {
     }
 
     const who = oneLine(author, 60);
+    const earlier = await this.earlierChanges(sandbox);
     const title = oneLine(
       requests.length === 1 ? last : `Site edits by ${who}`,
       72,
@@ -1132,6 +1207,18 @@ export class Workspace {
       ...(requests.length
         ? requests.slice(-30).map((r) => `- ${oneLine(r, 300)}`)
         : ["- (not recorded)"]),
+      ...(earlier.length
+        ? [
+            "",
+            "Also carried from earlier sessions:",
+            ...earlier
+              .slice(-30)
+              .map(
+                (c) =>
+                  `- ${oneLine(c.title, 300)}${c.author ? ` (${oneLine(c.author, 60)})` : ""}`,
+              ),
+          ]
+        : []),
       "",
       "Files changed:",
       ...files.slice(0, 60).map((f) => `- \`${f.filename}\` (${f.status})`),

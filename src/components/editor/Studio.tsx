@@ -15,6 +15,7 @@ import {
   sleep,
   type BuildStatus,
   type Card,
+  type DraftCommit,
   type EventsResponse,
   type PromptResult,
   type QuickEditResult,
@@ -29,15 +30,18 @@ import { CommandPalette, type Command } from "./CommandPalette.tsx";
 import { Composer } from "./Composer.tsx";
 import { PublishDialog, type Publish } from "./PublishDialog.tsx";
 import {
+  newPagePrompt,
   PAGES,
   buildPrompt,
   editedFiles,
+  mergePages,
   pageLabel,
   pageMentioned,
   shrinkImage,
   splitPrompt,
   stepFor,
   type Attachment,
+  type PageInfo,
   type PickedItem,
 } from "./util.ts";
 
@@ -106,6 +110,7 @@ export function Studio({
   sandboxId,
   previewUrl,
   draftAtStart,
+  publishMode,
   onSignOut,
   onAuthLost,
   onClosed,
@@ -114,6 +119,7 @@ export function Studio({
   sandboxId: string;
   previewUrl: string;
   draftAtStart: boolean;
+  publishMode: "merge" | "review";
   onSignOut: () => void;
   onAuthLost: () => void;
   onClosed: (message: string) => void;
@@ -137,6 +143,8 @@ export function Studio({
   const [items, setItems] = useState<PickedItem[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [page, setPage] = useState("/");
+  const [pages, setPages] = useState<PageInfo[]>(PAGES);
+  const [earlier, setEarlier] = useState<DraftCommit[] | null>(null);
   const [editMode, setEditMode] = useState(true);
   const [device, setDevice] = useState<Device>("desktop");
   const [panel, setPanel] = useState(true);
@@ -402,7 +410,9 @@ export function Studio({
       post({ type: "endWatch" });
       if (target && target !== pageRef.current) {
         post({ type: "navigate", path: target });
-        say(`Showing ${pageLabel(target)}, where the change is`);
+        say(
+          `Showing ${pageLabel(target, pagesRef.current)}, where the change is`,
+        );
       }
     },
     [pull, fail, post, save, say],
@@ -950,6 +960,51 @@ export function Studio({
     }
   };
 
+  // ---- pages: what the workspace has, refreshed after every change ------------------------
+
+  const pagesRef = useRef<PageInfo[]>(PAGES);
+  useEffect(() => {
+    pagesRef.current = pages;
+  }, [pages]);
+  useEffect(() => {
+    let gone = false;
+    api<{ pages: PageInfo[] }>(`pages?${query({ sandboxId })}`)
+      .then((res) => {
+        if (!gone && res.pages.length) setPages(mergePages(res.pages));
+      })
+      .catch(() => undefined);
+    return () => {
+      gone = true;
+    };
+  }, [sandboxId, cards.length]);
+
+  const newPage = useCallback(() => {
+    const name = window.prompt(
+      "What is the new page called? (for example: Events)",
+    );
+    if (!name?.trim()) return;
+    setText(newPagePrompt(name));
+    inputRef.current?.focus();
+  }, []);
+
+  // ---- publish: what else the draft carries ----------------------------------------------
+
+  useEffect(() => {
+    if (publish.step !== "confirm") return;
+    let gone = false;
+    setEarlier(null);
+    api<{ earlier: DraftCommit[] }>(`draft?${query({ sandboxId })}`)
+      .then((res) => {
+        if (!gone) setEarlier(res.earlier);
+      })
+      .catch(() => {
+        if (!gone) setEarlier([]);
+      });
+    return () => {
+      gone = true;
+    };
+  }, [publish.step, sandboxId]);
+
   // ---- opening: history, cards, and any turn still running -------------------------------
 
   useEffect(() => {
@@ -1247,12 +1302,19 @@ export function Studio({
   // ---- commands ----------------------------------------------------------------------------
 
   const commands: Command[] = [
-    ...PAGES.map((p) => ({
+    ...pages.map((p) => ({
       id: `page:${p.path}`,
       group: "Go to page",
       label: `${p.label}  ${p.path}`,
       run: () => post({ type: "navigate", path: p.path }),
     })),
+    {
+      id: "new-page",
+      group: "Go to page",
+      label: "New page…",
+      hint: "Describe it to the assistant",
+      run: newPage,
+    },
     {
       id: "mode",
       group: "Preview",
@@ -1383,17 +1445,23 @@ export function Studio({
         <label className="ed-page-select">
           <span className="ed-sr">Page</span>
           <select
-            value={PAGES.some((p) => p.path === page) ? page : "__other"}
-            onChange={(e) => post({ type: "navigate", path: e.target.value })}
+            value={pages.some((p) => p.path === page) ? page : "__other"}
+            onChange={(e) =>
+              e.target.value === "__new"
+                ? newPage()
+                : post({ type: "navigate", path: e.target.value })
+            }
           >
-            {PAGES.map((p) => (
+            {pages.map((p) => (
               <option key={p.path} value={p.path}>
                 {p.label}
               </option>
             ))}
-            {!PAGES.some((p) => p.path === page) && (
-              <option value="__other">{pageLabel(page)}</option>
+            {!pages.some((p) => p.path === page) && (
+              <option value="__other">{pageLabel(page, pages)}</option>
             )}
+            <option disabled>────────</option>
+            <option value="__new">+ New page…</option>
           </select>
         </label>
 
@@ -1595,6 +1663,7 @@ export function Studio({
                 case "card":
                   return (
                     <ChangeCard
+                      pages={pages}
                       key={row.key}
                       card={row.card}
                       sandboxId={sandboxId}
@@ -1687,9 +1756,16 @@ export function Studio({
         <PublishDialog
           publish={publish}
           cards={cards}
+          pages={pages}
+          earlier={earlier}
+          mode={publishMode}
           draftFromEarlier={draftAtStart}
           onConfirm={runPublish}
           onCancel={() => setPublish({ step: "idle" })}
+          onDiscard={() => {
+            setPublish({ step: "idle" });
+            void discard();
+          }}
           onAskFix={(log) => {
             setPublish({ step: "idle" });
             void send({

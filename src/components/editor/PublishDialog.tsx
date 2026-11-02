@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { Card } from "./api.ts";
-import { pageLabel } from "./util.ts";
+import type { Card, DraftCommit } from "./api.ts";
+import { pageLabel, timeAgo, type PageInfo } from "./util.ts";
 
 export type Publish =
   | { step: "idle" }
@@ -12,22 +12,34 @@ export type Publish =
   | { step: "review"; prUrl: string }
   | { step: "blocked"; reason: string; prUrl?: string };
 
-const STEPS = ["Check the site", "Publish", "Live"];
+const STEPS = {
+  merge: ["Check the site", "Publish", "Live"],
+  review: ["Check the site", "Send for review", "Pull request"],
+};
 
 export function PublishDialog({
   publish,
   cards,
+  pages,
+  earlier,
+  mode,
   draftFromEarlier,
   onConfirm,
   onCancel,
+  onDiscard,
   onAskFix,
   onDone,
 }: {
   publish: Publish;
   cards: Card[];
+  pages?: PageInfo[];
+  /** Commits from earlier sessions; null while they are being looked up. */
+  earlier: DraftCommit[] | null;
+  mode: "merge" | "review";
   draftFromEarlier: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  onDiscard: () => void;
   onAskFix: (log: string) => void;
   onDone: (message: string) => void;
 }) {
@@ -70,7 +82,7 @@ export function PublishDialog({
       <div className="ed-dialog">
         {stage >= 0 && (
           <ol className="ed-progress" aria-label="Publishing progress">
-            {STEPS.map((s, i) => (
+            {STEPS[mode].map((s, i) => (
               <li
                 key={s}
                 className={i < stage ? "ed-done" : i === stage ? "ed-now" : ""}
@@ -84,27 +96,60 @@ export function PublishDialog({
 
         {publish.step === "confirm" && (
           <>
-            <h2 id="ed-publish-title">Publish to www.filpgf.io?</h2>
+            <h2 id="ed-publish-title">
+              {mode === "review"
+                ? "Send these changes for review?"
+                : "Publish to www.filpgf.io?"}
+            </h2>
             {live.length > 0 ? (
               <ul className="ed-publish-list">
                 {live.slice(-12).map((c) => (
                   <li key={c.id}>
                     <strong>{c.title}</strong>
-                    {c.page && <span>{pageLabel(c.page)}</span>}
+                    {c.page && <span>{pageLabel(c.page, pages)}</span>}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p>Your saved, unpublished changes will go live.</p>
+              !earlier?.length && (
+                <p>Your saved, unpublished changes will go live.</p>
+              )
             )}
-            {draftFromEarlier && live.length > 0 && (
-              <p className="ed-muted">
-                Plus the changes saved in an earlier session.
-              </p>
+            {earlier === null && draftFromEarlier && (
+              <p className="ed-muted">Looking up changes saved earlier…</p>
+            )}
+            {earlier && earlier.length > 0 && (
+              <>
+                <p className="ed-muted">
+                  {live.length > 0 ? "Also going live: " : ""}
+                  {earlier.length === 1
+                    ? "one change"
+                    : `${earlier.length} changes`}{" "}
+                  saved in earlier sessions, which were loaded into this one.
+                </p>
+                <ul className="ed-publish-list ed-earlier">
+                  {earlier.slice(-12).map((c) => (
+                    <li key={c.sha}>
+                      <strong>{c.title}</strong>
+                      <span>
+                        {c.author ? `${c.author} · ` : ""}
+                        {timeAgo(c.at * 1000)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="ed-muted">
+                  Not what you expected?{" "}
+                  <button className="ed-link-btn" onClick={onDiscard}>
+                    Throw away every unpublished change
+                  </button>{" "}
+                  and start again from the live site.
+                </p>
+              </>
             )}
             <p className="ed-muted">
-              The site is checked first. If anything is wrong, nothing is
-              published.
+              The site is checked first. If anything is wrong, nothing is{" "}
+              {mode === "review" ? "sent" : "published"}.
             </p>
             <div className="ed-row">
               <button
@@ -112,7 +157,7 @@ export function PublishDialog({
                 onClick={onConfirm}
                 autoFocus
               >
-                Publish
+                {mode === "review" ? "Send for review" : "Publish"}
               </button>
               <button className="ed-btn" onClick={onCancel}>
                 Not yet
@@ -134,8 +179,13 @@ export function PublishDialog({
 
         {publish.step === "shipping" && (
           <div className="ed-center-col" aria-live="polite">
-            <h2 id="ed-publish-title">Publishing</h2>
-            <p className="ed-muted">Everything checked out. Sending it live…</p>
+            <h2 id="ed-publish-title">
+              {mode === "review" ? "Sending for review" : "Publishing"}
+            </h2>
+            <p className="ed-muted">
+              Everything checked out.{" "}
+              {mode === "review" ? "Opening the request…" : "Sending it live…"}
+            </p>
           </div>
         )}
 

@@ -331,6 +331,15 @@ export function quickEditCommand(payloadB64: string): string {
   return `cd ${SITE_DIR} && node .editor/quick-edit.mjs ${checkB64(payloadB64, QUICK_EDIT_MAX)}`;
 }
 
+/** The site's pages from the checkout, as JSON (see sandbox/pages.mjs). */
+export const PAGES_COMMAND = `cd ${SITE_DIR} && node .editor/pages.mjs`;
+
+/**
+ * The draft commits this workspace started from: saved in earlier sessions,
+ * fetched once at setup, so this session's own saves are not among them.
+ */
+export const DRAFT_LOG_COMMAND = `cd ${SITE_DIR} && git log --reverse --format='%H%x1f%an%x1f%at%x1f%s' origin/main..origin/${DRAFT_BRANCH} 2>/dev/null || true`;
+
 /** A full-page screenshot of `path` in the preview (see sandbox/shot.mjs). */
 export function shotCommand(payloadB64: string): string {
   return `cd ${SITE_DIR} && node .editor/shot.mjs ${checkB64(payloadB64, 2_000)}`;
