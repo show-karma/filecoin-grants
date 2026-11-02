@@ -45,8 +45,18 @@ export default defineConfig({
    */
   output: "static",
   adapter: vercel({
+    // The editor's save and publish calls wait on Boat and GitHub; the
+    // non-Fluid default (10–15 s) is too short for them.
+    maxDuration: 60,
     isr: {
       expiration: 3600,
+      /*
+       * The site editor (/edit and its API) answers per person and per
+       * moment — sign-in, workspace status, the agent's progress. An hour of
+       * edge cache would serve one person's answer to the next, so these run
+       * as plain functions.
+       */
+      exclude: [/^\/edit$/, /^\/api\/editor\//],
     },
   }),
   vite: {
