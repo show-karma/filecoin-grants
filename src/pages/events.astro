@@ -43,4 +43,61 @@ import { UPCOMING_EVENTS } from "../data/events";
       )
     }
   </Section>
+
+  <Section id="usd-brl" tint>
+    <h2 class="text-2xl sm:text-3xl">USD/BRL</h2>
+    <p class="mt-2 text-sm text-body">
+      Live exchange rate, refreshed every 5 seconds.
+    </p>
+    <div
+      data-usdbrl-rate
+      class="mt-6 rounded-lg border border-line bg-surface p-6 sm:p-7"
+    >
+      <p class="text-body">Loading…</p>
+    </div>
+  </Section>
 </BaseLayout>
+
+<script>
+  const container = document.querySelector<HTMLDivElement>(
+    "[data-usdbrl-rate]",
+  );
+
+  const fetchRate = async () => {
+    if (!container) return;
+    try {
+      const res = await fetch(
+        "https://economia.awesomeapi.com.br/json/last/USD-BRL",
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const quote = data.USDBRL;
+      const bid = Number(quote.bid).toFixed(4);
+      const ask = Number(quote.ask).toFixed(4);
+      const updated = new Date(
+        Number(quote.timestamp) * 1000,
+      ).toLocaleTimeString();
+      container.innerHTML = `
+        <dl class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div>
+            <dt class="mono-meta uppercase">Bid</dt>
+            <dd class="mt-1.5 text-lg font-semibold text-ink">R$ ${bid}</dd>
+          </div>
+          <div>
+            <dt class="mono-meta uppercase">Ask</dt>
+            <dd class="mt-1.5 text-lg font-semibold text-ink">R$ ${ask}</dd>
+          </div>
+          <div>
+            <dt class="mono-meta uppercase">Updated</dt>
+            <dd class="mt-1.5 text-lg font-semibold text-ink">${updated}</dd>
+          </div>
+        </dl>
+      `;
+    } catch {
+      container.innerHTML = `<p class="text-body">Could not load the exchange rate.</p>`;
+    }
+  };
+
+  fetchRate();
+  setInterval(fetchRate, 5000);
+</script>
