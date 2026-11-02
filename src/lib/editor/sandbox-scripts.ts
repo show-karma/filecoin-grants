@@ -17,9 +17,47 @@ export const SITE_DIR = "/home/user/site";
 export const STATE_DIR = "/home/user/.editor";
 export const DEV_PORT = 4321;
 export const DEV_SERVICE = "filpgf-dev";
-/** Name prefix of every editing sandbox, so the server can find the live one. */
+/** Name prefix of every editing sandbox, so the server can find them. */
 export const SESSION_NAME = "filpgf-editor-session";
-export const DRAFT_BRANCH = "editor/draft";
+
+/**
+ * Each person edits on their own draft branch and in their own sandbox, so
+ * one person's unpublished work never rides along with another's publish.
+ * The handle comes from the name given at sign-in, reduced to what git and
+ * the shell give no meaning to.
+ */
+export function editorSlug(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+/, "")
+    .slice(0, 30)
+    .replace(/-+$/, "");
+  return slug || "editor";
+}
+
+function checkSlug(slug: string): string {
+  if (!/^[a-z0-9][a-z0-9-]{0,29}$/.test(slug))
+    throw new Error("bad editor slug");
+  return slug;
+}
+
+export function draftBranch(slug: string): string {
+  return `editor/draft-${checkSlug(slug)}`;
+}
+
+export function sessionName(slug: string): string {
+  return `${SESSION_NAME}-${checkSlug(slug)}`;
+}
+
+/** A branch name as `draftBranch` makes it, or nothing is spliced. */
+function checkBranch(branch: string): string {
+  if (!/^editor\/draft-[a-z0-9][a-z0-9-]{0,29}$/.test(branch))
+    throw new Error("bad draft branch");
+  return branch;
+}
 
 /** Where the save step exports changed files for the server to read. */
 export const BLOB_DIR = "/tmp/editor-blobs";
@@ -185,7 +223,8 @@ echo "[editor] installed"
  * the preview and waits until it answers. Boat reports the outcome as the
  * sandbox's setupStatus.
  */
-export function setupScript(install?: SanitySettings): string {
+export function setupScript(branch: string, install?: SanitySettings): string {
+  const draft = checkBranch(branch);
   return `#!/usr/bin/env bash
 set -euo pipefail
 mkdir -p ${STATE_DIR}
@@ -195,8 +234,8 @@ ${install ? `if [ ! -d ${SITE_DIR}/.git ]; then\n( ${installScript(install)} )\n
 cd ${SITE_DIR}
 git remote set-url origin ${REPO_URL}
 git fetch --quiet --prune origin '+refs/heads/main:refs/remotes/origin/main'
-if git fetch --quiet origin '+refs/heads/${DRAFT_BRANCH}:refs/remotes/origin/${DRAFT_BRANCH}' 2>/dev/null; then
-  START=origin/${DRAFT_BRANCH}
+if git fetch --quiet origin '+refs/heads/${draft}:refs/remotes/origin/${draft}' 2>/dev/null; then
+  START=origin/${draft}
 else
   START=origin/main
 fi
@@ -245,7 +284,7 @@ echo "[editor] ready"
 }
 
 /** Setup for a session started from the template. */
-export const SETUP_SCRIPT = setupScript();
+export const SETUP_SCRIPT = setupScript(draftBranch("editor"));
 
 type Dirs = { site: string; state: string; blobs: string };
 const DIRS: Dirs = { site: SITE_DIR, state: STATE_DIR, blobs: BLOB_DIR };
@@ -338,7 +377,9 @@ export const PAGES_COMMAND = `cd ${SITE_DIR} && node .editor/pages.mjs`;
  * The draft commits this workspace started from: saved in earlier sessions,
  * fetched once at setup, so this session's own saves are not among them.
  */
-export const DRAFT_LOG_COMMAND = `cd ${SITE_DIR} && git log --reverse --format='%H%x1f%an%x1f%at%x1f%s' origin/main..origin/${DRAFT_BRANCH} 2>/dev/null || true`;
+export function draftLogCommand(branch: string): string {
+  return `cd ${SITE_DIR} && git log --reverse --format='%H%x1f%an%x1f%at%x1f%s' origin/main..origin/${checkBranch(branch)} 2>/dev/null || true`;
+}
 
 /** A full-page screenshot of `path` in the preview (see sandbox/shot.mjs). */
 export function shotCommand(payloadB64: string): string {

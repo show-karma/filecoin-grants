@@ -117,7 +117,7 @@ export function editorRoute(handler: Handler): APIRoute {
       if (context.request.method !== "GET") {
         body = (await context.request.json().catch(() => ({}))) ?? {};
       }
-      const workspace = new Workspace(editorConfig());
+      const workspace = new Workspace(editorConfig(), editor.name);
       const result = await handler({ context, editor, workspace, body });
       return result instanceof Response ? result : json(result ?? { ok: true });
     } catch (e) {

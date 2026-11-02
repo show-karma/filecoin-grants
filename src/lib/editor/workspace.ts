@@ -28,7 +28,9 @@ import {
   BUILD_COMMAND,
   BUILT_TREE_FILE,
   DEV_PORT,
-  DRAFT_BRANCH,
+  draftBranch,
+  editorSlug,
+  sessionName,
   SAVE_SCRIPT,
   SESSION_NAME,
   READY_CHECK,
@@ -39,7 +41,7 @@ import {
   CARDS_FILE,
   DIFF_FILE,
   PAGES_COMMAND,
-  DRAFT_LOG_COMMAND,
+  draftLogCommand,
   isProtected,
   markSavedScript,
   appendCardCommand,
@@ -276,8 +278,16 @@ export class Workspace {
   readonly github: GitHub;
   private readonly config: EditorConfig;
 
-  constructor(config: EditorConfig) {
+  /** This person's draft branch on GitHub. */
+  readonly branch: string;
+  /** This person's sandbox name. */
+  readonly sessionName: string;
+
+  constructor(config: EditorConfig, editorName = "editor") {
     this.config = config;
+    const slug = editorSlug(editorName);
+    this.branch = draftBranch(slug);
+    this.sessionName = sessionName(slug);
     this.boat = new Boat(config.boatApiKey, config.boatApiBase);
     this.github = new GitHub({
       token: config.githubToken,
@@ -290,7 +300,7 @@ export class Workspace {
 
   async findLive(): Promise<Sandbox | null> {
     const list = await this.boat.listSandboxes({
-      namePrefix: SESSION_NAME,
+      namePrefix: this.sessionName,
       state: LIVE_STATES.join(","),
     });
     return list[0] ?? null;
@@ -313,7 +323,7 @@ export class Workspace {
       }
       throw e;
     }
-    if (!sandbox.name?.startsWith(SESSION_NAME))
+    if (!sandbox.name?.startsWith(this.sessionName))
       throw new EditorError(403, "Not an editor session.");
     if (!LIVE_STATES.includes(sandbox.state)) {
       throw new EditorError(
@@ -327,7 +337,7 @@ export class Workspace {
   async status(): Promise<SessionView> {
     const [sandbox, draftHead] = await Promise.all([
       this.findLive(),
-      this.github.branchHead(DRAFT_BRANCH),
+      this.github.branchHead(this.branch),
     ]);
     const draft = { exists: draftHead !== null };
     const publishMode = this.config.publishMode;
@@ -394,7 +404,7 @@ export class Workspace {
   async start(startKey: string, editorOrigin?: string): Promise<SessionView> {
     const live = await this.findLive();
     if (live) {
-      const draftHead = await this.github.branchHead(DRAFT_BRANCH);
+      const draftHead = await this.github.branchHead(this.branch);
       return this.view(live, { exists: draftHead !== null });
     }
     void this.cleanUpStopped();
@@ -407,7 +417,7 @@ export class Workspace {
         {
           ...(fromTemplate ? { from: this.config.template } : {}),
           environment: this.config.environment,
-          name: SESSION_NAME,
+          name: this.sessionName,
           labels: { app: "filpgf-editor" },
           ttlSeconds: IDLE_SECONDS,
           // Drafts live on GitHub, so a stopped session has nothing worth
@@ -449,8 +459,8 @@ export class Workspace {
             },
           ],
           setupScript: fromTemplate
-            ? setupScript()
-            : setupScript(this.config.sanity),
+            ? setupScript(this.branch)
+            : setupScript(this.branch, this.config.sanity),
         },
         `filpgf-editor-${startKey}`,
       );
@@ -465,7 +475,7 @@ export class Workspace {
       }
       throw e;
     }
-    const draftHead = await this.github.branchHead(DRAFT_BRANCH);
+    const draftHead = await this.github.branchHead(this.branch);
     return this.view(created.sandbox, { exists: draftHead !== null });
   }
 
@@ -660,7 +670,7 @@ export class Workspace {
       };
     }
 
-    const draftHead = await this.github.branchHead(DRAFT_BRANCH);
+    const draftHead = await this.github.branchHead(this.branch);
     const parent = draftHead ?? (await this.baseSha(sandbox));
     const [baseTree, entries] = await Promise.all([
       this.github.commitTree(parent),
@@ -682,7 +692,7 @@ export class Workspace {
         email: COMMIT_EMAIL,
       },
     });
-    await this.github.setBranch(DRAFT_BRANCH, commit, draftHead !== null);
+    await this.github.setBranch(this.branch, commit, draftHead !== null);
     await this.markSaved(sandbox, local);
     return {
       result: { saved: true, files: changes.map((c) => c.path), skipped },
@@ -781,7 +791,7 @@ export class Workspace {
   /** Draft commits from earlier sessions: a publish from this one carries them too. */
   async earlierChanges(sandbox: Sandbox): Promise<DraftCommit[]> {
     const res = await this.boat
-      .exec(sandbox.id, DRAFT_LOG_COMMAND)
+      .exec(sandbox.id, draftLogCommand(this.branch))
       .catch(() => null);
     return res ? parseDraftLog(res.stdout) : [];
   }
@@ -1184,13 +1194,13 @@ export class Workspace {
       );
     }
 
-    const head = await this.github.branchHead(DRAFT_BRANCH);
+    const head = await this.github.branchHead(this.branch);
     if (!head)
       return { published: false, reason: "There are no changes to publish." };
     const diff = await this.github.compare("main", head);
     const files = diff.files ?? [];
     if (files.length === 0) {
-      await this.github.deleteBranch(DRAFT_BRANCH).catch(() => undefined);
+      await this.github.deleteBranch(this.branch).catch(() => undefined);
       return { published: false, reason: "There are no changes to publish." };
     }
 
@@ -1227,9 +1237,9 @@ export class Workspace {
     ].join("\n");
 
     const pr =
-      (await this.github.findOpenPull(DRAFT_BRANCH, "main")) ??
+      (await this.github.findOpenPull(this.branch, "main")) ??
       (await this.github.createPull({
-        head: DRAFT_BRANCH,
+        head: this.branch,
         base: "main",
         title,
         body,
@@ -1260,14 +1270,14 @@ export class Workspace {
       };
     }
     // Merged: the rest is housekeeping and must not turn success into an error.
-    await this.github.deleteBranch(DRAFT_BRANCH).catch(() => undefined);
+    await this.github.deleteBranch(this.branch).catch(() => undefined);
     await this.boat.deleteSandbox(sandbox.id).catch(() => undefined);
     return { published: true, prUrl: pr.html_url, commit: merged.sha };
   }
 
   /** Throws the draft away: deletes the branch and the session. */
   async discard(sandbox: Sandbox | null) {
-    await this.github.deleteBranch(DRAFT_BRANCH);
+    await this.github.deleteBranch(this.branch);
     if (sandbox)
       await this.boat.deleteSandbox(sandbox.id).catch(() => undefined);
   }

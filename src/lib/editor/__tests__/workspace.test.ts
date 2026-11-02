@@ -20,7 +20,7 @@ const TREE = sha("f");
 
 const sandbox: Sandbox = {
   id: "bx_abcdefgh",
-  name: "filpgf-editor-session",
+  name: "filpgf-editor-session-ada",
   state: "idle",
 };
 const b64 = (s: string) => Buffer.from(s, "utf8").toString("base64");
@@ -98,7 +98,7 @@ function fakeFetch(opts: {
       if (url.host === "api.github.com") {
         const repo = "/repos/show-karma/filecoin-grants";
         const q = p.slice(repo.length);
-        if (q === "/git/ref/heads/editor/draft") {
+        if (q === "/git/ref/heads/editor/draft-ada") {
           return draftHead
             ? ok({ object: { sha: draftHead } })
             : new Response("{}", { status: 404 });
@@ -113,11 +113,11 @@ function fakeFetch(opts: {
           draftHead = body.sha;
           return ok({}, 201);
         }
-        if (q === "/git/refs/heads/editor/draft" && method === "PATCH") {
+        if (q === "/git/refs/heads/editor/draft-ada" && method === "PATCH") {
           draftHead = body.sha;
           return ok({});
         }
-        if (q === "/git/refs/heads/editor/draft" && method === "DELETE") {
+        if (q === "/git/refs/heads/editor/draft-ada" && method === "DELETE") {
           draftHead = null;
           return new Response(null, { status: 204 });
         }
@@ -212,7 +212,7 @@ describe("Workspace.save", () => {
     });
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
 
-    const res = await new Workspace(config).save(
+    const res = await new Workspace(config, "Ada").save(
       sandbox,
       "Ada",
       "Change the title",
@@ -252,7 +252,7 @@ describe("Workspace.save", () => {
       calls.some(
         (c) =>
           c.url.pathname.endsWith("/git/refs") &&
-          c.body.ref === "refs/heads/editor/draft",
+          c.body.ref === "refs/heads/editor/draft-ada",
       ),
     ).toBe(true);
     // The sandbox records the save only after GitHub has it.
@@ -268,7 +268,7 @@ describe("Workspace.save", () => {
       diff: raw([`:100644 100644 ${Z} ${BLOB_A} M`, "src/data/site.ts"]),
     });
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
-    await new Workspace(config).save(sandbox, "Ada", "x");
+    await new Workspace(config, "Ada").save(sandbox, "Ada", "x");
     expect(
       calls.find(
         (c) => c.url.pathname.endsWith("/git/commits") && c.method === "POST",
@@ -281,7 +281,7 @@ describe("Workspace.save", () => {
   it("commits nothing when nothing changed, but still records the save point", async () => {
     const { fetchImpl, calls } = fakeFetch({ draftHead: null, diff: "" });
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
-    const res = await new Workspace(config).save(sandbox, "Ada", "x");
+    const res = await new Workspace(config, "Ada").save(sandbox, "Ada", "x");
     expect(res.saved).toBe(false);
     expect(calls.some((c) => c.url.host === "api.github.com")).toBe(false);
   });
@@ -296,7 +296,7 @@ describe("Workspace.save", () => {
       saveStdout: `COMMIT ${LOCAL}\nTREE ${TREE}\nLEFT  M src/lib/editor/auth.ts\n`,
     });
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
-    const res = await new Workspace(config).save(sandbox, "Ada", "x");
+    const res = await new Workspace(config, "Ada").save(sandbox, "Ada", "x");
     expect(res.files).toEqual(["src/data/site.ts"]);
     expect(res.skipped).toEqual([
       "src/lib/editor/auth.ts",
@@ -319,7 +319,7 @@ describe("Workspace.ship", () => {
     });
     globalThis.fetch = fake.fetchImpl as unknown as typeof fetch;
     await expect(
-      new Workspace(config).ship(sandbox, "Ada", 7, ["x"]),
+      new Workspace(config, "Ada").ship(sandbox, "Ada", 7, ["x"]),
     ).rejects.toThrow(EditorError);
 
     fake = fakeFetch({
@@ -329,7 +329,7 @@ describe("Workspace.ship", () => {
     });
     globalThis.fetch = fake.fetchImpl as unknown as typeof fetch;
     await expect(
-      new Workspace(config).ship(sandbox, "Ada", 7, ["x"]),
+      new Workspace(config, "Ada").ship(sandbox, "Ada", 7, ["x"]),
     ).rejects.toThrow(/did not pass/);
     expect(fake.calls.some((c) => c.url.pathname.includes("/merge"))).toBe(
       false,
@@ -340,7 +340,7 @@ describe("Workspace.ship", () => {
     const { fetchImpl, calls } = fakeFetch({ draftHead: DRAFT, diff: "" });
     fixPullsList(fetchImpl);
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
-    const res = await new Workspace(config).ship(sandbox, "Ada", 7, [
+    const res = await new Workspace(config, "Ada").ship(sandbox, "Ada", 7, [
       "Change the title",
     ]);
     expect(res).toEqual({
@@ -360,7 +360,7 @@ describe("Workspace.ship", () => {
       calls.some(
         (c) =>
           c.method === "DELETE" &&
-          c.url.pathname.endsWith("/git/refs/heads/editor/draft"),
+          c.url.pathname.endsWith("/git/refs/heads/editor/draft-ada"),
       ),
     ).toBe(true);
     expect(
@@ -380,7 +380,10 @@ describe("Workspace.ship", () => {
     });
     fixPullsList(fetchImpl);
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
-    const res = await new Workspace(config).ship(sandbox, "Ada", 7, ["a", "b"]);
+    const res = await new Workspace(config, "Ada").ship(sandbox, "Ada", 7, [
+      "a",
+      "b",
+    ]);
     expect(res).toMatchObject({
       published: false,
       prUrl: "https://github.com/pr/71",
@@ -392,9 +395,12 @@ describe("Workspace.ship", () => {
     const { fetchImpl } = fakeFetch({ draftHead: DRAFT, diff: "" });
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
     await expect(
-      new Workspace(config).ship({ ...sandbox, state: "running" }, "Ada", 7, [
-        "x",
-      ]),
+      new Workspace(config, "Ada").ship(
+        { ...sandbox, state: "running" },
+        "Ada",
+        7,
+        ["x"],
+      ),
     ).rejects.toThrow(/still working/);
   });
 
@@ -406,7 +412,7 @@ describe("Workspace.ship", () => {
     });
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
     await expect(
-      new Workspace(config).ship(sandbox, "Ada", 7, ["x"]),
+      new Workspace(config, "Ada").ship(sandbox, "Ada", 7, ["x"]),
     ).rejects.toThrow(/package\.json/);
     expect(calls.some((c) => c.url.pathname.includes("/pulls"))).toBe(false);
   });
@@ -419,7 +425,7 @@ describe("Workspace.ship", () => {
     });
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
     await expect(
-      new Workspace(config).ship(sandbox, "Ada", 7, ["x"]),
+      new Workspace(config, "Ada").ship(sandbox, "Ada", 7, ["x"]),
     ).rejects.toThrow(/changed after the check/);
     expect(calls.some((c) => c.url.pathname.includes("/pulls"))).toBe(false);
   });
@@ -428,12 +434,10 @@ describe("Workspace.ship", () => {
     const { fetchImpl, calls } = fakeFetch({ draftHead: DRAFT, diff: "" });
     fixPullsList(fetchImpl);
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
-    const res = await new Workspace({ ...config, publishMode: "review" }).ship(
-      sandbox,
+    const res = await new Workspace(
+      { ...config, publishMode: "review" },
       "Ada",
-      7,
-      ["x"],
-    );
+    ).ship(sandbox, "Ada", 7, ["x"]);
     expect(res).toEqual({
       published: false,
       review: true,
@@ -450,7 +454,7 @@ describe("Workspace.ship", () => {
   it("says so when there is nothing to publish", async () => {
     const { fetchImpl } = fakeFetch({ draftHead: null, diff: "" });
     globalThis.fetch = fetchImpl as unknown as typeof fetch;
-    const res = await new Workspace(config).ship(sandbox, "Ada", 7, []);
+    const res = await new Workspace(config, "Ada").ship(sandbox, "Ada", 7, []);
     expect(res).toEqual({
       published: false,
       reason: "There are no changes to publish.",
@@ -505,7 +509,7 @@ describe("quick edits", () => {
         ms: 900,
       }) + "\n",
     );
-    const res = await new Workspace(config).quickEdit(sandbox, {
+    const res = await new Workspace(config, "Ada").quickEdit(sandbox, {
       request: "Say open source",
       page: "/",
       blocks,
@@ -542,7 +546,7 @@ describe("quick edits", () => {
         summary: "",
       }),
     );
-    const res = await new Workspace(config).quickEdit(sandbox, {
+    const res = await new Workspace(config, "Ada").quickEdit(sandbox, {
       request: "x",
       page: "/",
       blocks,
@@ -552,7 +556,7 @@ describe("quick edits", () => {
 
   it("passes the agent's requests on", async () => {
     boatAnswering(JSON.stringify({ ok: false, reason: "agent" }));
-    const res = await new Workspace(config).quickEdit(sandbox, {
+    const res = await new Workspace(config, "Ada").quickEdit(sandbox, {
       request: "Add a photo",
       page: "/",
       blocks,
@@ -563,14 +567,17 @@ describe("quick edits", () => {
   it("is off without a fast model, and never runs while the agent works", async () => {
     const commands = boatAnswering("{}");
     expect(
-      await new Workspace({ ...config, fastModel: null }).quickEdit(sandbox, {
-        request: "x",
-        page: "/",
-        blocks,
-      }),
+      await new Workspace({ ...config, fastModel: null }, "Ada").quickEdit(
+        sandbox,
+        {
+          request: "x",
+          page: "/",
+          blocks,
+        },
+      ),
     ).toEqual({ ok: false, reason: "off" });
     await expect(
-      new Workspace(config).quickEdit(
+      new Workspace(config, "Ada").quickEdit(
         { ...sandbox, state: "running" },
         { request: "x", page: "/", blocks },
       ),
@@ -589,7 +596,7 @@ describe("quick edits", () => {
       file: "src/pages/index.astro",
       selected: i === 899,
     }));
-    await new Workspace(config).quickEdit(sandbox, {
+    await new Workspace(config, "Ada").quickEdit(sandbox, {
       request: "x",
       page: "/",
       blocks: many,

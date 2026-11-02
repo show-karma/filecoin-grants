@@ -7,6 +7,9 @@ import {
   SETUP_SCRIPT,
   installScript,
   setupScript,
+  draftBranch,
+  editorSlug,
+  sessionName,
   isProtected,
   markSavedScript,
 } from "../sandbox-scripts";
@@ -18,12 +21,32 @@ const parses = (script: string) =>
     stdio: ["pipe", "pipe", "pipe"],
   });
 
+describe("editor handles", () => {
+  it("reduce a sign-in name to a branch and sandbox name", () => {
+    expect(editorSlug("Erin")).toBe("erin");
+    expect(editorSlug("  Érin O'Neil  ")).toBe("erin-o-neil");
+    expect(editorSlug("Mahesh (site editor)")).toBe("mahesh-site-editor");
+    expect(editorSlug("!!!")).toBe("editor");
+    expect(editorSlug("x".repeat(80))).toHaveLength(30);
+    expect(draftBranch("erin")).toBe("editor/draft-erin");
+    expect(sessionName("erin")).toBe("filpgf-editor-session-erin");
+    expect(() => draftBranch("Erin")).toThrow();
+    expect(() => draftBranch("a;b")).toThrow();
+    expect(() => setupScript("editor/draft")).toThrow();
+  });
+});
+
 describe("sandbox scripts", () => {
   it("are valid bash", () => {
     expect(() => parses(SETUP_SCRIPT)).not.toThrow();
     expect(() => parses(SAVE_SCRIPT)).not.toThrow();
     expect(() =>
-      parses(setupScript({ projectId: "86k25j71", dataset: "production" })),
+      parses(
+        setupScript("editor/draft-erin", {
+          projectId: "86k25j71",
+          dataset: "production",
+        }),
+      ),
     ).not.toThrow();
     expect(() => parses(markSavedScript("a".repeat(40)))).not.toThrow();
   });
@@ -37,7 +60,10 @@ describe("sandbox scripts", () => {
   it("installs the site only when there is no template", () => {
     expect(SETUP_SCRIPT).not.toContain("git clone");
     expect(
-      setupScript({ projectId: "86k25j71", dataset: "production" }),
+      setupScript("editor/draft-erin", {
+        projectId: "86k25j71",
+        dataset: "production",
+      }),
     ).toContain("git clone");
   });
 

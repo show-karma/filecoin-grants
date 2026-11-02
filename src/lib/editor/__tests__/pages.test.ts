@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { cleanPages, parseDraftLog } from "../workspace";
-import { DRAFT_LOG_COMMAND, PAGES_COMMAND } from "../sandbox-scripts";
+import { draftLogCommand, PAGES_COMMAND } from "../sandbox-scripts";
 
 const parses = (script: string) =>
   execFileSync("bash", ["-n"], {
@@ -12,7 +12,7 @@ const parses = (script: string) =>
 describe("page listing", () => {
   it("commands are valid bash", () => {
     expect(() => parses(PAGES_COMMAND)).not.toThrow();
-    expect(() => parses(DRAFT_LOG_COMMAND)).not.toThrow();
+    expect(() => parses(draftLogCommand("editor/draft-erin"))).not.toThrow();
   });
 
   it("lists this site's pages with their titles, skipping routes the editor hides", () => {

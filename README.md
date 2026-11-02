@@ -188,7 +188,7 @@ anything the code can do is in reach: copy, layout, new sections, new pages.
 /edit (browser) ──► /api/editor/* (Vercel) ──► Boat sandbox ──► agent edits ~/site
      ▲                       │                     │            astro dev :4321
      └──── preview iframe ◄──┼──── https://<id>-4321.on.boat.dev (hot reload)
-                             └──► GitHub: editor/draft branch ──► PR ──► squash-merge to main ──► Vercel
+                             └──► GitHub: editor/draft-<name> branch ──► PR ──► squash-merge to main ──► Vercel
 ```
 
 1. **Start.** Opening `/edit` starts a [Boat](https://docs.boat.dev) sandbox
@@ -199,11 +199,12 @@ anything the code can do is in reach: copy, layout, new sections, new pages.
    by default). Its file changes show in the preview within a second. Its
    house rules are in `src/lib/editor/agent-rules.md`.
 3. **Save.** After every reply the server copies the changed files into one
-   commit on the `editor/draft` branch through the GitHub API. Closing the tab
-   loses nothing; the next session resumes the draft.
+   commit on that person's draft branch (`editor/draft-<name>`, from the name
+   given at sign-in) through the GitHub API. Closing the tab loses nothing;
+   the next session under the same name resumes the draft.
 4. **Publish.** Runs `pnpm run build` (astro check + build) in the sandbox on
    the exact draft. If it passes, the server opens a pull request from
-   `editor/draft`, squash-merges it into `main`, deletes the branch and the
+   the draft branch, squash-merges it into `main`, deletes the branch and the
    sandbox. Vercel deploys `main` as usual. A failed check publishes nothing
    and offers to have the agent fix it. With `EDITOR_PUBLISH_MODE=review`,
    the pull request is left open for a developer instead.
