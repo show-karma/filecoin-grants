@@ -65,8 +65,11 @@ import { UPCOMING_EVENTS } from "../data/events";
     "[data-usdbrl-rate]",
   );
 
+  let refreshCount = 0;
+
   const fetchRate = async () => {
     if (!container) return;
+    refreshCount += 1;
     try {
       const res = await fetch(
         "https://economia.awesomeapi.com.br/json/last/USD-BRL",
@@ -80,7 +83,7 @@ import { UPCOMING_EVENTS } from "../data/events";
         Number(quote.timestamp) * 1000,
       ).toLocaleTimeString();
       container.innerHTML = `
-        <dl class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
             <dt class="mono-meta uppercase">Bid</dt>
             <dd class="mt-1.5 text-lg font-semibold text-ink">R$ ${bid}</dd>
@@ -92,6 +95,10 @@ import { UPCOMING_EVENTS } from "../data/events";
           <div>
             <dt class="mono-meta uppercase">Updated</dt>
             <dd class="mt-1.5 text-lg font-semibold text-ink">${updated}</dd>
+          </div>
+          <div>
+            <dt class="mono-meta uppercase">Refreshes</dt>
+            <dd class="mt-1.5 text-lg font-semibold text-ink">${refreshCount}</dd>
           </div>
         </dl>
       `;
