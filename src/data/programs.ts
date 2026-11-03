@@ -116,27 +116,7 @@ export type Rfp = {
 
 export const RND_RFPS: Rfp[] = [
   {
-    title: "RFP 1: Filecoin Paid Retrieval Prototype",
-    objective:
-      "produce a design recommendation and a working proof-of-concept that lets providers get paid for services, so e.g. retrieval becomes a revenue line alongside storage.",
-    problem:
-      "Storage providers earn on storage, but serving data back is virtually always unpaid. That weakens the incentive to retrieve fast and reliably, and it is a gap in the network's long-term economics. Several designs have been proposed over the years across Filecoin, IPFS and libp2p, but no functional prototype exists today.",
-    inScope: [
-      "A survey of prior art: past Filecoin retrieval-market designs, payment-channel approaches and any live paid-retrieval services.",
-      "A comparison of protocol-level versus application-level approaches, with trade-offs on latency, trust, cost per request and SP integration effort.",
-      "A prototype of one recommended approach. Suggested starting point: a voucher system using MPP for Filecoin Onchain Cloud (FOC) paid retrieval.",
-      "An end-to-end demo: client pays, SP serves, SP settles.",
-    ],
-    notInScope: [
-      "Production deployment or mainnet launch.",
-      "Changes to Filecoin consensus or FIPs (a FIP draft can be a recommendation, not a deliverable).",
-      "Building a new client or gateway beyond what the demo needs.",
-    ],
-    whoShouldApply:
-      "Teams with hands-on experience in Filecoin retrieval, payment channels or micropayments, and libp2p. Prior published research is a plus.",
-  },
-  {
-    title: "RFP 2: Complementary Security Testing of Filecoin EVM Deployments",
+    title: "RFP 1: Complementary Security Testing of Filecoin EVM Deployments",
     objective:
       "add an independent layer of security testing for high-value FEVM contracts, complementing (not duplicating) FF Security's existing test harnesses.",
     problem:
@@ -156,7 +136,7 @@ export const RND_RFPS: Rfp[] = [
       "Smart-contract security teams or independent researchers with public audit or fuzzing work, ideally with experience in stablecoin/CDP systems (Liquity-style troves) and payment-rail contracts. FEVM experience is a strong plus.",
   },
   {
-    title: "RFP 3: Programmable PoRep Proving Pipeline via FEVM",
+    title: "RFP 2: Programmable PoRep Proving Pipeline via FEVM",
     objective:
       "expose Filecoin's existing PoRep, PoSt and related proof verifiers to FEVM so that a Solidity contract can run a full PoRep / PoSt / prove-update cycle, enabling a PoRep+PDP-style system built entirely in FEVM.",
     problem:
