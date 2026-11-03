@@ -136,7 +136,7 @@ export const RND_RFPS: Rfp[] = [
       "Smart-contract security teams or independent researchers with public audit or fuzzing work, ideally with experience in stablecoin/CDP systems (Liquity-style troves) and payment-rail contracts. FEVM experience is a strong plus.",
   },
   {
-    title: "RFP 3: Programmable PoRep Proving Pipeline via FEVM",
+    title: "RFP 2: Programmable PoRep Proving Pipeline via FEVM",
     objective:
       "expose Filecoin's existing PoRep, PoSt and related proof verifiers to FEVM so that a Solidity contract can run a full PoRep / PoSt / prove-update cycle, enabling a PoRep+PDP-style system built entirely in FEVM.",
     problem:
