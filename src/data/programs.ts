@@ -116,7 +116,7 @@ export type Rfp = {
 
 export const RND_RFPS: Rfp[] = [
   {
-    title: "RFP 2: Complementary Security Testing of Filecoin EVM Deployments",
+    title: "RFP 1: Complementary Security Testing of Filecoin EVM Deployments",
     objective:
       "add an independent layer of security testing for high-value FEVM contracts, complementing (not duplicating) FF Security's existing test harnesses.",
     problem:
