@@ -101,13 +101,13 @@ export type TimelineStep = {
 export const TIMELINE: TimelineStep[] = [
   { date: "Jan 2026", label: "FY26 term begins", state: "done" },
   { date: "Apr 2026", label: "Mid-term audit cleared", state: "done" },
-  { date: "Aug 2026", label: "Health reporting live", state: "current" },
+  { date: "Aug 2026", label: "Health reporting live", state: "done" },
   {
     date: "Oct 2026",
     label: "Close-out funding round audit",
     state: "done",
   },
-  { date: "Nov 2026", label: "Applications close", state: "done" },
+  { date: "Nov 2026", label: "Applications close", state: "current" },
   { date: "Dec 2026", label: "Awards published", state: "upcoming" },
   { date: "Jan 2027", label: "FY27 term begins", state: "upcoming" },
 ];
