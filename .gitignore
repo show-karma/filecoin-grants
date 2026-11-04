@@ -16,3 +16,6 @@ node_modules/
 
 # local overrides (point the build at a local API/widget/app)
 .env.local
+
+# sanity cli
+.sanity/

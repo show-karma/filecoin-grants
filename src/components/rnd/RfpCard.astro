@@ -1,0 +1,60 @@
+---
+import type { Rfp } from "../../data/programs";
+
+type Props = { rfp: Rfp };
+const { rfp } = Astro.props;
+---
+
+<article class="rounded-lg border border-line bg-surface p-6 sm:p-7">
+  <h3 class="text-xl">{rfp.title}</h3>
+  <p class="mt-3 text-[0.95rem] leading-relaxed">
+    <strong>Objective:</strong>
+    {rfp.objective}
+  </p>
+
+  <div class="mt-6 border-t border-line-soft pt-6">
+    <h4 class="mono-meta uppercase">Problem</h4>
+    <p class="mt-3 text-[0.95rem] leading-relaxed">{rfp.problem}</p>
+  </div>
+
+  <div class="mt-6 border-t border-line-soft pt-6">
+    <h4 class="mono-meta uppercase">Scope</h4>
+    <p class="mt-3 text-[0.95rem] leading-relaxed">In scope:</p>
+    <ul class="mt-2.5 space-y-2.5">
+      {
+        rfp.inScope.map((item) => (
+          <li class="flex gap-3">
+            <span
+              class="mt-0.5 shrink-0 font-mono text-sm text-ok"
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+            <span class="text-[0.95rem] leading-relaxed" set:html={item} />
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mt-5 text-[0.95rem] leading-relaxed">Out of scope:</p>
+    <ul class="mt-2.5 space-y-2.5">
+      {
+        rfp.notInScope.map((item) => (
+          <li class="flex gap-3">
+            <span
+              class="mt-0.5 shrink-0 font-mono text-sm text-bad"
+              aria-hidden="true"
+            >
+              ✕
+            </span>
+            <span class="text-[0.95rem] leading-relaxed" set:html={item} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="mt-6 border-t border-line-soft pt-6">
+    <h4 class="mono-meta uppercase">Who should apply</h4>
+    <p class="mt-3 text-[0.95rem] leading-relaxed">{rfp.whoShouldApply}</p>
+  </div>
+</article>

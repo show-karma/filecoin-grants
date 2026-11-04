@@ -12,8 +12,9 @@ import type { AstroIntegration } from "astro";
  * Accept header would cache whichever variant was asked for first and serve it
  * to everyone. The @astrojs/vercel adapter has no option for routes like these,
  * so this edits the routing table it writes to .vercel/output/config.json.
- * That works because Astro puts the adapter first in the integration list, so
- * the adapter's astro:build:done has written the file by the time this runs.
+ * That works because Astro puts the adapter first in the integration list and
+ * this integration is registered last, so the adapter's astro:build:done has
+ * written the file by the time this runs.
  */
 
 type Route = Record<string, unknown>;

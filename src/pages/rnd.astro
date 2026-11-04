@@ -4,13 +4,12 @@ import Section from "../components/Section.astro";
 import SectionHeader from "../components/SectionHeader.astro";
 import CriteriaList from "../components/CriteriaList.astro";
 import PageHero from "../components/PageHero.astro";
-import FocusAreaCard from "../components/rnd/FocusAreaCard.astro";
+import RfpCard from "../components/rnd/RfpCard.astro";
 import {
   RND_EVALUATION,
-  RND_FOCUS_AREAS,
   RND_LOOKING_FOR,
   RND_NOT_IN_SCOPE,
-  RND_OPEN_RFPS,
+  RND_RFPS,
 } from "../data/programs";
 ---
 
@@ -78,23 +77,9 @@ import {
       intro="R&D is request-driven — the usual way in is a response to a published RFP rather than an unsolicited proposal."
     />
 
-    <div
-      class="mt-8 max-w-2xl rounded-lg border border-dashed p-6"
-      style="border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-surface)); background: color-mix(in srgb, var(--color-accent) 5%, var(--color-surface))"
-    >
-      <p class="eyebrow">{RND_OPEN_RFPS.eyebrow}</p>
-      <h3 class="mt-2.5 text-xl">{RND_OPEN_RFPS.title}</h3>
-      <p class="mt-3 text-[0.95rem] leading-relaxed">
-        {RND_OPEN_RFPS.description}
-      </p>
-    </div>
-
-    <div class="mt-10 space-y-6">
-      {
-        RND_FOCUS_AREAS.map((area, index) => (
-          <FocusAreaCard area={area} index={index} />
-        ))
-      }
+    <h3 class="mt-10 text-2xl">Active RFPs</h3>
+    <div class="mt-6 space-y-6">
+      {RND_RFPS.map((rfp) => <RfpCard rfp={rfp} />)}
     </div>
 
     <div

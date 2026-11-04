@@ -21,7 +21,7 @@ import {
 } from "../data/site";
 import { HOME_COPY, OBJECTIVES, REPORT_CADENCES } from "../data/landing";
 import { NEXT_ROUND } from "../data/kernel";
-import { PODS, REVDEV_FUNDING_FACTS, RND_OPEN_RFPS } from "../data/programs";
+import { PODS, REVDEV_FUNDING_FACTS, RND_RFPS } from "../data/programs";
 import { SKILLS } from "./skills";
 import mcp from "../../mcp.json";
 
@@ -34,7 +34,7 @@ export type PostSummary = {
 
 /** Published blog posts, in the shape the views below take. */
 export const postSummaries = async (): Promise<PostSummary[]> =>
-  (await getCollection("blog", ({ data }) => !data.draft)).map((post) => ({
+  (await getCollection("blog")).map((post) => ({
     id: post.id,
     title: post.data.title,
     description: post.data.description,
@@ -85,7 +85,7 @@ const day = (date: Date) => date.toISOString().slice(0, 10);
 const ENTRY: Record<string, string> = {
   Kernel: `${NEXT_ROUND.title}. ${NEXT_ROUND.description} ${link("Apply", NEXT_ROUND.ctaHref)}.`,
   "Revenue Development": `Funds ${REVDEV_FUNDING_FACTS[0].value} (${PODS.map((pod) => pod.name).join(" and ")}). ${REVDEV_FUNDING_FACTS[0].note}.`,
-  "R&D": `${RND_OPEN_RFPS.title}. R&D is request-driven: the usual way in is a response to a published RFP.`,
+  "R&D": `R&D is request-driven: the usual way in is a response to a published RFP. Open now: ${RND_RFPS.map((rfp) => rfp.title).join("; ")}.`,
 };
 
 const objectiveLines = (site: URL) =>

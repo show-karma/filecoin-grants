@@ -1,0 +1,24 @@
+---
+import type { Props as BlockProps } from "astro-portabletext/types";
+import { imageUrl } from "../lib/sanity";
+
+type Image = {
+  _type: "image";
+  alt?: string;
+  asset: {
+    _id: string;
+    metadata?: { dimensions?: { width: number; height: number } };
+  };
+};
+
+const { node } = Astro.props as BlockProps<Image>;
+const dims = node.asset.metadata?.dimensions;
+---
+
+<img
+  src={imageUrl(node).width(1600).url()}
+  alt={node.alt ?? ""}
+  width={dims?.width}
+  height={dims?.height}
+  loading="lazy"
+/>
