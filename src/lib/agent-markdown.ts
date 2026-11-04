@@ -54,7 +54,7 @@ const PAGES: Page[] = [
     title: "Revenue Development",
     summary: "program page, including the two pods",
   },
-  { path: "/rnd/", title: "R&D", summary: "program page and focus areas" },
+  { path: "/rnd/", title: "R&D", summary: "program page and open RFPs" },
   {
     path: "/propgf/",
     title: "ProPGF",
