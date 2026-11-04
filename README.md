@@ -271,7 +271,7 @@ opening `/edit` joins it.
    only, with Contents and Pull requests set to read & write.
 4. **Vercel.** Add `BOAT_API_KEY`, `GITHUB_TOKEN`, `EDITOR_PASSWORD` (12+
    characters, random) and `EDITOR_SESSION_SECRET` (`openssl rand -base64
-   32`) as Production variables. Optional ones are listed in `.env.example`.
+32`) as Production variables. Optional ones are listed in `.env.example`.
    For local runs, `BOAT_API_BASE` and `GITHUB_API_BASE` point the editor at
    stand-ins.
 
@@ -293,3 +293,31 @@ usage is the larger cost and depends on the model chosen on Boat.
   shows earlier unpublished work as part of the draft, not as cards.
 - If `main` moved in a way that conflicts with the draft, Publish leaves the
   pull request open for a developer instead of merging.
+
+## For agents
+
+- `skills/` is the FilPGF agent toolkit: one folder per skill, in the
+  [Agent Skills](https://agentskills.io/specification) format. Install with
+  `npx skills add show-karma/filecoin-grants`, or in Claude Code with
+  `/plugin marketplace add show-karma/filecoin-grants` then
+  `/plugin install filpgf@filpgf`, or in Codex with
+  `codex plugin marketplace add show-karma/filecoin-grants`. `plugin.json` +
+  `mcp.json` ([Agent Plugins](https://agent-plugins.org/specification), read by
+  Codex, Cursor and Copilot), `.claude-plugin/` (Claude Code; check with
+  `claude plugin validate .`) and `.agents/plugins/marketplace.json` (Codex)
+  all package the same folder; `src/lib/__tests__/plugin-manifests.test.ts`
+  keeps their shared fields in step. Skill names carry a `filpgf-` prefix
+  because only Claude namespaces skills by plugin.
+- Every file in `skills/` is also served from the site at `/skills/...`
+  (`src/pages/skills/[...path].ts`), so agents can fetch a skill from the URL
+  /llms.txt gives them. `src/lib/__tests__/skills.test.ts`
+  checks each skill's frontmatter.
+- `/llms.txt` is a short index of the pages, app destinations and skills, each
+  linking to its source. The skills list is read from `skills/*/SKILL.md` at
+  build time. Built by `src/lib/agent-markdown.ts`.
+- `Accept: text/markdown` on `/` returns `/home.md` (`Vary: Accept`), and on a
+  missing page returns `/404.md` with a 404. Vercel routes these, not the page:
+  `src/integrations/markdown-negotiation.ts` adds them to the adapter's
+  `.vercel/output/config.json`. Check with
+  `curl -i -H 'Accept: text/markdown' https://www.filpgf.io/`.
+- The homepage carries Organization and WebSite JSON-LD.

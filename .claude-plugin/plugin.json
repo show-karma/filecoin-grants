@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "filpgf",
+  "version": "0.1.0",
+  "description": "Skills for working on Filecoin Public Goods Funding: find programs and data, read Karma and OSO, and prepare milestone and project reviews.",
+  "author": {
+    "name": "FilPGF",
+    "url": "https://www.filpgf.io"
+  },
+  "homepage": "https://www.filpgf.io",
+  "repository": "https://github.com/show-karma/filecoin-grants",
+  "license": "MIT",
+  "keywords": [
+    "filecoin",
+    "filpgf",
+    "kernel",
+    "propgf",
+    "grants",
+    "karma",
+    "oso"
+  ],
+  "mcpServers": {
+    "oso": {
+      "type": "http",
+      "url": "https://mcp.oso.xyz/mcp"
+    }
+  }
+}

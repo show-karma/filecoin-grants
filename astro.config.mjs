@@ -6,6 +6,7 @@ import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
 import react from "@astrojs/react";
 import sanity from "@sanity/astro";
+import markdownNegotiation from "./src/integrations/markdown-negotiation";
 
 const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
   process.env.NODE_ENV ?? "development",
@@ -32,6 +33,8 @@ export default defineConfig({
       useCdn: false,
       studioBasePath: "/studio",
     }),
+    /* Last: it edits the routing table the Vercel adapter writes. */
+    markdownNegotiation(),
   ],
   /*
    * Static by default: every page is prerendered unless it opts out with

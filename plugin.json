@@ -1,0 +1,38 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "filpgf",
+  "version": "0.1.0",
+  "description": "Skills for working on Filecoin Public Goods Funding: find programs and data, read Karma and OSO, and prepare milestone and project reviews.",
+  "author": {
+    "name": "FilPGF",
+    "url": "https://www.filpgf.io"
+  },
+  "homepage": "https://www.filpgf.io",
+  "repository": "https://github.com/show-karma/filecoin-grants",
+  "license": "MIT",
+  "keywords": [
+    "filecoin",
+    "filpgf",
+    "kernel",
+    "propgf",
+    "grants",
+    "karma",
+    "oso"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "FilPGF",
+        "shortDescription": "Review and research Filecoin public goods funding",
+        "developerName": "FilPGF",
+        "category": "Productivity",
+        "websiteURL": "https://www.filpgf.io",
+        "defaultPrompt": [
+          "Which milestones are waiting for verification?",
+          "Review this ProPGF milestone",
+          "How is this Kernel project tracking against its SLA?"
+        ]
+      }
+    }
+  }
+}

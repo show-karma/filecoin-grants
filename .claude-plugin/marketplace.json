@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "filpgf",
+  "description": "FilPGF agent toolkit: skills for Filecoin public goods funding reviews and data.",
+  "owner": {
+    "name": "Karma",
+    "url": "https://karmahq.org"
+  },
+  "plugins": [
+    {
+      "name": "filpgf",
+      "source": "./",
+      "description": "Skills for working on Filecoin Public Goods Funding: find programs and data, read Karma and OSO, and prepare milestone and project reviews."
+    }
+  ]
+}
