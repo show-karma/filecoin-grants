@@ -315,7 +315,7 @@ usage is the larger cost and depends on the model chosen on Boat.
 - `/llms.txt` is a short index of the pages, app destinations and skills, each
   linking to its source. The skills list is read from `skills/*/SKILL.md` at
   build time. Built by `src/lib/agent-markdown.ts`.
-- `Accept: text/markdown` on `/` returns `/index.md` (`Vary: Accept`), and on a
+- `Accept: text/markdown` on `/` returns `/home.md` (`Vary: Accept`), and on a
   missing page returns `/404.md` with a 404. Vercel routes these, not the page:
   `src/integrations/markdown-negotiation.ts` adds them to the adapter's
   `.vercel/output/config.json`. Check with

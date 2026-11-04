@@ -19,7 +19,7 @@ describe("Markdown negotiation routes", () => {
     const home = routes.findIndex((r) => r.src === "^/$" && isMarkdown(r));
     expect(home).toBeGreaterThanOrEqual(0);
     expect(home).toBeLessThan(filesystem);
-    expect(routes[home].dest).toBe("/index.md");
+    expect(routes[home].dest).toBe("/home.md");
   });
 
   it("marks / as varying by Accept for every request", () => {

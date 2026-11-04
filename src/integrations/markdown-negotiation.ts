@@ -3,7 +3,7 @@ import type { AstroIntegration } from "astro";
 
 /**
  * Markdown content negotiation on Vercel: a request for `/` that sends
- * `Accept: text/markdown` gets /index.md instead of the HTML homepage, and one
+ * `Accept: text/markdown` gets /home.md instead of the HTML homepage, and one
  * for a page that does not exist gets /404.md with a 404 status. Every other
  * request routes exactly as before, and `/` says `Vary: Accept` either way.
  *
@@ -15,6 +15,10 @@ import type { AstroIntegration } from "astro";
  * That works because Astro puts the adapter first in the integration list and
  * this integration is registered last, so the adapter's astro:build:done has
  * written the file by the time this runs.
+ *
+ * The Markdown homepage is /home.md, not /index.md: Vercel's filesystem phase
+ * treats any `index.*` file as a directory index, so an /index.md would be
+ * served for `/` to every request, ahead of these routes and the ISR render.
  */
 
 type Route = Record<string, unknown>;
@@ -30,7 +34,7 @@ export const negotiationRoutes = (routes: Route[]): Route[] => {
     {
       src: "^/$",
       has: MARKDOWN,
-      dest: "/index.md",
+      dest: "/home.md",
       headers: { "Content-Type": MARKDOWN_TYPE, Vary: "Accept" },
       check: true,
     },

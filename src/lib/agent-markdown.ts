@@ -1,5 +1,5 @@
 /**
- * Markdown views of the site for AI agents: /llms.txt, /index.md (what the
+ * Markdown views of the site for AI agents: /llms.txt, /home.md (what the
  * homepage returns for `Accept: text/markdown`) and /404.md (the not-found body
  * for the same requests). See src/integrations/markdown-negotiation.ts for the
  * routing.
@@ -169,12 +169,12 @@ export const llmsTxt = (site: URL): string =>
     "",
     "## Optional",
     "",
-    `- ${link("Homepage as Markdown", absolute("/index.md", site))}`,
+    `- ${link("Homepage as Markdown", absolute("/home.md", site))}`,
     `- ${link("Sitemap", absolute("/sitemap-index.xml", site))}`,
     "",
   ].join("\n");
 
-/** /index.md — the homepage, section for section. */
+/** /home.md — the homepage, section for section. */
 export const homeMarkdown = (posts: PostSummary[], site: URL): string =>
   [
     `# ${HOME_COPY.heading}`,

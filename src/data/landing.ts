@@ -377,7 +377,7 @@ export const REPORT_CADENCES: ReportCadence[] = [
 
 /**
  * Homepage headings and section intros. Kept here rather than inline in
- * index.astro because /index.md renders the same copy for agents.
+ * index.astro because /home.md renders the same copy for agents.
  */
 export const HOME_COPY = {
   heading: "The work behind the network, in the open.",
