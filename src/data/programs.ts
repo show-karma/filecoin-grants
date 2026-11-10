@@ -122,7 +122,6 @@ export const RND_RFPS: Rfp[] = [
     problem:
       "Filecoin Solstice and USDFC hold real user value on FEVM, and Filecoin Pay contracts are becoming core infrastructure for Filecoin Onchain Cloud. FF Security already runs test harnesses for Solstice and USDFC, but one team's view leaves blind spots. FEVM also differs from Ethereum (actor model, gas, precompiles), so standard EVM tooling can miss Filecoin-specific issues.",
     inScope: [
-      "Review of FF Security's current harnesses to identify coverage gaps.",
       "New tests in the gaps: invariant/property-based fuzzing (Foundry, Echidna, Medusa), formal or symbolic checks on critical paths, and FEVM-specific edge cases.",
       "Targets: Solstice, USDFC, and Filecoin Pay contracts (v1, and v2 if stable).",
       "Responsible disclosure of any findings before public reporting.",
