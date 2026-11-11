@@ -110,8 +110,8 @@ export type Rfp = {
   objective: string;
   problem: string;
   inScope: string[];
-  notInScope: string[];
-  whoShouldApply: string;
+  notInScope?: string[];
+  whoShouldApply?: string;
 };
 
 export const RND_RFPS: Rfp[] = [
@@ -122,7 +122,6 @@ export const RND_RFPS: Rfp[] = [
     problem:
       "Filecoin Solstice and USDFC hold real user value on FEVM, and Filecoin Pay contracts are becoming core infrastructure for Filecoin Onchain Cloud. FF Security already runs test harnesses for Solstice and USDFC, but one team's view leaves blind spots. FEVM also differs from Ethereum (actor model, gas, precompiles), so standard EVM tooling can miss Filecoin-specific issues.",
     inScope: [
-      "Review of FF Security's current harnesses to identify coverage gaps.",
       "New tests in the gaps: invariant/property-based fuzzing (Foundry, Echidna, Medusa), formal or symbolic checks on critical paths, and FEVM-specific edge cases.",
       "Targets: Solstice, USDFC, and Filecoin Pay contracts (v1, and v2 if stable).",
       "Responsible disclosure of any findings before public reporting.",
@@ -153,6 +152,27 @@ export const RND_RFPS: Rfp[] = [
     ],
     whoShouldApply:
       "Engineers familiar with ref-fvm, builtin-actors and Filecoin proofs (rust-fil-proofs), with prior contributions to Filecoin core repos.",
+  },
+  {
+    title:
+      "RFP 3: Bridging UCAN to Mainstream Web3, On-Chain Execution and AI Agents",
+    objective:
+      "make UCAN the practical way for wallet owners to delegate scoped, revocable authority to apps and AI agents, signable in the EVM wallets and passkeys people already use.",
+    problem:
+      "AI agents increasingly act on users' behalf: paying for storage, moving funds, calling contracts. Today that usually means handing an agent a private key or an unlimited approval. UCAN offers a hardened alternative: capability-based, attenuable, time-bound delegation. Three gaps block mainstream use: wallet friction (UCANs can't be signed as readable EIP-712 typed data in wallets like MetaMask, so users can't see what they are delegating), an incomplete execution loop (the Receipt spec, which proves what an invocation did, is unfinished, so agent actions can't be audited end to end), and implementation drift (JS, Rust and Go libraries lack shared test vectors, and the core spec has ambiguities).",
+    inScope: [
+      "EIP-712 varsig codec, with typed-data schemas for UCAN delegations and invocations.",
+      "Finalised UCAN Receipt specification.",
+      "WebAuthn support in varsig.",
+      "Interop test-vector suite covering valid chains, expiry, invalid signatures and EIP-712/WebAuthn edge cases, validated against JS, Rust and Go libraries.",
+      "Editorial and technical refinement of the core UCAN spec.",
+      "AI-agent reference flow: a demo where a wallet owner delegates a narrow capability (e.g. spend up to X USDFC on Filecoin Pay for 7 days) to an agent, the agent invokes it, the receiving service validates the delegation chain off-chain, and a UCAN Receipt records what the agent did.",
+    ],
+    notInScope: [
+      "A production agent framework or wallet product.",
+      "New signature schemes beyond EIP-712 and WebAuthn.",
+      "On-chain UCAN verification (e.g. Solidity verifier contracts) and storing UCAN delegations, invocations or receipts on-chain.",
+    ],
   },
 ];
 

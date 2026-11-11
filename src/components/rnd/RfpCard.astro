@@ -35,26 +35,36 @@ const { rfp } = Astro.props;
         ))
       }
     </ul>
-    <p class="mt-5 text-[0.95rem] leading-relaxed">Out of scope:</p>
-    <ul class="mt-2.5 space-y-2.5">
-      {
-        rfp.notInScope.map((item) => (
-          <li class="flex gap-3">
-            <span
-              class="mt-0.5 shrink-0 font-mono text-sm text-bad"
-              aria-hidden="true"
-            >
-              ✕
-            </span>
-            <span class="text-[0.95rem] leading-relaxed" set:html={item} />
-          </li>
-        ))
-      }
-    </ul>
+    {
+      rfp.notInScope && rfp.notInScope.length > 0 && (
+        <>
+          <p class="mt-5 text-[0.95rem] leading-relaxed">Out of scope:</p>
+          <ul class="mt-2.5 space-y-2.5">
+            {rfp.notInScope.map((item) => (
+              <li class="flex gap-3">
+                <span
+                  class="mt-0.5 shrink-0 font-mono text-sm text-bad"
+                  aria-hidden="true"
+                >
+                  ✕
+                </span>
+                <span class="text-[0.95rem] leading-relaxed" set:html={item} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
   </div>
 
-  <div class="mt-6 border-t border-line-soft pt-6">
-    <h4 class="mono-meta uppercase">Who should apply</h4>
-    <p class="mt-3 text-[0.95rem] leading-relaxed">{rfp.whoShouldApply}</p>
-  </div>
+  {
+    rfp.whoShouldApply && (
+      <div class="mt-6 border-t border-line-soft pt-6">
+        <h4 class="mono-meta uppercase">Who should apply</h4>
+        <p class="mt-3 text-[0.95rem] leading-relaxed">
+          {rfp.whoShouldApply}
+        </p>
+      </div>
+    )
+  }
 </article>
