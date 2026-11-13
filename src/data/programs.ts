@@ -174,6 +174,80 @@ export const RND_RFPS: Rfp[] = [
       "On-chain UCAN verification (e.g. Solidity verifier contracts) and storing UCAN delegations, invocations or receipts on-chain.",
     ],
   },
+  {
+    title: "RFP 4: Permissionless Orchestrators in the SRA (FIP-0118 Phase 2)",
+    objective:
+      "a design, specification and simulation for Phase 2 of FIP-0118, where anyone can register as a Service Orchestrator and shares of the service stream are set by an on-chain mechanism rather than SRA Governance judgment.",
+    problem:
+      "In Phase 1, SRA Governance admits and removes Service Orchestrators, and SplitRule divides the service stream in proportion to each Orchestrator's Filecoin Pay Volume (FPV). FIP-0118 plans to open registration permissionlessly in Phase 2. Once registration is open, volume alone is easy to game: an Orchestrator can pay itself to inflate FPV. Today, telling genuine demand from self-dealing is an off-chain judgment by SRA Governance; Phase 2 needs a mechanism that does that job instead. FIP-0118's Phase 2 covers permissionless admission only — this RFP also asks for a new share metric, which goes beyond the FIP, and the move to Phase 2 will itself need a FIP.",
+    inScope: [
+      "Registration: how anyone registers as an Orchestrator — bond or lock size, eligibility checks, slashing or exit rules, and Sybil resistance.",
+      "Share metric: which metric, other than or alongside volume, sets each Orchestrator's share, and why it is costly to fake (e.g. unique paying clients, retention, verified service quality, fee burn, stake-weighted demand).",
+      "Scoring: who scores Orchestrators, how scorers are selected, incentivised and kept honest, and how collusion is handled.",
+      "Replacing governance judgment: what replaces SRA Governance's off-chain call on self-dealing, and what residual role (if any) governance keeps.",
+      "Attribution interface: a proposed on-chain attribution interface compatible with FIP-0118's planned standard, to be specified in a future FRC.",
+      "Transition: how to move from Phase 1 to Phase 2 without disrupting existing Orchestrators' payouts, including what the required FIP would contain.",
+      "A written spec compatible with the SRA's share map write to f02 and FIP-0118, an attack analysis (wash trading, Sybil Orchestrators, scorer collusion), and an agent-based or economic simulation comparing candidate metrics.",
+    ],
+    notInScope: [
+      "Production contracts and a governance vote (a FIP draft is welcome as a recommendation).",
+    ],
+    whoShouldApply:
+      "Mechanism designers and cryptoeconomics researchers with published work on incentive systems, ideally familiar with Bittensor, Filecoin Pay and FIP-0118.",
+  },
+  {
+    title: "RFP 5: Automatic New Streams in the SWA",
+    objective:
+      "a protocol that has the SWA register new streams in f02 and set their Weights from an on-chain signal, replacing the convention that each new stream needs an accepted FIP.",
+    problem:
+      "Registering a stream in f02 is already an on-chain write by the SWA. By governance convention, though, each new stream needs an accepted FIP, which is slow and limits experimentation. Bittensor shows another model: anyone can register a subnet by paying a burn (the amount becomes the subnet pool's initial reserve), and emissions are split across subnets by a market signal — net staking flows under Taoflow since November 2025, and a moving average of the subnet token price before that. Filecoin needs an equivalent that fits f02's constraints.",
+    inScope: [
+      "<strong>Hard constraints:</strong> the non-burn weights must sum to at most 1 at all times, including during stream creation, removal and reweighting; f02 caps streams at 8, so the design must decide who gets a slot and how a slot is freed; and every SWA write goes through the timelock and objection window, so the design must work with that delay.",
+      "Opening a stream: who can open one, at what cost (lock, bond, burn), how a slot is allocated under the 8-stream cap, and how a dead or abusive stream is closed.",
+      "Weight signal: which on-chain signal sets Weights (e.g. staking or locking flows, fees paid, usage), and how it is smoothed against manipulation and flash attacks.",
+      "Normalisation: how weights are scaled so the non-burn sum never exceeds 1, and what happens to the remainder (burn).",
+      "Safety rails: caps per stream, rate limits on weight changes, minimum lifetime, and any emergency governance override.",
+      "Migration: how existing FIP-approved streams coexist with automatically created ones.",
+      "Mechanism design, a spec for the SWA and f02 changes, an attack analysis (signal manipulation, Sybil streams, cartel staking), comparison with Bittensor's dTAO/Taoflow experience, and a simulation.",
+    ],
+    notInScope: ["Deploying the change on mainnet or passing the FIP."],
+    whoShouldApply:
+      "Cryptoeconomics researchers and protocol engineers with experience in emission design, ideally with direct knowledge of Bittensor's dTAO and Filecoin's f02 and SWA.",
+  },
+  {
+    title: "RFP 6: Quantum Readiness for Filecoin",
+    objective:
+      "a thorough report and a working prototype on quantum readiness for Filecoin, covering security, performance and economics, so the network can plan its long-term cryptography with confidence.",
+    problem:
+      "Filecoin builds on well-established cryptographic primitives: BLS signatures and pairings, Groth16 and Poseidon in storage proofs, ECDSA, and the Blake, SHA and Keccak hash families. The wider industry, including Ethereum, is actively planning for quantum readiness, and new SNARK designs are changing which constructions are practical. The Filecoin ecosystem has done early research in this area; the next step is a structured report that builds on that work and turns it into a clear, costed path forward. Economics matter as much as security: post-quantum signatures and proofs are often much larger and more expensive to verify, and Filecoin cannot take on very large signatures or costly proofs, so any path forward has to keep fees, chain bandwidth and storage-provider costs practical.",
+    inScope: [
+      "For each primitive Filecoin depends on: where it is used in the protocol and code, its long-term security outlook, candidate alternatives, and the cost of each alternative in signature and proof size, verification time, gas, chain bandwidth and storage-provider hardware.",
+      "A staged migration path, including what can change without a network upgrade.",
+      "Dependency mapping across Lotus, Forest, Venus, Curio, builtin-actors, ref-fvm and rust-fil-proofs.",
+      "A working prototype of the most promising change — for example an alternative signature scheme or proof-system component — running on a devnet, with measured performance and cost figures.",
+      "A prioritised roadmap and comparison with other ecosystems' plans.",
+    ],
+    notInScope: ["Production implementation.", "Designing new cryptographic primitives."],
+    whoShouldApply:
+      "Applied cryptographers or cryptography research groups with post-quantum and SNARK/STARK expertise, ideally with experience in Filecoin proofs or other blockchain protocols.",
+  },
+  {
+    title: "RFP 7: Stewardship of Filecoin Documentation",
+    objective:
+      "fund a team to keep docs.filecoin.io accurate, current with every protocol release, and easy for both developers and their coding agents to use.",
+    problem:
+      "docs.filecoin.io is the first place most builders meet Filecoin, and increasingly that first contact happens through a coding agent rather than a browser. Agents fetch the docs, generate code from them and don't flag what's stale, so out-of-date pages turn into broken builds without anyone noticing. The docs need to keep pace with every network upgrade and product release (FEVM, FOC, Filecoin Pay, Synapse SDK), and the agent-readiness and drift-monitoring work started in Batch 3 needs to keep running.",
+    inScope: [
+      "Ownership: running the docs repo, build and deploy pipeline, issue triage and contribution review.",
+      "Keeping current: updating docs for each network upgrade and major release within an agreed window, and working with core teams (Lotus, Forest, Curio, FOC, FEVM) so changes reach the docs.",
+      "Agent-readable by default: keeping the site parseable in a single fetch (e.g. llms.txt, clean markdown endpoints) and pointing clearly to the Filecoin MCP server and CLI.",
+      "Measuring quality: regular reporting on freshness, open issues and how accurately agents answer common Filecoin developer tasks from the docs.",
+      "Community contributions: making it easy for ecosystem teams to submit fixes, and reviewing their PRs promptly.",
+      "Proposals must include a clear cost for the core scope, any optional add-ons priced separately, and proposed quality targets such as time from release to updated docs, issue response time and agent accuracy.",
+    ],
+    whoShouldApply:
+      "DevRel, technical writing or developer-experience teams with hands-on Filecoin experience (FEVM, FOC, storage onboarding) and working relationships with core implementation teams. Experience making docs agent-readable is a strong plus. Teams already working on Filecoin docs are welcome to apply.",
+  },
 ];
 
 export const RND_EVALUATION: { label: string; value: string }[] = [
