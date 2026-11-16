@@ -113,6 +113,22 @@ export function describeTool(raw: Record<string, any>): string | null {
 
 const TERMINAL = new Set(["finished", "failed", "interrupted"]);
 
+/** "API Error: 400 You have reached your specified API usage limits…" → plain words. */
+export function apiErrorNotice(text: string): string {
+  const detail = text.replace(/^API Error:\s*(\d{3}\s*)?/i, "").trim();
+  if (/usage limit|spend(ing)? limit|credit balance|billing/i.test(detail)) {
+    const when = /regain access on ([^.]+)/i.exec(detail)?.[1];
+    return (
+      "The AI service's usage limit was reached, so the assistant stopped. " +
+      "A developer needs to raise the limit on the AI account" +
+      (when ? `; otherwise it resets on ${when.trim()}.` : ".")
+    );
+  }
+  if (/rate limit|overloaded|529|too many requests/i.test(detail))
+    return "The AI service is busy right now. Wait a minute and send the request again.";
+  return `The AI service refused the request: ${detail.slice(0, 200)}`;
+}
+
 export function toChatItems(events: BoatEvent[]): ChatItem[] {
   const items: ChatItem[] = [];
   for (const event of events) {
@@ -160,7 +176,17 @@ export function toChatItems(events: BoatEvent[]): ChatItem[] {
             });
         });
         const text = str(data.content);
-        if (text) {
+        if (text && /^API Error:/i.test(text.trim())) {
+          // The agent harness relays a refused model call as if it were a
+          // reply. Shown as a notice, with what a non-developer can do.
+          items.push({
+            kind: "notice",
+            key: `apierr:${event.id}`,
+            promptId,
+            text: apiErrorNotice(text),
+            at,
+          });
+        } else if (text) {
           items.push({
             kind: "assistant",
             key: `say:${event.id}`,
