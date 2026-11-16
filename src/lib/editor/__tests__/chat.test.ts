@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  apiErrorNotice,
   describeTool,
   foldStreaming,
   toChatItems,
@@ -179,31 +178,5 @@ describe("foldStreaming", () => {
   it("is idempotent over repeated items", () => {
     const item = say("Hi", false, "a");
     expect(foldStreaming([item, item])).toHaveLength(1);
-  });
-});
-
-describe("API errors relayed as replies", () => {
-  it("become a notice that says what to do", () => {
-    const items = toChatItems([
-      ev("response", {
-        content:
-          "API Error: 400 You have reached your specified API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
-      }),
-    ]);
-    expect(items).toHaveLength(1);
-    expect(items[0].kind).toBe("notice");
-    expect((items[0] as { text: string }).text).toContain("usage limit");
-    expect((items[0] as { text: string }).text).toContain(
-      "2026-12-01 at 00:00 UTC",
-    );
-  });
-
-  it("words the common refusals", () => {
-    expect(apiErrorNotice("API Error: 529 Overloaded")).toMatch(
-      /busy right now/,
-    );
-    expect(apiErrorNotice("API Error: 401 invalid x-api-key")).toMatch(
-      /refused the request: invalid x-api-key/,
-    );
   });
 });

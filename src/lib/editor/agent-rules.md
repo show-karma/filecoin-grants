@@ -29,10 +29,7 @@ did.
 ## How to work
 
 - To check a page after a change, fetch it: `curl -s localhost:4321/rnd | head`.
-  An error page means you broke something; fix it before replying. If the
-  page simply does not show your change, re-check once after a second; if it
-  still does not, say so in your reply and stop. Do not investigate the
-  preview server, its processes or its files.
+  An error page means you broke something; fix it before replying.
 - After changing TypeScript or component props, run
   `cd ~/site && pnpm astro check` and fix what it reports.
 - Keep the existing look. Use the existing components, colours and type scale.

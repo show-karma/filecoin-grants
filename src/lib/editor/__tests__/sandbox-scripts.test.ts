@@ -37,21 +37,6 @@ describe("editor handles", () => {
 });
 
 describe("sandbox scripts", () => {
-  it("wait for the lazily restored home and check where the preview runs", () => {
-    const script = setupScript("editor/draft-erin");
-    expect(script).toMatch(/findmnt -n -o FSTYPE -T \/home\/user\/site/);
-    expect(script).toMatch(/fuse\*\) sleep 1/);
-    expect(script).toMatch(
-      /readlink "\/proc\/\$\(systemctl show -p MainPID --value filpgf-dev\)\/cwd"/,
-    );
-    const firstWait = script.indexOf("\nwait_for_home\n");
-    expect(firstWait).toBeGreaterThan(0);
-    expect(firstWait).toBeLessThan(script.indexOf("git remote set-url"));
-    expect(script.indexOf("wait_for_home\nstart_preview")).toBeGreaterThan(
-      script.indexOf("git checkout --quiet --force -B work"),
-    );
-  });
-
   it("are valid bash", () => {
     expect(() => parses(SETUP_SCRIPT)).not.toThrow();
     expect(() => parses(SAVE_SCRIPT)).not.toThrow();

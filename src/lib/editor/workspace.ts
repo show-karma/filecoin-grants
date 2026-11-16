@@ -63,7 +63,6 @@ import {
   type Card,
 } from "./cards.ts";
 import { chooseMode, type Mode } from "./mode.ts";
-import { withGoogleDocs } from "./google-docs.ts";
 import type { EditorConfig } from "./config.ts";
 import agentRules from "./agent-rules.md?raw";
 import overlayJs from "./sandbox/overlay.js?raw";
@@ -539,7 +538,7 @@ export class Workspace {
     // conversation, so a reopened tab keeps the agent's memory.
     const res = await this.boat.prompt(sandbox.id, {
       provider: this.config.agentProvider,
-      prompt: await withGoogleDocs(prompt),
+      prompt,
       ...(pick.model ? { model: pick.model } : {}),
       ...(pick.effort ? { reasoningEffort: pick.effort } : {}),
     });
