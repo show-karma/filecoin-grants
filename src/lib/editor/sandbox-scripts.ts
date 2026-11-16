@@ -231,7 +231,24 @@ mkdir -p ${STATE_DIR}
 exec > >(tee -a ${STATE_DIR}/setup.log) 2>&1
 echo "[editor] setup started $(date -Is)"
 ${install ? `if [ ! -d ${SITE_DIR}/.git ]; then\n( ${installScript(install)} )\nfi` : ""}
+# Boat restores a template lazily: the home directory starts as a FUSE view
+# of the snapshot and is swapped for the real disk a few seconds later. Until
+# then git refuses the checkout (it looks owned by someone else), and a
+# preview started before the swap keeps serving the old view and never sees
+# an edit. So: wait for the swap before touching the site, and after starting
+# the preview check which directory it really runs from.
+wait_for_home() {
+  for i in $(seq 1 120); do
+    case "$(findmnt -n -o FSTYPE -T ${SITE_DIR} 2>/dev/null || true)" in
+      fuse*) sleep 1 ;;
+      *) return 0 ;;
+    esac
+  done
+  echo "[editor] home still lazily mounted after 120s; continuing"
+}
+wait_for_home
 cd ${SITE_DIR}
+git config --global --add safe.directory ${SITE_DIR}
 git remote set-url origin ${REPO_URL}
 git fetch --quiet --prune origin '+refs/heads/main:refs/remotes/origin/main'
 if git fetch --quiet origin '+refs/heads/${draft}:refs/remotes/origin/${draft}' 2>/dev/null; then
@@ -261,19 +278,33 @@ if ! cmp -s pnpm-lock.yaml ${STATE_DIR}/template-lock.yaml; then
   pnpm install --frozen-lockfile --prefer-offline
   cp pnpm-lock.yaml ${STATE_DIR}/template-lock.yaml
 fi
-sudo systemctl restart ${DEV_SERVICE}
-# Any HTTP answer means the server is up. A draft can break a page; that must
-# not stop the editor from opening, or there would be no way to fix it.
-code=000
-for i in $(seq 1 120); do
-  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:${DEV_PORT}/ || true)
-  if [ "$code" != "000" ]; then
-    echo "[editor] preview answered $code after \${i}s"
-    break
-  fi
-  sleep 1
-done
-[ "$code" != "000" ]
+start_preview() {
+  sudo systemctl daemon-reload
+  sudo systemctl restart ${DEV_SERVICE}
+  # Any HTTP answer means the server is up. A draft can break a page; that
+  # must not stop the editor from opening, or there would be no way to fix it.
+  code=000
+  for i in $(seq 1 120); do
+    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:${DEV_PORT}/ || true)
+    if [ "$code" != "000" ]; then
+      echo "[editor] preview answered $code after \${i}s"
+      break
+    fi
+    sleep 1
+  done
+  [ "$code" != "000" ]
+}
+preview_dir() {
+  readlink "/proc/$(systemctl show -p MainPID --value ${DEV_SERVICE})/cwd" 2>/dev/null || true
+}
+wait_for_home
+start_preview
+if [ "$(preview_dir)" != "${SITE_DIR}" ]; then
+  echo "[editor] preview started from $(preview_dir); restarting it from ${SITE_DIR}"
+  wait_for_home
+  start_preview
+fi
+echo "[editor] preview serves $(preview_dir)"
 # Compile the other pages in the background so the first click is quick.
 ( for p in / /kernel /propgf /revenue-development /roadmap /blog; do
     curl -s -o /dev/null --max-time 60 "http://127.0.0.1:${DEV_PORT}$p" || true
