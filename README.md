@@ -177,7 +177,8 @@ anything the code can do is in reach: copy, layout, new sections, new pages.
   screenshot slider, the words that changed, **Show me** and **Undo**.
 - **Richer input.** Drop a photo on an image to replace it, paste or attach
   screenshots for reference, dictate with the mic, or paste a Google Doc
-  (headings and lists are kept).
+  (headings and lists are kept). A link to a Google Doc shared with "anyone
+  with the link" is fetched by the editor and handed to the assistant.
 - **Studio polish.** Full-width preview with desktop, tablet and phone frames;
   the assistant floats beside it (⌘J); ⌘K opens every command, page and
   action; quick requests use low reasoning effort and structural ones high.
