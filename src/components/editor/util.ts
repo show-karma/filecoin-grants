@@ -150,6 +150,11 @@ export function splitPrompt(prompt: string): {
   const docs = ctx.match(/pasted a document/g);
   if (docs)
     extras.push(docs.length === 1 ? "1 document" : `${docs.length} documents`);
+  const linked = ctx.match(/linked a Google Doc/g);
+  if (linked)
+    extras.push(
+      linked.length === 1 ? "1 Google Doc" : `${linked.length} Google Docs`,
+    );
   return { text: prompt.slice(0, i), extras };
 }
 
