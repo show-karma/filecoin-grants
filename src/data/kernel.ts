@@ -118,7 +118,7 @@ export const NEXT_ROUND = {
   description:
     "Applications close in November, awards are published in December, and the new term begins in January. Existing grantees re-apply on the same cycle.",
   ctaText: "Invite Only Application",
-  ctaHref: "https://app.filpgf.io/programs/1479/",
+  ctaHref: "https://app.filpgf.io/programs/1508",
 };
 
 /**
