@@ -357,8 +357,8 @@ export const REPORT_CADENCES: ReportCadence[] = [
     title: "Progress reporting",
     description:
       "Granular tracking from every funded team — what shipped, what moved, what's blocked.",
-    linkText: `Latest: ${PORTFOLIO.reportDate}`,
-    href: reportUrl("biweeklyProgress"),
+    linkText: "Bi-weekly report",
+    href: "https://app.filpgf.io/reports?type=6a233d04e82a77f23c7838f7",
   },
   {
     cadence: "Monthly",
