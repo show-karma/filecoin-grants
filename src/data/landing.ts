@@ -344,8 +344,8 @@ export type ReportCadence = {
   cadence: string;
   title: string;
   description: string;
-  linkText: string;
   /** Omitted while a report has no destination yet — renders as plain text. */
+  linkText?: string;
   href?: string;
   /** Use instead of linkText/href to show several links on one card. */
   links?: { text: string; href: string }[];
@@ -373,7 +373,6 @@ export const REPORT_CADENCES: ReportCadence[] = [
     title: "Health & impact metrics",
     description:
       "The network-level numbers each program is judged against — resilience, paid usage, and what research has graduated.",
-    linkText: "Coming soon",
     links: [
       { text: "Kernel", href: "/kernel/" },
       { text: "Revenue Development", href: "/revenue-development/" },

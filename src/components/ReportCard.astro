@@ -10,22 +10,29 @@ const { report } = Astro.props;
   <p class="eyebrow">{report.cadence}</p>
   <h3 class="mt-2.5 text-lg">{report.title}</h3>
   <p class="mt-2 text-[0.95rem] leading-relaxed">{report.description}</p>
-  <p class="mt-4">
-    {
-      report.href ? (
-        <ArrowLink href={report.href} label={report.linkText} tone="muted" />
-      ) : (
-        <span class="font-mono text-xs tracking-wide text-muted">
-          {report.linkText}
-        </span>
-      )
-    }
-  </p>
+  {
+    report.linkText && (
+      <p class="mt-4">
+        {report.href ? (
+          <ArrowLink href={report.href} label={report.linkText} tone="muted" />
+        ) : (
+          <span class="font-mono text-xs tracking-wide text-muted">
+            {report.linkText}
+          </span>
+        )}
+      </p>
+    )
+  }
   {
     report.links && (
-      <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+      <p class="mt-4 flex flex-wrap gap-x-4 gap-y-1">
         {report.links.map((link) => (
-          <ArrowLink href={link.href} label={link.text} tone="muted" />
+          <a
+            href={link.href}
+            class="font-mono text-xs tracking-wide text-muted underline-offset-4 hover:underline"
+          >
+            {link.text}
+          </a>
         ))}
       </p>
     )
