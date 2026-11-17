@@ -362,7 +362,7 @@ export const REPORT_CADENCES: ReportCadence[] = [
   },
   {
     cadence: "Monthly",
-    title: "Pods reporting",
+    title: "ProPGF Monthly Report",
     description:
       "Monthly summary of each pod against its six-month roadmap, covering delivery progress and the network-level KPIs it's accountable for.",
     linkText: "Latest: July 2026",
