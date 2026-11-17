@@ -114,10 +114,10 @@ export const TIMELINE: TimelineStep[] = [
 
 export const NEXT_ROUND = {
   eyebrow: "Next round opening",
-  title: "FY27 intake opens October 2026",
+  title: "FY27 intake open",
   description:
     "Applications close in November, awards are published in December, and the new term begins in January. Existing grantees re-apply on the same cycle.",
-  ctaText: "Apply",
+  ctaText: "Invite Only Application",
   ctaHref: "https://app.filpgf.io/programs/1479/",
 };
 
