@@ -364,7 +364,7 @@ export const REPORT_CADENCES: ReportCadence[] = [
     cadence: "Monthly",
     title: "Pods reporting",
     description:
-      "Each pod against its six-month roadmap, including the network-level KPIs it's accountable for.",
+      "Monthly summary of each pod against its six-month roadmap, covering delivery progress and the network-level KPIs it's accountable for.",
     linkText: "Latest: July 2026",
     href: reportUrl("monthlyPods"),
   },
