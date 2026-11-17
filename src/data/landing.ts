@@ -363,10 +363,15 @@ export const REPORT_CADENCES: ReportCadence[] = [
   {
     cadence: "Monthly",
     title: "ProPGF Monthly Report",
-    description:
-      "Monthly summary of each pod against its six-month roadmap, covering delivery progress and the network-level KPIs it's accountable for.",
+    description: "Monthly report of active funding across ProPGF programs",
     linkText: "Latest: July 2026",
     href: reportUrl("monthlyPods"),
+    links: [
+      {
+        text: "Monthly report",
+        href: "https://app.filpgf.io/reports?type=69e70e9a641448585f44e961",
+      },
+    ],
   },
   {
     cadence: "Continuous",
