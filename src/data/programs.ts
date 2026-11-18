@@ -330,12 +330,8 @@ export const RND_TIMELINE: ProcessStep[] = [
     detail: "Reviewed as they come in, not against a fixed deadline",
   },
   {
-    title: "AI-assisted shortlist",
-    detail: "A first pass narrows the field",
-  },
-  {
-    title: "Committee vetting",
-    detail: "Shortlisted proposals are reviewed by committee",
+    title: "Shortlist and committee vetting",
+    detail: "An AI-assisted first pass narrows the field, then shortlisted proposals are reviewed by committee",
   },
   {
     title: "Final allocation",
