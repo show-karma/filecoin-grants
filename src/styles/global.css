@@ -365,7 +365,7 @@
 
 /* Link inside a body-copy paragraph, e.g. set:html card text. */
 @utility inline-link {
-  color: var(--color-accent);
+  color: var(--color-brand);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
