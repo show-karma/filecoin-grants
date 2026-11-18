@@ -250,6 +250,63 @@ export const RND_RFPS: Rfp[] = [
   },
 ];
 
+export type KernelStewardRfp = {
+  title: string;
+  background: string;
+  whoThisIsForIntro: string;
+  whoThisIsFor: string[];
+  scopeIntro: string;
+  applicationMustState: string[];
+  inScope: string[];
+  notInScope: string[];
+  terms: string[];
+  whoShouldApply: string;
+  howToApply: string[];
+};
+
+export const RND_KERNEL_STEWARD_RFP: KernelStewardRfp = {
+  title: "RFP 8: Steward a Filecoin Kernel Function",
+  background:
+    'The Filecoin Kernel is a map of every capability the network depends on to keep producing blocks, proving storage and staying observable. Each capability is written down as a <em>function</em>, separate from whichever repo or team provides it today. You can see the full list of functions, their tiers, who maintains each one today, and how each is monitored at <a href="/kernel">filpgf.io/kernel</a> and check out the functions <a href="https://github.com/filecoin-project/pgf-monitor/blob/main/registry/_kernel.yaml">here</a> for reference.',
+  whoThisIsForIntro:
+    "If you look at the Kernel inventory and think your team is well suited to serve or steward one of its functions, please apply. That includes:",
+  whoThisIsFor: [
+    "maintaining or operating a function that currently has no funded maintainer;",
+    "providing a <strong>second implementation or operator</strong> for a function that has only one today;",
+    "taking on a function where you can offer better reliability, coverage or cost than what exists.",
+  ],
+  scopeIntro: "Your application must state clearly:",
+  applicationMustState: [
+    '<strong>The function you are applying for</strong>, using its name exactly as it appears at filpgf.io/kernel, along with its tier. If you are applying for more than one function, list each one separately.',
+    "<strong>What you will do for that function:</strong> maintenance, operation, a second implementation, monitoring, testnet support, incident response, or security and upgrade work.",
+    "<strong>How you will report health:</strong> the metrics you will publish, where anyone can read them, and how often. Every Kernel function must have a maintainer willing to report health metrics publicly.",
+    "<strong>Your operating plan:</strong> on-call coverage, how you will handle network upgrades, and how you will respond to incidents.",
+    "<strong>Your annual cost</strong> for the function, broken down by people, infrastructure and other costs.",
+  ],
+  inScope: [
+    "Keeping a Kernel function working, healthy and up to date.",
+    "A second implementation where a single one is a systemic risk.",
+    "Monitoring, testnets and incident response that keep the network observable.",
+    "Security and upgrade work needed to stay production-safe.",
+  ],
+  notInScope: [
+    "New features or product expansion. These belong in Revenue Development.",
+    "Exploratory or unproven work. This belongs in R&D.",
+  ],
+  terms: [
+    "Kernel grants run on an <strong>annual term</strong>, with audits mid-term and at close.",
+    "Audits check the agreed health and resilience metrics, not a feature list.",
+    'Your metrics will be collected independently and shown publicly on <a href="/kernel">filpgf.io/kernel</a>.',
+  ],
+  whoShouldApply:
+    "Teams with a track record of running production infrastructure or maintaining critical open-source software, ideally in Filecoin or another blockchain network. Existing Kernel maintainers, new teams and independent operators are all welcome.",
+  howToApply: [
+    'Review the inventory at <a href="/kernel">filpgf.io/kernel</a> and <a href="https://github.com/filecoin-project/pgf-monitor/blob/main/registry/_kernel.yaml">functions here</a>.',
+    "Choose the function or functions you are suited to steward.",
+    "Submit your application, naming the function and tier at the top.",
+  ],
+};
+
 export const RND_EVALUATION: { label: string; value: string }[] = [
   {
     label: "Process",

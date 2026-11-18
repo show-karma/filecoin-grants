@@ -5,8 +5,10 @@ import SectionHeader from "../components/SectionHeader.astro";
 import CriteriaList from "../components/CriteriaList.astro";
 import PageHero from "../components/PageHero.astro";
 import RfpCard from "../components/rnd/RfpCard.astro";
+import KernelStewardRfpCard from "../components/rnd/KernelStewardRfpCard.astro";
 import {
   RND_EVALUATION,
+  RND_KERNEL_STEWARD_RFP,
   RND_LOOKING_FOR,
   RND_NOT_IN_SCOPE,
   RND_RFPS,
@@ -80,6 +82,7 @@ import {
     <h3 class="mt-10 text-2xl">Active RFPs</h3>
     <div class="mt-6 space-y-6">
       {RND_RFPS.map((rfp) => <RfpCard rfp={rfp} />)}
+      <KernelStewardRfpCard rfp={RND_KERNEL_STEWARD_RFP} />
     </div>
 
     <div
