@@ -251,7 +251,7 @@ export const RND_RFPS: Rfp[] = [
   {
     title: "RFP 8: Steward a Filecoin Kernel Function",
     objective:
-      "find a team to steward one or more functions in the Kernel inventory — as a first maintainer, a second implementation, or a better operator than what exists today — and to report that function's health publicly.",
+      "Objective:",
     problem:
       "The Filecoin Kernel is a map of every capability the network depends on to keep producing blocks, proving storage and staying observable. Each capability is written down as a function, separate from whichever repo or team provides it today. The full list of functions, their tiers, who maintains each one, and how each is monitored is at filpgf.io/kernel, with the underlying registry at github.com/filecoin-project/pgf-monitor. This RFP is open to teams maintaining or operating a function that currently has no funded maintainer, teams offering a second implementation or operator for a function that has only one today, and teams that can offer better reliability, coverage or cost than what exists.",
     inScope: [
