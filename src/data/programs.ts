@@ -105,7 +105,14 @@ export const RND_NOT_IN_SCOPE = [
   "Work that duplicates what a pod or an existing Kernel function already covers",
 ];
 
-export const RND_APPLY_URL = "https://app.filpgf.io/programs/1505/apply";
+export const RND_OPEN_CALL = {
+  eyebrow: "R&D",
+  title: "Open on a rolling basis",
+  description:
+    "RFPs are published as gaps are identified, and applications are reviewed as they arrive — there's no deadline to wait for.",
+  ctaText: "Apply",
+  ctaHref: "https://app.filpgf.io/programs/1505/apply",
+};
 
 export type Rfp = {
   title: string;
