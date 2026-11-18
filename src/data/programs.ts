@@ -105,6 +105,8 @@ export const RND_NOT_IN_SCOPE = [
   "Work that duplicates what a pod or an existing Kernel function already covers",
 ];
 
+export const RND_APPLY_URL = "https://app.filpgf.io/programs/1505/apply";
+
 export type Rfp = {
   title: string;
   objective: string;

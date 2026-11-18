@@ -4,10 +4,12 @@ import Section from "../components/Section.astro";
 import SectionHeader from "../components/SectionHeader.astro";
 import CriteriaList from "../components/CriteriaList.astro";
 import PageHero from "../components/PageHero.astro";
+import Button from "../components/Button.astro";
 import RfpCard from "../components/rnd/RfpCard.astro";
 import KernelStewardRfpCard from "../components/rnd/KernelStewardRfpCard.astro";
 import Timeline from "../components/rnd/Timeline.astro";
 import {
+  RND_APPLY_URL,
   RND_EVALUATION,
   RND_KERNEL_STEWARD_RFP,
   RND_LOOKING_FOR,
@@ -74,11 +76,17 @@ import {
 
   <!-- Timeline -->
   <Section id="timeline">
-    <SectionHeader
-      eyebrow="Timeline"
-      title="How an RFP becomes funded work"
-      intro="R&D is request-driven and rolling rather than run in rounds, but every RFP moves through the same steps."
-    />
+    <div
+      class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+    >
+      <SectionHeader
+        eyebrow="Timeline"
+        title="How an RFP becomes funded work"
+        intro="R&D is request-driven and rolling rather than run in rounds, but every RFP moves through the same steps."
+        class="max-w-2xl"
+      />
+      <Button href={RND_APPLY_URL} class="shrink-0">Apply</Button>
+    </div>
     <div class="mt-10">
       <Timeline />
     </div>
