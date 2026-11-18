@@ -348,7 +348,7 @@ export type ReportCadence = {
   linkText?: string;
   href?: string;
   /** Use instead of linkText/href to show several links on one card. */
-  links?: { text: string; href: string }[];
+  links?: { text: string; href: string; arrow?: boolean }[];
 };
 
 export const REPORT_CADENCES: ReportCadence[] = [
@@ -370,6 +370,7 @@ export const REPORT_CADENCES: ReportCadence[] = [
       {
         text: "Monthly report",
         href: "https://app.filpgf.io/reports?type=69e70e9a641448585f44e961",
+        arrow: true,
       },
     ],
   },
