@@ -363,6 +363,13 @@
   color: var(--color-accent);
 }
 
+/* Link inside a body-copy paragraph, e.g. set:html card text. */
+@utility inline-link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* Monospace metadata: figures, dates, inline "→" links. */
 @utility mono-meta {
   font-family: var(--font-mono);

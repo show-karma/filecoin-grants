@@ -267,7 +267,7 @@ export type KernelStewardRfp = {
 export const RND_KERNEL_STEWARD_RFP: KernelStewardRfp = {
   title: "RFP 8: Steward a Filecoin Kernel Function",
   background:
-    'The Filecoin Kernel is a map of every capability the network depends on to keep producing blocks, proving storage and staying observable. Each capability is written down as a <em>function</em>, separate from whichever repo or team provides it today. You can see the full list of functions, their tiers, who maintains each one today, and how each is monitored at <a href="/kernel">filpgf.io/kernel</a> and check out the functions <a href="https://github.com/filecoin-project/pgf-monitor/blob/main/registry/_kernel.yaml">here</a> for reference.',
+    'The Filecoin Kernel is a map of every capability the network depends on to keep producing blocks, proving storage and staying observable. Each capability is written down as a <em>function</em>, separate from whichever repo or team provides it today. You can see the full list of functions, their tiers, who maintains each one today, and how each is monitored at <a href="/kernel" class="inline-link">filpgf.io/kernel</a> and check out the functions <a href="https://github.com/filecoin-project/pgf-monitor/blob/main/registry/_kernel.yaml" class="inline-link">here</a> for reference.',
   whoThisIsForIntro:
     "If you look at the Kernel inventory and think your team is well suited to serve or steward one of its functions, please apply. That includes:",
   whoThisIsFor: [
@@ -296,12 +296,12 @@ export const RND_KERNEL_STEWARD_RFP: KernelStewardRfp = {
   terms: [
     "Kernel grants run on an <strong>annual term</strong>, with audits mid-term and at close.",
     "Audits check the agreed health and resilience metrics, not a feature list.",
-    'Your metrics will be collected independently and shown publicly on <a href="/kernel">filpgf.io/kernel</a>.',
+    'Your metrics will be collected independently and shown publicly on <a href="/kernel" class="inline-link">filpgf.io/kernel</a>.',
   ],
   whoShouldApply:
     "Teams with a track record of running production infrastructure or maintaining critical open-source software, ideally in Filecoin or another blockchain network. Existing Kernel maintainers, new teams and independent operators are all welcome.",
   howToApply: [
-    'Review the inventory at <a href="/kernel">filpgf.io/kernel</a> and <a href="https://github.com/filecoin-project/pgf-monitor/blob/main/registry/_kernel.yaml">functions here</a>.',
+    'Review the inventory at <a href="/kernel" class="inline-link">filpgf.io/kernel</a> and <a href="https://github.com/filecoin-project/pgf-monitor/blob/main/registry/_kernel.yaml" class="inline-link">functions here</a>.',
     "Choose the function or functions you are suited to steward.",
     "Submit your application, naming the function and tier at the top.",
   ],
