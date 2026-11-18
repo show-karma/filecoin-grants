@@ -330,12 +330,12 @@ export const RND_TIMELINE: ProcessStep[] = [
     detail: "Reviewed as they come in, not against a fixed deadline",
   },
   {
-    title: "Shortlist and committee vetting",
-    detail: "An AI-assisted first pass narrows the field, then shortlisted proposals are reviewed by committee",
+    title: "Initial reviews with AI assistance",
+    detail: "Shortlisted proposals are reviewed by committee",
   },
   {
-    title: "Final allocation",
-    detail: "Assessed against Filecoin's 2026 network objectives",
+    title: "Committee review",
+    detail: "Shortlisted and assessed against Filecoin's 2026 network objectives",
   },
   {
     title: "Funded in stages",
