@@ -339,6 +339,6 @@ export const RND_TIMELINE: ProcessStep[] = [
   },
   {
     title: "Funded in stages",
-    detail: "Released as the work proves out",
+    detail: "Approved projects paid out once milestone work is reviewed and completed",
   },
 ];
