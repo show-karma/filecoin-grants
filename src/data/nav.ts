@@ -56,11 +56,6 @@ export const MAIN_NAV: NavEntry[] = [
         href: EXTERNAL.financials,
       },
       { label: "RetroPGF - Paused", href: EXTERNAL.retropgf },
-      { label: "filpgf.io/kernel", href: "/kernel/" },
-      {
-        label: "functions here",
-        href: "https://github.com/filecoin-project/pgf-monitor/blob/main/registry/_kernel.yaml",
-      },
     ],
   },
   {
