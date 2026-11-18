@@ -248,6 +248,25 @@ export const RND_RFPS: Rfp[] = [
     whoShouldApply:
       "DevRel, technical writing or developer-experience teams with hands-on Filecoin experience (FEVM, FOC, storage onboarding) and working relationships with core implementation teams. Experience making docs agent-readable is a strong plus. Teams already working on Filecoin docs are welcome to apply.",
   },
+  {
+    title: "RFP 8: Steward a Filecoin Kernel Function",
+    objective:
+      "find a team to steward one or more functions in the Kernel inventory — as a first maintainer, a second implementation, or a better operator than what exists today — and to report that function's health publicly.",
+    problem:
+      "The Filecoin Kernel is a map of every capability the network depends on to keep producing blocks, proving storage and staying observable. Each capability is written down as a function, separate from whichever repo or team provides it today. The full list of functions, their tiers, who maintains each one, and how each is monitored is at filpgf.io/kernel, with the underlying registry at github.com/filecoin-project/pgf-monitor. This RFP is open to teams maintaining or operating a function that currently has no funded maintainer, teams offering a second implementation or operator for a function that has only one today, and teams that can offer better reliability, coverage or cost than what exists.",
+    inScope: [
+      "Keeping a Kernel function working, healthy and up to date.",
+      "A second implementation where a single one is a systemic risk.",
+      "Monitoring, testnets and incident response that keep the network observable.",
+      "Security and upgrade work needed to stay production-safe.",
+    ],
+    notInScope: [
+      "New features or product expansion. These belong in Revenue Development.",
+      "Exploratory or unproven work. This belongs in R&D.",
+    ],
+    whoShouldApply:
+      "Teams with a track record of running production infrastructure or maintaining critical open-source software, ideally in Filecoin or another blockchain network. Existing Kernel maintainers, new teams and independent operators are all welcome.",
+  },
 ];
 
 export const RND_EVALUATION: { label: string; value: string }[] = [
