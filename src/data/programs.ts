@@ -319,3 +319,30 @@ export const RND_EVALUATION: { label: string; value: string }[] = [
     value: "Shipped products with named paying customers within six months",
   },
 ];
+
+export const RND_TIMELINE: ProcessStep[] = [
+  {
+    title: "RFP published",
+    detail: "Published as soon as a gap in the network is identified",
+  },
+  {
+    title: "Applications arrive",
+    detail: "Reviewed as they come in, not against a fixed deadline",
+  },
+  {
+    title: "AI-assisted shortlist",
+    detail: "A first pass narrows the field",
+  },
+  {
+    title: "Committee vetting",
+    detail: "Shortlisted proposals are reviewed by committee",
+  },
+  {
+    title: "Final allocation",
+    detail: "Assessed against Filecoin's 2026 network objectives",
+  },
+  {
+    title: "Funded in stages",
+    detail: "Released as the work proves out",
+  },
+];
