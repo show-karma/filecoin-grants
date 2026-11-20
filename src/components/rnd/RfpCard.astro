@@ -3,10 +3,17 @@ import type { Rfp } from "../../data/programs";
 
 type Props = { rfp: Rfp };
 const { rfp } = Astro.props;
+
+const slugMatch = rfp.title.match(/^RFP (\d+)/);
+const anchorId = slugMatch ? `rfp-${slugMatch[1]}` : undefined;
 ---
 
-<article class="rounded-lg border border-line bg-surface p-6 sm:p-7">
-  <h3 class="text-xl">{rfp.title}</h3>
+<article id={anchorId} class="scroll-mt-24 rounded-lg border border-line bg-surface p-6 sm:p-7">
+  <h3 class="text-xl">
+    <a href={anchorId ? `#${anchorId}` : undefined} class="hover:underline hover:decoration-accent">
+      {rfp.title}
+    </a>
+  </h3>
   <p class="mt-3 text-[0.95rem] leading-relaxed">
     <strong>Objective:</strong>
     {rfp.objective}
