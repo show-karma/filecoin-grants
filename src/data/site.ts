@@ -26,6 +26,12 @@ export const EXTERNAL = {
   skills: "https://github.com/show-karma/skills",
   /** This repo; its `skills/` folder is the FilPGF agent toolkit. */
   repo: "https://github.com/show-karma/filecoin-grants",
+  /** Filecoin Data Portal's agent skill: public network and market datasets. */
+  fdpSkill: "https://filecoindataportal.xyz/SKILL.md",
+  /** Filoscope: search over Filecoin docs, FIPs, specs and code. */
+  filoscope: "https://davidgasquez.github.io/filoscope/SKILL.md",
+  /** FilPGF Agent Kit: these skills packaged for several agent clients. */
+  agentKit: "https://github.com/filecoin-project/filpgf-agent-kit",
   slack: "https://filecoin.io/slack",
 } as const;
 
